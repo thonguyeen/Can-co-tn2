@@ -1,0 +1,73 @@
+{
+  "updated_at": "2026-04-01T13:05:00+07:00",
+  "summary": {
+    "project": "CẦN & CÓ",
+    "current_feature": "Nâng cấp Super App Layout 5-Tabs",
+    "current_task": "All Phases 01-05 Completed",
+    "status": "completed",
+    "progress_percent": 100,
+    "last_action": "Hoàn thành Phase 05: Tích hợp Mapbox GL JS, sửa lỗi Tailwind 4 JIT parse file nhị phân trong next-tmp, và khắc phục lỗi import react-map-gl/mapbox.",
+    "next_step": "Chờ User giao task mới (e.g. nối DB thật cho Feed/Map, tối ưu SEO, Deploy)."
+  },
+  "working_on": {
+    "feature": "Super App Layout",
+    "task": "N/A - Done",
+    "status": "idle",
+    "files": [],
+    "blockers": [],
+    "notes": "Plan '260331-2212-super-app' đã hoàn thành 100%."
+  },
+  "pending_tasks": [],
+  "recent_changes": [
+    {
+      "timestamp": "2026-04-01T13:05:00+07:00",
+      "type": "feature",
+      "description": "Phase 05 Map & Radar: Tích hợp Mapbox GL JS, giả lập điểm phát CẦN/CÓ, UI Desktop Panel & Mobile Slider. Radar Mode sweep effect.",
+      "files": [
+        "app/components/map/MapboxRenderer.tsx",
+        "app/components/map/MapPinDetailPanel.tsx",
+        "app/components/tabs/MapRadarTab.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-01T10:00:00+07:00",
+      "type": "feature",
+      "description": "Phase 04 Global Chatbot: Tạo Chatbot Slide-over layout, mock luồng tư vấn BĐS thời gian thực.",
+      "files": [
+        "app/components/chatbot/GlobalChatbot.tsx",
+        "app/components/chatbot/ChatPanel.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-01T08:00:00+07:00",
+      "type": "feature",
+      "description": "Phase 03 Swipe Match: Sử dụng framer-motion PanHandlers, UI quẹt thẻ Tinder (Trái: Bỏ qua, Phải: Gọi Chatbot, Tim: Match).",
+      "files": [
+        "app/components/tabs/SwipeMatchTab.tsx",
+        "app/components/feed/MatchCard.tsx"
+      ]
+    }
+  ],
+  "errors_encountered": [
+    {
+      "error": "Lỗi 'Unexpected token Delim(\\u{16})' khi build CSS trong Next.js.",
+      "solution": "Thêm /next-tmp/ vào .gitignore. Lý do: Tailwind v4 JIT quét nhầm file nén của Turbopack tạo ra rác CSS.",
+      "resolved": true
+    },
+    {
+      "error": "Lỗi 'Can't resolve react-map-gl' mặc dù đã install.",
+      "solution": "Sửa import từ 'react-map-gl' thành 'react-map-gl/mapbox'. Do bản 8.1.0 bỏ support export root.",
+      "resolved": true
+    }
+  ],
+  "decisions_made": [
+    {
+      "decision": "Tailwind 4 Source Control",
+      "reason": "Chặn Tailwind tự quét thư mục cache bằng cách kiểm soát chặt .gitignore để không văng lỗi build."
+    },
+    {
+      "decision": "Sử dụng framer-motion cho card swipe",
+      "reason": "Rất mượt trên di động, kiểm soát được threshold vuốt thẻ."
+    }
+  ]
+}

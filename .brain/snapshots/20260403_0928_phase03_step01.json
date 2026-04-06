@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-04-03T09:28:00Z",
+  "trigger": "workflow_end",
+  "session_summary": {
+    "project": "CẦN & CÓ",
+    "current_feature": "Phase 03: API & Data Access Rewrite (Supabase → Prisma)",
+    "current_task": "Step 2: Batch A — Feed & Posts (next)",
+    "status": "coding",
+    "progress_percent": 22,
+    "last_action": "Completed Step 0 (Schema +14 models) + Step 1 (Helper Layer)",
+    "next_step": "Migrate api/bots/route.ts → Prisma (simplest route first)"
+  },
+  "completed_in_session": [
+    "Schema: +12 new models, +2 supplementary, +7 Profile cols, +13 Bot cols",
+    "Fix: pgvector Unsupported type removed, use $queryRaw",
+    "Helper: lib/data/get-user.ts (auth), lib/data/helpers.ts (utilities)",
+    "db push + prisma generate + verification: ALL PASS"
+  ],
+  "key_files": [
+    "app/prisma/schema.prisma",
+    "app/lib/data/get-user.ts",
+    "app/lib/data/helpers.ts",
+    "plans/260403-1050-postgres-migration/phase-03-api-rewrite.md",
+    "docs/DESIGN_PHASE03_API_REWRITE.md"
+  ]
+}

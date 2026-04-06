@@ -1,0 +1,76 @@
+{
+  "meta": { "schema_version": "1.1.0", "awf_version": "3.3.0" },
+  "project": {
+    "name": "CẦN & CÓ",
+    "type": "Web Application (Matchmaking for Real Estate)",
+    "status": "Development / Testing"
+  },
+  "tech_stack": {
+    "frontend": { "framework": "Next.js 14", "styling": "Vanilla CSS & Tailwind" },
+    "backend": { "framework": "Next.js API Routes", "database": "Supabase (PostgreSQL)" },
+    "ai_agents": { "orchestration": "Custom Orchestrator", "proxy": "SimpleVerse" }
+  },
+  "database_schema": {
+    "summary": "App lưu: bài đăng (intents), người dùng (profiles), và bình luận AI (intent_comments)",
+    "tables": [
+      {
+        "name": "intents",
+        "description": "Bài đăng nhu cầu CAN hoặc CO của người dùng"
+      },
+      {
+        "name": "intent_comments",
+        "description": "Các bình luận từ AI Agents (Match Advisor, Trust Checker, NHÀ ADVISOR) và user."
+      },
+      {
+        "name": "profiles",
+        "description": "Hồ sơ người dùng"
+      }
+    ],
+    "relationships_explained": "1 intent có nhiều intent_comments. 1 profile có nhiều intents."
+  },
+  "api_endpoints": [
+    {
+      "path": "POST /api/intents",
+      "explained": "User tạo bài đăng mới -> Gắn db -> Trigger AI Agents chạy ngầm."
+    },
+    {
+      "path": "GET /api/intents",
+      "explained": "Lấy danh sách bài đăng (có hỗ trợ lọc theo ID qua ?id=xxx để lấy detail)."
+    },
+    {
+      "path": "POST /api/intents/comments",
+      "explained": "Nhận bình luận của người dùng (giao diện) và ghi xuống DB với is_bot = false."
+    },
+    {
+      "path": "POST /api/intents/interest",
+      "explained": "Tăng / giảm match_count của Intents khi user bấm Quan Tâm."
+    }
+  ],
+  "business_rules": [
+    "Bài đăng mới nhất luôn được lên đầu.",
+    "Bình luận Match Advisor luôn được ghim đầu dòng.",
+    "Tất cả AI Agents đều chạy qua luồng 'orchestrator' tập trung.",
+    "Trang chi tiết Intents sử dụng basePath rỗng để chạy chung cho mọi chế độ (Demo/Hybrid/Mobile)."
+  ],
+  "features": [
+    "Đăng bài tìm kiếm/bán (CAN/CO)",
+    "AI tự động vào bình luận (Trust Check, Price Check, Match Advisor)",
+    "API Background Task for AI inference without blocking UI",
+    "Hybrid Real-Time Feed (Supabase Subscription)",
+    "Tương tác thực (Bình luận, Thả tim) cắm thẳng vào Database."
+  ],
+  "knowledge_items": {
+    "patterns": [
+      "Dùng createServiceClient() cho các task async/background vì request context & cookie bị mất.",
+      "Thêm { id } filter vào fetch listing API tái sử dụng code chung cho List lẫn Detail.",
+      "Dùng supabase_realtime cho bảng intents để tránh flick UI khi load danh sách ban đầu.",
+      "Đẩy trang chi tiết (Detail Page) ra root (app/intent) để tránh xung đột Layout Layout chung của app/demo."
+    ],
+    "gotchas": [
+      "Bot comment async -> Cần frontend setTimeout đợi 3-5 giây gọi lại API để feed UI có comment bot.",
+      "Bản Text Embedding 3 Small không có trên proxy free SimpleVerse, cần bóc tách các task block model API error ra khỏi luồng chính.",
+      "Thẻ Link (Next.js) bọc ngoài các component thẻ Card (vd: IntentCard) cần lưu ý sự kiện sủi bọt (e.preventDefault(), e.stopPropagation()) khi bấm các nút tương tác."
+    ],
+    "conventions": []
+  }
+}

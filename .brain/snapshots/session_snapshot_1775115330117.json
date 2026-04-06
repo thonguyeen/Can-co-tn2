@@ -1,0 +1,55 @@
+{
+  "updated_at": "2026-04-02T14:35:00Z",
+  "working_on": {
+    "feature": "Admin Dashboard - Phase 04",
+    "task": "Completed Phase 04, pending Phase 05",
+    "status": "completed",
+    "files": [
+      "app/app/admin/page.tsx",
+      "app/api/bots/route.ts",
+      "app/api/crawl-sources/route.ts"
+    ],
+    "blockers": [],
+    "notes": "Testing for Phase 04 integration passed 9/9"
+  },
+  "pending_tasks": [
+    {
+      "task": "Phase 05: Feed Integration",
+      "priority": "high",
+      "notes": "Hiển thị bài viết do bot cào lên feed trang chủ với logo robot."
+    }
+  ],
+  "recent_changes": [
+    {
+      "timestamp": "2026-04-02T14:00:00Z",
+      "type": "feature",
+      "description": "Completed Phase 04 Admin UI and DB mapping logic.",
+      "files": [
+        "app/app/admin/page.tsx",
+        "app/app/admin/components/BotHRTab.tsx",
+        "app/app/admin/components/CrawlSourcesTab.tsx",
+        "app/app/api/bots/route.ts",
+        "app/app/api/crawl-sources/route.ts",
+        "app/lib/data/vietnam-locations.ts",
+        "app/scripts/test-phase-04.ts"
+      ]
+    }
+  ],
+  "errors_encountered": [
+    {
+      "error": "Error in POST /api/bots mismatching bots table columns like isActive and category",
+      "solution": "Use assigned_categories and check original 001_initial_schema.sql for right property names",
+      "resolved": true
+    }
+  ],
+  "decisions_made": [
+    {
+      "decision": "Use vietnam-locations.ts generated from Excel for Admin bot assigning UI",
+      "reason": "Provides exact matching and hierarchical Province -> District -> Ward picking"
+    },
+    {
+      "decision": "Split admin/page.tsx into components",
+      "reason": "Improves readability as file was > 400 lines"
+    }
+  ]
+}

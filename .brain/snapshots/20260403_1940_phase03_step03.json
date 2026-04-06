@@ -1,0 +1,49 @@
+{
+  "snapshot_at": "2026-04-03T19:40:00Z",
+  "milestone": "Phase 03 — Steps 0-3 Complete (50%)",
+  "description": "Migrated 25+ files from Supabase to Prisma across Feed/Posts (Step 2) and Intents/Matching (Step 3). Homepage UI fixed. All APIs tested and passing.",
+  "completed_steps": ["Step 0: Schema", "Step 1: Helpers", "Step 2: Feed & Posts (11 files)", "Step 3: Intents CẦN/CÓ (14 files)"],
+  "remaining_steps": ["Step 4: Bots & Users", "Step 5: Crawler", "Step 6: Verification & Chat", "Step 7: Lib Services", "Step 8: Cleanup"],
+  "migrated_files_step2": [
+    "lib/feed/feed-service.ts",
+    "api/feed/route.ts",
+    "api/posts/[id]/like/route.ts",
+    "api/posts/[id]/save/route.ts",
+    "api/comments/route.ts",
+    "api/comments/[id]/route.ts",
+    "api/comments/reply/route.ts",
+    "api/breaking/route.ts",
+    "api/breaking/[id]/route.ts",
+    "api/notifications/route.ts",
+    "(main)/post/[id]/page.tsx"
+  ],
+  "migrated_files_step3": [
+    "lib/engine/matching.ts",
+    "lib/agents/orchestrator.ts",
+    "api/intents/route.ts",
+    "api/intents/[id]/route.ts",
+    "api/intents/[id]/comments/route.ts",
+    "api/intents/[id]/matches/route.ts",
+    "api/intents/[id]/images/route.ts",
+    "api/intents/comments/route.ts",
+    "api/intents/interest/route.ts",
+    "api/intents/crawled-inject/route.ts",
+    "api/intents/link-check/route.ts",
+    "api/intents/parse/route.ts (no change needed)",
+    "api/matching/route.ts",
+    "api/matching/trigger/route.ts"
+  ],
+  "key_patterns_established": {
+    "auth": "requireAuth(request) → { userId } | { error: Response }",
+    "response_format": "Manual snake_case mapping for complex routes, toSnakeCase() for simple ones",
+    "bigint_handling": "Prisma BigInt → Number() for JSON serialization (price fields)",
+    "matching_engine": "Global prisma import, toIntentType() for camelCase→snake_case conversion",
+    "atomic_counters": "Prisma increment/decrement instead of read-then-update",
+    "vector_operations": "$executeRaw for pgvector (embedding insert/upsert)"  
+  },
+  "test_results": {
+    "api_tests": "10/10 PASS (browser-verified with session)",
+    "auth_tests": "5/5 PASS (401 without token)",
+    "ui_test": "Homepage renders without errors, shows empty state correctly"
+  }
+}

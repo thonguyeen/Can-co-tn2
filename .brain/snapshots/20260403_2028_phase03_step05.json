@@ -1,0 +1,22 @@
+{
+  "snapshot_at": "2026-04-03T20:28:00Z",
+  "milestone": "Phase 03 — Steps 0-5 Complete (75%)",
+  "description": "38 files migrated. Step 5 added 7 crawler pipeline API routes.",
+  "completed_steps": ["Step 0: Schema", "Step 1: Helpers", "Step 2: Feed & Posts (11)", "Step 3: Intents CẦN/CÓ (14)", "Step 4: Bots & Users (6)", "Step 5: Crawler Pipeline (7)"],
+  "remaining_steps": ["Step 6: Verification & Chat", "Step 7: Lib Services", "Step 8: Cleanup"],
+  "step5_files": [
+    "api/crawl-sources/route.ts — GET/POST/PUT/DELETE",
+    "api/crawl/route.ts — POST trigger + GET status (crawl_logs + sources)",
+    "api/crawler/trigger/route.ts — POST crawl + GET crawl_sources overview",
+    "api/raw-news/route.ts — GET with source relation, pagination",
+    "api/generate-post/route.ts — POST gen + breaking detection, GET stats (bots, posts, pending count)",
+    "api/dev/trigger-ai/route.ts — GET insert test intent_comment",
+    "api/openclaw/webhook/route.ts — POST webhook (message, reaction, follow handlers)"
+  ],
+  "step5_patterns": {
+    "crawl_sources_crud": "Direct CrawlSource model CRUD, snake→camel key mapping for PUT",
+    "breaking_detection": "prisma.post.update + prisma.breakingNews.create (omit relatedTopics, breakingDetectedAt)",
+    "openclaw_adaptations": "Comment model lacks external channel fields — context logged via console. Reactions require userId — external logged only.",
+    "raw_news_relation": "prisma.rawNews.findMany with include source (name, credibilityScore)"
+  }
+}

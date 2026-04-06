@@ -1,0 +1,75 @@
+{
+  "updated_at": "2026-03-31T14:43:00Z",
+  "summary": {
+    "project": "CẦN & CÓ",
+    "current_feature": "Real-time Hybrid Feed Integration",
+    "current_task": "Phase 04: Integration & Edge Cases (Kết Nối Tương Tác Thật)",
+    "status": "completed",
+    "progress_percent": 80,
+    "last_action": "Moved Intent Detail Page to root and integrated actual API endpoints for comments and interest.",
+    "next_step": "Phase 05: Testing Observer Sidebar"
+  },
+  "working_on": {
+    "feature": "Real-time Hybrid Feed Integration",
+    "task": "Phase 04: Integration & Edge Cases (Kết Nối Tương Tác Thật)",
+    "status": "completed",
+    "files": [
+      "app/app/intent/[id]/page.tsx",
+      "app/api/intents/comments/route.ts",
+      "app/api/intents/interest/route.ts"
+    ],
+    "blockers": [],
+    "notes": "Completely wired up intents details UI with API endpoints for commenting and matching."
+  },
+  "pending_tasks": [
+    {
+      "task": "Phase 05: Testing Observer Sidebar",
+      "priority": "high",
+      "notes": "Feature for AI Observer column on the right side of the screen"
+    },
+    {
+      "task": "Audit RLS Policies",
+      "priority": "high",
+      "notes": "Verify security rules for intents and intent_comments tables"
+    }
+  ],
+  "recent_changes": [
+    {
+      "timestamp": "2026-03-31T14:00:00Z",
+      "type": "feature",
+      "description": "Implemented Real-time Subscription capability on both `/hybrid` and `/hybrid-v2` routes to push new intents from Supabase channel.",
+      "files": ["app/hybrid/page.tsx", "app/hybrid-v2/page.tsx", "plans/plan.md"]
+    },
+    {
+      "timestamp": "2026-03-31T14:30:00Z",
+      "type": "feature",
+      "description": "Moved Intent Detail Page to root (/intent/[id]) to support universal linking. Integrated actual API endpoints for POST comments and updating match_count logic.",
+      "files": ["app/intent/[id]/page.tsx", "app/api/intents/comments/route.ts", "app/api/intents/interest/route.ts", "components/intent/IntentCard.tsx"]
+    }
+  ],
+  "errors_encountered": [
+    {
+      "error": "Intent Detail linking loop in IntentCard (basePath issue)",
+      "solution": "Refactored IntentCard to accept basePath as an empty string '\"\"' for root rendering instead of '/demo', escaping the demo sub-layout.",
+      "resolved": true,
+      "file": "components/intent/IntentCard.tsx"
+    }
+  ],
+  "decisions_made": [
+    {
+      "decision": "Fetch Real Data Fallback over fully deprecating Mock Data",
+      "reason": "Keeps the demo UI lighting fast initially while transparently supporting new user posts from the live database."
+    },
+    {
+      "decision": "Detail Page uses Root Layout vs Demo Layout",
+      "reason": "Because elements in `/demo` require SavedContext Provider and other visual heavy Demo sidebar overlays, whereas the actual feature should be generic and link-friendly from `/hybrid` modes."
+    }
+  ],
+  "context_checkpoints": [
+    {
+      "timestamp": "2026-03-31T14:43:00Z",
+      "trigger": "user_manual_call",
+      "summary": "Phase 04 completed: Integrated real-time data and actual interaction APIs (comments, interest). Application is 80% through the hybrid integration plan."
+    }
+  ]
+}

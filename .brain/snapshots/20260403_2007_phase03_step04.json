@@ -1,0 +1,20 @@
+{
+  "snapshot_at": "2026-04-03T20:07:00Z",
+  "milestone": "Phase 03 — Steps 0-4 Complete (62.5%)",
+  "description": "31 files migrated. Step 4 added bots CRUD, follow system, user stats, admin avatars, and 2 gamification lib files.",
+  "completed_steps": ["Step 0: Schema", "Step 1: Helpers", "Step 2: Feed & Posts (11)", "Step 3: Intents CẦN/CÓ (14)", "Step 4: Bots & Users (6)"],
+  "remaining_steps": ["Step 5: Crawler", "Step 6: Verification & Chat", "Step 7: Lib Services", "Step 8: Cleanup"],
+  "step4_files": [
+    "api/bots/route.ts — GET/POST/PUT",
+    "api/bots/[id]/follow/route.ts — Follow/Unfollow/Check",
+    "api/users/[id]/stats/route.ts — Gamification stats",
+    "api/admin/update-avatars/route.ts — Batch avatar assignment",
+    "lib/gamification/leaderboard.ts — getUserRank + getLeaderboard",
+    "lib/gamification/achievements.ts — checkAchievement + getUserAchievements"
+  ],
+  "step4_patterns": {
+    "dynamic_key_mapping": "snake_case body keys → camelCase Prisma via regex replace",
+    "atomic_rpc_replacement": "supabase.rpc('increment_bot_followers') → prisma.bot.update({ data: { followersCount: { increment: 1 } } })",
+    "auth_migration": "supabase.auth.getUser() → getAuthUserId() from lib/data/get-user"
+  }
+}

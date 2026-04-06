@@ -1,0 +1,112 @@
+{
+  "meta": { "schema_version": "1.1.0", "awf_version": "3.3.0" },
+  "project": {
+    "name": "CẦN & CÓ",
+    "type": "Web Application (Matchmaking for Real Estate)",
+    "status": "Migration: Supabase → PostgreSQL + Prisma"
+  },
+  "tech_stack": {
+    "frontend": { "framework": "Next.js 14/15 Turbopack", "styling": "Vanilla CSS & Tailwind CSS v4" },
+    "backend": { "framework": "Next.js API Routes", "database": "Supabase PostgreSQL via Prisma 7 Driver Adapter" },
+    "auth": { "framework": "NextAuth.js v5 (next-auth)", "adapter": "@auth/prisma-adapter", "strategy": "JWT + Credentials" },
+    "orm": { "name": "Prisma 7", "adapter": "@prisma/adapter-pg (node-pg Pool)", "config": "prisma.config.ts + prisma/schema.prisma" },
+    "libraries": { "animation": "framer-motion", "map": "react-map-gl/mapbox (v8)", "excel": "xlsx (devDependency)" },
+    "ai_agents": { "orchestration": "Custom Orchestrator (lib/openclaw)", "proxy": "SimpleVerse" }
+  },
+  "database_schema": {
+    "summary": "App lưu: bài đăng (intents), người dùng (profiles/users), bình luận AI (intent_comments), bot (bots), nguồn cào (crawl_sources), matching, verification, chat, agent memory, activity logs",
+    "connection": {
+      "runtime": "DATABASE_URL → Supabase Transaction Pooler (port 6543)",
+      "migration": "DIRECT_URL → Supabase Direct (port 5432) via prisma.config.ts"
+    },
+    "tables": [
+      { "name": "users", "description": "NextAuth User model. Liên kết với Account/Session/Profile." },
+      { "name": "accounts", "description": "NextAuth OAuth accounts." },
+      { "name": "sessions", "description": "NextAuth sessions." },
+      { "name": "profiles", "description": "Hồ sơ người dùng. Mở rộng: violation_count, is_banned, trust_score, verification_level, phone." },
+      { "name": "bots", "description": "Danh sách Bot. Envoy fields: assigned_province/district/ward, daily_quota, posts_today, is_envoy, comments_count, debates_count." },
+      { "name": "intents", "description": "Bài đăng CẦN/CÓ. Hỗ trợ user thật (user_id) và Bot (is_bot + bot_handle + source_url)." },
+      { "name": "intent_images", "description": "Ảnh đính kèm intent." },
+      { "name": "intent_comments", "description": "Bình luận từ AI Agents và user trên intents." },
+      { "name": "intent_embeddings", "description": "Vector embeddings (pgvector) cho AI matching. Cột embedding dùng $queryRaw." },
+      { "name": "matches", "description": "Ghép cặp CẦN ↔ CÓ với similarity score." },
+      { "name": "verifications", "description": "Xác minh GPS/CCCD/Sổ đỏ cho intents." },
+      { "name": "conversations", "description": "Chat trực tiếp giữa 2 users về 1 intent." },
+      { "name": "messages", "description": "Tin nhắn trong conversations." },
+      { "name": "content_violations", "description": "Log vi phạm nội dung bị moderation chặn." },
+      { "name": "agent_memory", "description": "Bộ nhớ bot AI (nhớ user preferences)." },
+      { "name": "knowledge_edges", "description": "Đồ thị tri thức (knowledge graph)." },
+      { "name": "agent_activity", "description": "Log hoạt động bot AI." },
+      { "name": "crawl_sources", "description": "Nguồn cào BĐS do Admin nhập (URL, loại RSS/HTML, khu vực)." },
+      { "name": "activity_logs", "description": "Log hoạt động bot orchestration. Type: post/comment/debate/reaction/message." },
+      { "name": "posts", "description": "Bài viết hệ thống FACEBOT (legacy, vẫn dùng cho news feed)." },
+      { "name": "raw_news", "description": "Tin thô từ crawler chưa xử lý." },
+      { "name": "sources", "description": "Nguồn tin tức (legacy, khác crawl_sources)." }
+    ],
+    "relationships_explained": "1 intent có nhiều intent_comments/images/matches. 1 profile có nhiều intents. 1 bot đăng nhiều intents (is_bot=true). matches ghép CẦN↔CÓ. conversations nối 2 users qua 1 intent."
+  },
+  "api_endpoints": [
+    { "path": "POST /api/intents", "explained": "User tạo bài đăng mới → Trigger AI Agents." },
+    { "path": "GET /api/intents", "explained": "Lấy danh sách bài đăng (lọc theo status, type, ID)." },
+    { "path": "POST /api/intents/comments", "explained": "User bình luận trên intent." },
+    { "path": "POST /api/intents/interest", "explained": "Tăng/giảm match_count." },
+    { "path": "GET/PUT/POST /api/bots", "explained": "Quản lý Bot Envoy." },
+    { "path": "GET/POST/PUT/DELETE /api/crawl-sources", "explained": "CRUD nguồn cào." },
+    { "path": "GET /api/feed", "explained": "Feed trang chủ với ranking algorithm." },
+    { "path": "POST/DELETE /api/posts/[id]/like", "explained": "Like/unlike post." },
+    { "path": "POST/DELETE /api/posts/[id]/save", "explained": "Save/unsave post." },
+    { "path": "POST /api/crawl", "explained": "Kích hoạt cào tin theo platform hoặc source_id." },
+    { "path": "GET /api/crawl", "explained": "Lấy log cào tin gần nhất và danh sách nguồn." },
+    { "path": "POST /api/crawler/trigger", "explained": "Trigger OpenClaw crawler cho real estate." },
+    { "path": "GET /api/raw-news", "explained": "Lấy danh sách tin thô (raw_news) kèm nguồn." },
+    { "path": "POST /api/generate-post", "explained": "AI chuyển tin thô thành bài đăng bot (Post) + check breaking news." },
+    { "path": "POST /api/openclaw/webhook", "explained": "Webhook nhận tin từ các channel (Telegram/Zalo/...) vào hệ thống." }
+  ],
+  "business_rules": [
+    "Bài đăng mới nhất luôn được lên đầu.",
+    "Bình luận Match Advisor luôn được ghim đầu dòng.",
+    "Bot Envoy có quota 5-100 bài/ngày. Đạt quota thì tự dừng.",
+    "Bot ghi bài vào bảng intents (is_bot=true).",
+    "Nguồn cào BĐS do Admin quản lý qua bảng crawl_sources.",
+    "Bộ địa chính VN lấy từ file Excel carCRM (vietnam-locations.ts).",
+    "Auth: Đăng ký/Đăng nhập qua NextAuth Credentials. JWT strategy. Post-login redirect → trang chủ (/)."
+  ],
+  "features": [
+    "Đăng bài tìm kiếm/bán (CAN/CO)",
+    "AI tự động vào bình luận (Trust Check, Price Check, Match Advisor)",
+    "Hybrid Real-Time Feed (Supabase Subscription)",
+    "Vuốt chạm Tinder-style Swipe Match (framer-motion)",
+    "Chatbot AI phân tích BĐS thời gian thực",
+    "Global Map & Radar Scanning mode với react-map-gl",
+    "Admin Dashboard: Quản lý Bot HR + Nguồn web-scraping",
+    "[MIGRATION] Supabase SDK → Prisma ORM (Phase 03 API Rewrite)"
+  ],
+  "knowledge_items": {
+    "patterns": [
+      "Auth: getAuthUserId(req) từ lib/data/get-user.ts thay thế supabase.auth.getUser().",
+      "DB: import { prisma } from '@/lib/db' — bypass RLS, tương đương service role.",
+      "Prisma 7: Dùng Driver Adapter (@prisma/adapter-pg) thay vì datasourceUrl.",
+      "Prisma config: prisma.config.ts dùng DIRECT_URL (port 5432) cho migrations.",
+      "Response format: toSnakeCase() từ lib/data/helpers.ts để giữ tương thích frontend.",
+      "RPC Functions → Prisma native: prisma.bot.update({ data: { postsToday: { increment: 1 } } })."
+    ],
+    "gotchas": [
+      "pgvector extension: IntentEmbedding.embedding dùng $queryRaw, không để trong Prisma schema (db push fail).",
+      "Bot comment async → Frontend setTimeout 3-5s rồi gọi lại API.",
+      "Tailwind v4 tự quét binary/rác, cần chặn thư mục build.",
+      "Luôn chạy server dev ở port 4000 bằng lệnh next dev -p 4000 (đã update trong package.json).",
+      "Import react-map-gl/mapbox (v8), KHÔNG import root.",
+      "Bot output có thẻ <think> lẫn vào content. Strip trước khi save.",
+      "Bảng intents CHECK constraint: is_bot=TRUE → bot_handle NOT NULL; is_bot=FALSE → user_id NOT NULL.",
+      "Prisma schema @@map() ánh xạ camelCase model → snake_case table. Cẩn thận khi thêm cột.",
+      "Model Comment dùng botId (relation), không dùng bot_handle hay is_bot như bảng intents."
+    ],
+    "conventions": [
+      "File địa chính VN: app/lib/data/vietnam-locations.ts.",
+      "SQL migrations: app/supabase/migrations/ (prefix 001, 012, 100, 200, 201, 20260131).",
+      "Helper layer: lib/data/get-user.ts (auth), lib/data/helpers.ts (error, pagination, case conversion).",
+      "Plan: plans/260403-1050-postgres-migration/phase-03-api-rewrite.md.",
+      "Design: docs/DESIGN_PHASE03_API_REWRITE.md."
+    ]
+  }
+}

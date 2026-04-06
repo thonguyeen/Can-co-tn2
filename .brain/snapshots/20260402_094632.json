@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-04-02T09:46:32+07:00",
+  "trigger": "workflow_end",
+  "session_summary": {
+    "project": "CẦN & CÓ",
+    "current_feature": "Bot Môi Giới Địa Phương (Local Envoy Bots)",
+    "current_task": "Phase 01 — DB Migration + Location Data (15/18 tasks)",
+    "status": "waiting_user",
+    "progress_percent": 17,
+    "last_action": "Convert Excel carCRM → vietnam-locations.ts + Viết SQL migration 200_bot_envoy.sql",
+    "next_step": "User chạy SQL migration trên Supabase Dashboard → Phase 02 Backend Refactor"
+  },
+  "files_created": [
+    "scripts/convert-locations.js",
+    "app/lib/data/vietnam-locations.ts",
+    "app/supabase/migrations/200_bot_envoy.sql",
+    "docs/BRIEF.md",
+    "docs/DESIGN.md",
+    "plans/260402-0933-bot-envoy/plan.md",
+    "plans/260402-0933-bot-envoy/phase-01-db-migration.md",
+    "plans/260402-0933-bot-envoy/phase-02-backend-refactor.md",
+    "plans/260402-0933-bot-envoy/phase-03-crawler.md",
+    "plans/260402-0933-bot-envoy/phase-04-admin-ui.md",
+    "plans/260402-0933-bot-envoy/phase-05-feed-integration.md",
+    "plans/260402-0933-bot-envoy/phase-06-testing.md"
+  ],
+  "decisions": [
+    "Địa chính từ Excel carCRM (35 tỉnh, 692 quận, 3322 phường)",
+    "Nguồn cào = bảng Admin nhập (crawl_sources)",
+    "Quota Bot: Min 5 - Max 100",
+    "Bot ghi intents (is_bot=true), user_id NULL, Service Role bypass RLS"
+  ],
+  "brain_state": "synced",
+  "session_state": "synced",
+  "handover_state": "synced"
+}
