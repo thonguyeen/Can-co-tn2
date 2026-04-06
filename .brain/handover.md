@@ -1,40 +1,71 @@
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 HANDOVER DOCUMENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 📋 HANDOVER DOCUMENT — Cần & Có Platform
 
-📍 Đang làm: Phase 03 - API & Data Access Rewrite (Supabase → Prisma)
-🔢 Đến bước: Hoàn tất Phase 03 
+**Date:** 2026-04-06 16:38 (GMT+7)
+**Status:** Migration COMPLETE ✅
 
-✅ ĐÃ XONG:
-   - Phase 01 & 02: Setup & DB Schema Migrate ✓
-   - Phase 03: Đã chuyển đổi hoàn toàn các module sau từ Supabase sang Prisma:
-      * Feed & Posts
-      * Intents CẦN/CÓ
-      * Bots, Users & Auth (NextAuth)
-      * Crawler Pipeline (OpenClaw APIs)
-      * Intelligence (Notification Timing, Interest Tracker, Custom Triggers)
-      * AI Agents Subsystem (Proactive Poster, Post Generator, Reply Agent, Verification Agent)
-   - Tiện ích: Loại bỏ các file test cũ, dọn dẹp các biến môi trường `SUPABASE_*` trong `.env.local`
-   - Config: Cài đặt server dev luôn chạy port `4000`.
+---
 
-⏳ CÒN LẠI:
-   - **Phase 04 (Technical Debt)**: Sửa hàng loạt các lỗi TypeScript bị tồn đọng tại `lib/openclaw/` và `lib/gamification/`. Các lỗi này hiện đang gây crash khi chạy `npm run build` (Mặc dù `npm run dev` vẫn chạy trơn tru).
-   - Kiểm tra vận hành (Integration Test) toàn bộ server với DB PostgreSQL mới.
+## 📍 Đang ở đâu
 
-🔧 QUYẾT ĐỊNH QUAN TRỌNG:
-   - Xóa bỏ cài đặt kết nối Supabase SDK cũ. Thay thế toàn bộ truy xuất Auth bằng `getServerSession` của `next-auth` phía Server.
-   - Các API phức tạp vẫn duy trì sử dụng `prisma.$queryRaw` thay vì Prisma Client query thuần để bảo toàn format JSONB và các logic phức tạp cũ mà không làm vỡ Frontend.
-   - Image Upload tạm thời mock up trên local chờ chuyển sang S3/Cloudflare R2 sau này (Vì đã xóa biến Supabase).
+**Chiến dịch "Cắt đứt 100% Supabase"** đã hoàn thành 5/5 phases:
 
-⚠️ LƯU Ý CHO SESSION SAU:
-   - Server hiện tại `npm run dev` sống an toàn ở `http://localhost:4000`.
-   - Nếu bạn dự định `Deploy` dự án, sẽ phải dành ra 1 Task lớn để Fix Type ở thư mục `openclaw` & `gamification`! 
+```
+████████████████████ 100% (5/5 phases)
 
-📁 FILES QUAN TRỌNG:
-   - `package.json` (Đã lưu đổi port)
-   - `.brain/brain.json` (Quy định & Lịch sử)
-   - `.brain/session.json` (Tiến độ thực tế)
+Phase 01: Setup Prisma          ✅
+Phase 02: NextAuth Migration    ✅
+Phase 03: API Rewrite           ✅
+Phase 04: Realtime & Storage    ✅
+Phase 05: Data Migration        ✅
+```
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📍 Đã lưu! Để tiếp tục: Gõ /recap
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## ✅ ĐÃ XONG
+
+- **30 Prisma models** synced lên DB production
+- **4 users** migrated từ `auth.users` → `public.users`
+- **0 TypeScript errors** — codebase clean 100%
+- **0 Supabase imports** — hoàn toàn độc lập
+- **Git initialized** với 2 commits (baseline + phase 05)
+- **Login page** renders đúng, API auth guard hoạt động (401)
+- **Middleware** dùng NextAuth JWT, không Supabase SSR
+
+## 🔧 QUYẾT ĐỊNH QUAN TRỌNG
+
+| Quyết định | Lý do |
+|-----------|-------|
+| **Dual-table auth** | Giữ FK `profiles.id → auth.users(id)`. Copy users với cùng UUID sang `public.users`. Zero-risk. |
+| **HTTP Polling** (not WebSocket) | Platform independence. 15s feed, 3s chat. |
+| **Local filesystem storage** | Đủ cho MVP. Cần S3 cho serverless deploy. |
+| **bcrypt compatible** | Supabase + NextAuth đều dùng bcrypt → users login bình thường. |
+
+## ⚠️ LƯU Ý CHO SESSION SAU
+
+### Technical Debt (10 TODOs)
+- 4 missing Prisma models: `userAchievement`, `pointTransaction`, `pushLog`, `userChannel`
+- 15+ dead RLS policies using `auth.uid()`
+- Dead trigger `on_auth_user_created`
+- `/demo` route returns 404
+
+### Environment
+- App runs on **port 4000**: `npm run dev -- -p 4000`
+- DB connection uses **PgBouncer** (port 6543) for runtime, **Direct** (port 5432) for Prisma CLI
+- `prisma.config.ts` reads `DIRECT_URL`, `lib/db.ts` reads `DATABASE_URL`
+
+## 📁 FILES QUAN TRỌNG
+
+| File | Purpose |
+|------|---------|
+| `app/lib/db.ts` | Prisma client singleton (PrismaPg adapter) |
+| `app/lib/auth.ts` | NextAuth config (Credentials + JWT) |
+| `app/lib/data/get-user.ts` | Auth helper: `getAuthUserId()`, `requireAuth()` |
+| `app/middleware.ts` | Route protection (NextAuth JWT) |
+| `app/prisma/schema.prisma` | 30 models, 663 lines |
+| `app/prisma.config.ts` | CLI config (reads DIRECT_URL) |
+| `app/scripts/migrate-auth-users.ts` | Phase 05 migration script |
+| `plans/260403-1050-postgres-migration/plan.md` | Migration plan (✅ Complete) |
+| `.brain/brain.json` | Project knowledge base |
+| `.brain/session.json` | Dynamic session state |
+
+---
+
+📍 **Đã lưu! Để tiếp tục: Gõ `/recap`**
