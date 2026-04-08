@@ -1,71 +1,46 @@
-# 📋 HANDOVER DOCUMENT — Cần & Có Platform
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 HANDOVER DOCUMENT — 2026-04-07T15:51
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Date:** 2026-04-06 16:38 (GMT+7)
-**Status:** Migration COMPLETE ✅
+📍 Đang làm: Referral System & User Management
+🔢 Đến bước: Planning DONE. Chờ bắt đầu Phase 01 (DB Schema)
 
----
+✅ ĐÃ XONG HÔM NAY:
+   - Local Docker DB setup (plans/260407-1107-local-db-seed) ✓
+   - Brainstorm Referral System ✓
+   - Tạo plan đầy đủ 6 phases (65 tasks) ✓
+   - BRIEF.md + plan.md + 6 phase files ✓
 
-## 📍 Đang ở đâu
+⏳ VIỆC KẾ TIẾP (theo thứ tự):
+   Phase 01 — DB Schema
+     → Sửa schema.prisma: thêm 4 models mới, sửa 3 models có sẵn
+     → npx prisma db push
+   Phase 02 — Backend Referral + Boost API (11 endpoints)
+   Phase 03 — Backend Admin API (10 endpoints)
+   Phase 04 — Frontend User UI (3 trang, 9 components)
+   Phase 05 — Frontend Admin UI (3 trang, 8 components)
+   Phase 06 — Integration & Testing
 
-**Chiến dịch "Cắt đứt 100% Supabase"** đã hoàn thành 5/5 phases:
+🔧 QUYẾT ĐỊNH QUAN TRỌNG:
+   - MVP: 1-level referral only. Multi-level là Phase 2.
+   - Fraud: Admin review thủ công. Không làm OTP phone ngay.
+   - Tier names: Đồng → Bạc → Vàng → Bạch Kim → Kim Cương
+   - Điểm giới thiệu: 20 pts/lượt. Boost bài: 50 pts/24h.
+   - Đổi quà: Admin duyệt thủ công, từ chối thì hoàn điểm.
 
-```
-████████████████████ 100% (5/5 phases)
+⚠️ LƯU Ý CHO SESSION SAU:
+   - Gõ `/code phase-01` để bắt đầu sửa Prisma schema
+   - File plan chính: plans/260407-1341-referral-system/plan.md
+   - Phase files chi tiết trong cùng folder
+   - Server đang chạy: http://localhost:4000 (npm run dev, port 4000)
+   - DB đang dùng: LOCAL Docker (localhost:5432, cancotn_local)
 
-Phase 01: Setup Prisma          ✅
-Phase 02: NextAuth Migration    ✅
-Phase 03: API Rewrite           ✅
-Phase 04: Realtime & Storage    ✅
-Phase 05: Data Migration        ✅
-```
+📁 FILES QUAN TRỌNG:
+   - plans/260407-1341-referral-system/   (toàn bộ plan)
+   - app/prisma/schema.prisma             (cần sửa ở Phase 01)
+   - .brain/brain.json                    (context tổng quan dự án)
+   - .brain/session.json                  (trạng thái hiện tại)
 
-## ✅ ĐÃ XONG
-
-- **30 Prisma models** synced lên DB production
-- **4 users** migrated từ `auth.users` → `public.users`
-- **0 TypeScript errors** — codebase clean 100%
-- **0 Supabase imports** — hoàn toàn độc lập
-- **Git initialized** với 2 commits (baseline + phase 05)
-- **Login page** renders đúng, API auth guard hoạt động (401)
-- **Middleware** dùng NextAuth JWT, không Supabase SSR
-
-## 🔧 QUYẾT ĐỊNH QUAN TRỌNG
-
-| Quyết định | Lý do |
-|-----------|-------|
-| **Dual-table auth** | Giữ FK `profiles.id → auth.users(id)`. Copy users với cùng UUID sang `public.users`. Zero-risk. |
-| **HTTP Polling** (not WebSocket) | Platform independence. 15s feed, 3s chat. |
-| **Local filesystem storage** | Đủ cho MVP. Cần S3 cho serverless deploy. |
-| **bcrypt compatible** | Supabase + NextAuth đều dùng bcrypt → users login bình thường. |
-
-## ⚠️ LƯU Ý CHO SESSION SAU
-
-### Technical Debt (10 TODOs)
-- 4 missing Prisma models: `userAchievement`, `pointTransaction`, `pushLog`, `userChannel`
-- 15+ dead RLS policies using `auth.uid()`
-- Dead trigger `on_auth_user_created`
-- `/demo` route returns 404
-
-### Environment
-- App runs on **port 4000**: `npm run dev -- -p 4000`
-- DB connection uses **PgBouncer** (port 6543) for runtime, **Direct** (port 5432) for Prisma CLI
-- `prisma.config.ts` reads `DIRECT_URL`, `lib/db.ts` reads `DATABASE_URL`
-
-## 📁 FILES QUAN TRỌNG
-
-| File | Purpose |
-|------|---------|
-| `app/lib/db.ts` | Prisma client singleton (PrismaPg adapter) |
-| `app/lib/auth.ts` | NextAuth config (Credentials + JWT) |
-| `app/lib/data/get-user.ts` | Auth helper: `getAuthUserId()`, `requireAuth()` |
-| `app/middleware.ts` | Route protection (NextAuth JWT) |
-| `app/prisma/schema.prisma` | 30 models, 663 lines |
-| `app/prisma.config.ts` | CLI config (reads DIRECT_URL) |
-| `app/scripts/migrate-auth-users.ts` | Phase 05 migration script |
-| `plans/260403-1050-postgres-migration/plan.md` | Migration plan (✅ Complete) |
-| `.brain/brain.json` | Project knowledge base |
-| `.brain/session.json` | Dynamic session state |
-
----
-
-📍 **Đã lưu! Để tiếp tục: Gõ `/recap`**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📍 Đã lưu! Để tiếp tục: Gõ /recap hoặc /code phase-01
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

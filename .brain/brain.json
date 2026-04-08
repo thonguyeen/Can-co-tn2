@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-06T16:38:00+07:00"
+    "last_updated": "2026-04-07T15:51:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -30,8 +30,8 @@
     },
     "database": {
       "type": "PostgreSQL",
-      "host": "Supabase Pooler (aws-1-ap-south-1)",
-      "connection": "PgBouncer on port 6543 (pooled) + Direct on port 5432 (migrations)",
+      "host": "Local Docker (pgvector/pgvector:pg16) & Supabase Pooler (Prod)",
+      "connection": "Local on port 5432. Production PgBouncer on port 6543.",
       "orm_config": "prisma.config.ts reads DIRECT_URL for CLI, lib/db.ts reads DATABASE_URL for runtime"
     },
     "realtime": {
@@ -46,7 +46,7 @@
     }
   },
   "database_schema": {
-    "summary": "30 Prisma models covering NextAuth users, content (posts/comments), Cần&Có intents/matching, chat, gamification, crawler pipeline, and AI agents",
+    "summary": "34 Prisma models covering NextAuth users, content (posts/comments), Cần&Có intents/matching, chat, gamification, crawler pipeline, and AI agents",
     "key_models": [
       {"name": "User", "table": "users (NextAuth)", "purpose": "Authentication - email/password login"},
       {"name": "Profile", "table": "profiles", "purpose": "User display info, trust score, verification level"},
@@ -55,9 +55,11 @@
       {"name": "Bot", "table": "bots", "purpose": "AI bots with expertise, personality, envoy assignments"},
       {"name": "Post", "table": "posts", "purpose": "News posts by bots with verification status"},
       {"name": "Conversation", "table": "conversations", "purpose": "Chat between users about intents"},
-      {"name": "CrawlSource", "table": "crawl_sources", "purpose": "RSS/web sources for bot envoy crawling"}
+      {"name": "CrawlSource", "table": "crawl_sources", "purpose": "RSS/web sources for bot envoy crawling"},
+      {"name": "PointTransaction", "table": "point_transactions", "purpose": "Track points for gamification"},
+      {"name": "UserAchievement", "table": "user_achievements", "purpose": "Awarded badges and levels"}
     ],
-    "relationships_explained": "1 User has 1 Profile. 1 Bot has many Posts. 1 Intent has many Images, Comments, Matches. 1 Match links a CẦN intent to a CÓ intent. 1 Conversation has many Messages.",
+    "relationships_explained": "1 User has 1 Profile. 1 Bot has many Posts. 1 Profile has many PointTransactions. 1 Intent has many Images, Comments, Matches. 1 Match links a CẦN intent to a CÓ intent. 1 Conversation has many Messages.",
     "special_notes": [
       "profiles.id FK still points to auth.users(id) in DB (dual-table approach)",
       "IntentEmbedding uses pgvector via $queryRaw (not native Prisma)",
@@ -78,7 +80,17 @@
     {"path": "/api/conversations", "explained": "List user conversations"},
     {"path": "/api/bots", "explained": "Bot management (Admin)"},
     {"path": "/api/crawl-sources", "explained": "Crawl source management (Admin)"},
-    {"path": "/api/cron/*", "explained": "Scheduled tasks (crawler, digest, matching)"}
+    {"path": "/api/cron/*", "explained": "Scheduled tasks (crawler, digest, matching). Daily Digest and Breaking Push logs are now active."}
+  ],
+  "business_rules": [
+    "Gamification: Users earn 2 points per bot interaction.",
+    "Achievements: Unlocked automatically when criteria met (checkAchievement logic).",
+    "Notifications: System logs all push attempts in PushLog (title, body, status).",
+    "Referral: User earns 20 points per successful referral (1-level only in MVP).",
+    "Referral Tiers: Đồng=0 refs, Bạc=3+, Vàng=10+, Bạch Kim=30+, Kim Cương=100+.",
+    "Tier Multipliers: Đồng=1.0x, Bạc=1.2x, Vàng=1.5x, Bạch Kim=2.0x, Kim Cương=3.0x.",
+    "Boost: Spending 50 points pushes an intent to top of feed for 24 hours.",
+    "Reward Redemption: Admin manually fulfills in MVP. Rejected orders are refunded."
   ],
   "features": [
     {"name": "Khớp Nhanh (Swipe Feed)", "status": "implemented", "description": "Tinder-like swipe interface for browsing intents"},
@@ -87,8 +99,10 @@
     {"name": "Bot Envoy System", "status": "implemented", "description": "AI bots crawl real estate data and auto-post"},
     {"name": "Chat System", "status": "implemented", "description": "1-on-1 messaging with 3s polling"},
     {"name": "Verification System", "status": "implemented", "description": "GPS + photo verification of listings"},
-    {"name": "Gamification", "status": "partial", "description": "Points, levels, streaks. Missing: userAchievement, pointTransaction tables"},
-    {"name": "Content Moderation", "status": "implemented", "description": "AI-powered content violation detection"}
+    {"name": "Gamification", "status": "implemented", "description": "Core logic restored: Point transactions for bot interactions, achievement tracking, and weekly leaderboard."},
+    {"name": "Content Moderation", "status": "implemented", "description": "AI-powered content violation detection"},
+    {"name": "Local Development Environment", "status": "implemented", "description": "Decoupled from Supabase with Dockerized pgvector and auto-seed script (Safety Lock equipped)"},
+    {"name": "Referral System & User Management", "status": "planned", "description": "5-tier referral system (Đồng→Kim Cương). User dashboard with referral code, leaderboard, rewards store. Admin control panel with full user management, point adjustment, and redemption approval. Plan: plans/260407-1341-referral-system/ (65 tasks, 6 phases)"}
   ],
   "knowledge_items": {
     "patterns": [
@@ -101,8 +115,6 @@
     "gotchas": [
       "Prisma schema datasource block has NO url field — relies on prisma.config.ts for CLI and lib/db.ts for runtime",
       "profiles.id FK points to auth.users(id) NOT public.users(id) — dual-table approach",
-      "RLS policies in DB still use auth.uid() — dead code since Prisma bypasses RLS",
-      "Trigger on_auth_user_created still exists — dead code for new NextAuth signups",
       "NEXTAUTH_URL must match the port (currently :4000)"
     ],
     "conventions": [

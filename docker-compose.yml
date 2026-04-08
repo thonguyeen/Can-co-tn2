@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres_local:
+    image: pgvector/pgvector:pg16
+    container_name: cancotn_postgres_local
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: cancotn_local
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_local_data:
+    name: cancotn_postgres_local_data

@@ -1,37 +1,50 @@
 {
-  "updated_at": "2026-04-06T16:38:00+07:00",
+  "updated_at": "2026-04-07T15:51:00+07:00",
   "working_on": {
-    "feature": "PostgreSQL & NextAuth Migration",
-    "current_plan_path": "plans/260403-1050-postgres-migration/",
-    "current_phase": "COMPLETED",
-    "task": "All 5 phases done",
-    "status": "completed",
-    "files": [],
+    "feature": "Referral System & User Management",
+    "current_plan_path": "plans/260407-1341-referral-system",
+    "current_phase": "Phase 00 — Planning Done, Ready to Code",
+    "task": "Plan hoàn tất 6 phases. Chờ /code phase-01",
+    "status": "planned",
+    "last_run": "2026-04-07T13:00:00+07:00",
+    "last_run_url": "http://localhost:4000",
+    "files": [
+      "plans/260407-1341-referral-system/BRIEF.md",
+      "plans/260407-1341-referral-system/plan.md",
+      "plans/260407-1341-referral-system/phase-01-database.md",
+      "plans/260407-1341-referral-system/phase-02-backend-referral.md",
+      "plans/260407-1341-referral-system/phase-03-backend-admin.md",
+      "plans/260407-1341-referral-system/phase-04-frontend-user.md",
+      "plans/260407-1341-referral-system/phase-05-frontend-admin.md",
+      "plans/260407-1341-referral-system/phase-06-integration-testing.md"
+    ],
     "blockers": [],
-    "notes": "Full migration from Supabase SDK to Prisma ORM + NextAuth. 4 users migrated, 0 TS errors."
+    "notes": "Plan 260407-1341-referral-system is 100% designed. 65 tasks across 6 phases. Waiting for /code phase-01 to start DB schema changes."
   },
   "pending_tasks": [
-    {"task": "Add 4 missing Prisma models", "priority": "low", "notes": "userAchievement, pointTransaction, pushLog, userChannel — gamification features disabled with TODOs"},
-    {"task": "Remove dead RLS policies from DB", "priority": "low", "notes": "15+ policies using auth.uid() — dead code since Prisma bypasses RLS"},
-    {"task": "Remove dead trigger on_auth_user_created", "priority": "low", "notes": "Trigger creates profile in auth.users, not needed for NextAuth"},
-    {"task": "Setup S3/Vercel Blob for image storage", "priority": "medium", "notes": "Current: local filesystem /public/uploads/. Won't work on serverless"},
-    {"task": "Fix /demo route (404)", "priority": "low", "notes": "Login page 'Xem Demo' button links to /demo which doesn't exist"},
-    {"task": "Consider WebSocket/SSE for realtime", "priority": "low", "notes": "Current polling is fine for MVP. Revisit when user count grows."}
+    {"task": "[REFERRAL] Phase 01: Update Prisma schema — 4 new models + 3 modified", "priority": "high", "notes": "Add ReferralLog, IntentBoost, RewardRedemption, RewardItem. Modify Profile, UserStat, PointTransaction."},
+    {"task": "[REFERRAL] Phase 02: Build Referral + Boost + Rewards API (11 endpoints)", "priority": "high", "notes": "ReferralService, /api/referral/*, /api/boosts/*, /api/rewards/*"},
+    {"task": "[REFERRAL] Phase 03: Build Admin API (10 endpoints)", "priority": "high", "notes": "/api/admin/users/*, /api/admin/referrals, /api/admin/redemptions/*"},
+    {"task": "[REFERRAL] Phase 04: Build User UI — 3 pages, 9 components", "priority": "medium", "notes": "/profile/referral, /leaderboard, /rewards"},
+    {"task": "[REFERRAL] Phase 05: Build Admin UI — 3 pages, 8 components", "priority": "medium", "notes": "/admin/users, /admin/users/[id], /admin/referrals"},
+    {"task": "[REFERRAL] Phase 06: Integration & E2E testing", "priority": "medium", "notes": "4 E2E flows + regression + seed data"},
+    {"task": "Setup S3/Vercel Blob for image storage", "priority": "low", "notes": "Current: local filesystem /public/uploads/. Won't work on serverless"},
+    {"task": "Expand UserChannel schema", "priority": "low", "notes": "Add preferences/digestTime fields to UserChannel"}
   ],
   "recent_changes": [
-    {"timestamp": "2026-04-06T16:08:00+07:00", "type": "config", "description": "Git init + .env.local with DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL", "files": [".env.local"]},
-    {"timestamp": "2026-04-06T16:13:00+07:00", "type": "migration", "description": "prisma db push — synced 30 models to production DB", "files": ["prisma/schema.prisma"]},
-    {"timestamp": "2026-04-06T16:25:00+07:00", "type": "migration", "description": "Migrated 4 auth.users → public.users (dual-table approach)", "files": ["scripts/migrate-auth-users.ts"]},
-    {"timestamp": "2026-04-06T16:34:00+07:00", "type": "cleanup", "description": "Deleted empty lib/supabase/ folder, updated plan.md to Complete", "files": ["plans/260403-1050-postgres-migration/plan.md"]}
+    {"timestamp": "2026-04-07T15:50:00+07:00", "type": "planning", "description": "Completed full plan for Referral System (6 phases, 65 tasks). BRIEF + plan.md + 6 phase files created.", "files": ["plans/260407-1341-referral-system/"]},
+    {"timestamp": "2026-04-07T13:10:00+07:00", "type": "architecture", "description": "Set up Local Dockerized Postgres with seed data — fully decoupled from Supabase.", "files": ["docker-compose.yml", "app/.env.local", "app/prisma/seed.ts"]},
+    {"timestamp": "2026-04-06T21:42:00+07:00", "type": "test", "description": "Successful full production build (66/66 pages) after Gamification restore.", "files": ["npm run build"]}
   ],
   "errors_encountered": [
-    {"error": "PrismaClient needs datasource URL", "solution": "Added dotenv/config + PrismaPg adapter to migration script", "resolved": true},
-    {"error": "PowerShell && operator not supported", "solution": "Use separate git add / git commit commands", "resolved": true}
+    {"error": "Next.js DB mismatch — public.intents table missing", "solution": "Updated .env and .env.local to point to localhost Docker. Ran npx prisma db push.", "resolved": true}
   ],
   "decisions_made": [
-    {"decision": "Dual-table auth (Option A)", "reason": "Zero-risk, reversible. Keep FK profiles.id → auth.users(id) intact. Same UUIDs in both auth.users and public.users."},
-    {"decision": "Git init before migration", "reason": "Tech lead requirement — need rollback point before irreversible DB changes"},
-    {"decision": "prisma db push with --accept-data-loss", "reason": "Schema sync needed. Risk mitigated by git baseline commit."}
+    {"decision": "Referral MVP: 1-level only (A→B). Multi-level (A→B→C) is Phase 2.", "reason": "Keep complexity low for MVP. Multi-level adds fraud surface area."},
+    {"decision": "Fraud prevention: Admin manual review only in MVP.", "reason": "OTP phone verification deferred. Too much scope for now."},
+    {"decision": "5 Tier names: Đồng → Bạc → Vàng → Bạch Kim → Kim Cương", "reason": "Fits BĐS (Gold/Platinum/Diamond branding) + familiar to Vietnamese users."},
+    {"decision": "Reward redemption: Admin-manual fulfillment in MVP (no automated voucher system)", "reason": "Automated voucher inventory is complex. Triage via adminNote field."},
+    {"decision": "Decoupled Dev DB from Supabase using Docker", "reason": "Prevent accidental production data mutation during development."}
   ],
   "skipped_tests": []
 }
