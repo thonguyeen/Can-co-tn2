@@ -1,5 +1,5 @@
 # Phase 02: Backend — Referral & Boost API
-Status: ⬜ Pending
+Status: ✅ Complete
 Dependencies: Phase 01 (Database Schema)
 
 ## Objective
@@ -153,18 +153,18 @@ Nếu frontend đang dùng NextAuth Credentials, cập nhật form đăng ký đ
 
 ## Implementation Steps
 
-- [ ] 1. Tạo `app/lib/referral/constants.ts`
-- [ ] 2. Tạo `app/lib/referral/referral-service.ts`
-- [ ] 3. Tạo `app/api/referral/code/route.ts` (GET)
-- [ ] 4. Tạo `app/api/referral/stats/route.ts` (GET)
-- [ ] 5. Tạo `app/api/referral/logs/route.ts` (GET)
-- [ ] 6. Tạo `app/api/referral/register/route.ts` (POST)
-- [ ] 7. Tạo `app/api/boosts/route.ts` (POST)
-- [ ] 8. Tạo `app/api/boosts/active/route.ts` (GET)
-- [ ] 9. Tạo `app/api/rewards/route.ts` (GET)
-- [ ] 10. Tạo `app/api/rewards/redeem/route.ts` (POST)
-- [ ] 11. Tạo `app/api/rewards/my-redemptions/route.ts` (GET)
-- [ ] 12. Sửa Register flow để nhận và truyền referral code
+- [x] 1. Tạo `app/lib/referral/constants.ts`
+- [x] 2. Tạo `app/lib/referral/referral-service.ts`
+- [x] 3. Tạo `app/api/referral/code/route.ts` (GET)
+- [x] 4. Tạo `app/api/referral/stats/route.ts` (GET)
+- [x] 5. Tạo `app/api/referral/logs/route.ts` (GET)
+- [x] 6. Tạo `app/api/referral/register/route.ts` (POST) (Tech Lead Change: Dropped API, integrated directly in `app/actions/auth.ts`)
+- [x] 7. Tạo `app/api/boosts/route.ts` (POST)
+- [x] 8. Tạo `app/api/boosts/active/route.ts` (GET)
+- [x] 9. Tạo `app/api/rewards/route.ts` (GET)
+- [x] 10. Tạo `app/api/rewards/redeem/route.ts` (POST)
+- [x] 11. Tạo `app/api/rewards/my-redemptions/route.ts` (GET)
+- [x] 12. Sửa Register flow để nhận và truyền referral code (Updated Page and Server Action)
 
 ## Files to Create/Modify
 - `app/lib/referral/constants.ts` — NEW
@@ -181,11 +181,11 @@ Nếu frontend đang dùng NextAuth Credentials, cập nhật form đăng ký đ
 - `app/app/(auth)/register/page.tsx` — MODIFY (đọc URL param `?ref=CODE`)
 
 ## Test Criteria
-- [ ] GET `/api/referral/code` trả về code (tự tạo nếu chưa có)
-- [ ] POST `/api/referral/register` với code hợp lệ → ReferralLog được tạo, điểm được cộng
-- [ ] POST `/api/referral/register` với code đã dùng → trả lỗi 409
-- [ ] POST `/api/boosts` với đủ điểm → IntentBoost tạo thành công, điểm bị trừ
-- [ ] POST `/api/boosts` với thiếu điểm → trả lỗi 402
+- [x] GET `/api/referral/code` trả về code (tự tạo nếu chưa có)
+- [x] POST `/app/actions/auth.ts` với code hợp lệ → ReferralLog được tạo, điểm được cộng, Tier được nâng
+- [x] POST `/app/actions/auth.ts` với tự refer → Không cộng điểm
+- [x] POST `/api/boosts` với đủ điểm → IntentBoost tạo thành công, điểm bị trừ an toàn qua Atomic Decrement
+- [x] POST `/api/boosts` với thiếu điểm → trả lỗi 402
 
 ---
 Next Phase: [phase-03-backend-admin.md](./phase-03-backend-admin.md)

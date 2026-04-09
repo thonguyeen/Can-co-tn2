@@ -1,5 +1,5 @@
 # Phase 01: Database Schema
-Status: ⬜ Pending
+Status: ✅ Complete
 Dependencies: None
 
 ## Objective
@@ -153,24 +153,24 @@ model RewardItem {
 
 ## Implementation Steps
 
-- [ ] 1. Mở `app/prisma/schema.prisma`
-- [ ] 2. Thêm fields mới vào `Profile` model
-- [ ] 3. Thêm fields mới vào `UserStat` model
-- [ ] 4. Thêm `type` + `referenceId` vào `PointTransaction` model
-- [ ] 5. Thêm relation `boosts` vào `Intent` model
-- [ ] 6. Thêm 4 models mới: `ReferralLog`, `IntentBoost`, `RewardRedemption`, `RewardItem`
-- [ ] 7. Chạy `npx prisma db push` (local Docker)
-- [ ] 8. Chạy `npx prisma generate`
-- [ ] 9. Verify: Kiểm tra các bảng đã tồn tại trong DB
+- [x] 1. Mở `app/prisma/schema.prisma`
+- [x] 2. Thêm fields mới vào `Profile` model
+- [x] 3. Thêm fields mới vào `UserStat` model
+- [x] 4. Thêm `type` + `referenceId` vào `PointTransaction` model
+- [x] 5. Thêm relation `boosts` vào `Intent` model
+- [x] 6. Thêm 4 models mới: `ReferralLog`, `IntentBoost`, `RewardRedemption`, `RewardItem`
+- [x] 7. Chạy `npx prisma db push` (local Docker)
+- [x] 8. Chạy `npx prisma generate`
+- [x] 9. Verify: Kiểm tra các bảng đã tồn tại trong DB
 
 ## Files to Create/Modify
 - `app/prisma/schema.prisma` — MODIFY
 
 ## Test Criteria
-- [ ] `npx prisma db push` không báo lỗi
-- [ ] Bảng `referral_logs`, `intent_boosts`, `reward_redemptions`, `reward_items` tồn tại
-- [ ] Cột `referral_code`, `tier`, `total_referrals` tồn tại trong `profiles`
-- [ ] Không có breaking change ảnh hưởng code cũ
+- [x] `npx prisma db push` không báo lỗi
+- [x] Bảng `referral_logs`, `intent_boosts`, `reward_redemptions`, `reward_items` tồn tại
+- [x] Cột `referral_code`, `tier`, `total_referrals` tồn tại trong `profiles`
+- [x] Không có breaking change ảnh hưởng code cũ
 
 ---
 Next Phase: [phase-02-backend-referral.md](./phase-02-backend-referral.md)

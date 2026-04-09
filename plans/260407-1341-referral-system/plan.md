@@ -15,8 +15,8 @@ Xây dựng hệ thống Giới Thiệu Thành Viên 5 cấp bậc (Đồng → 
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 01 | Database Schema | ⬜ Pending | 0% |
-| 02 | Backend — Referral & Boost API | ⬜ Pending | 0% |
+| 01 | Database Schema | ✅ Complete | 100% |
+| 02 | Backend — Referral & Boost API | ✅ Complete | 100% |
 | 03 | Backend — Admin API | ⬜ Pending | 0% |
 | 04 | Frontend — User Dashboard (Referral, Leaderboard, Rewards) | ⬜ Pending | 0% |
 | 05 | Frontend — Admin Control Panel | ⬜ Pending | 0% |

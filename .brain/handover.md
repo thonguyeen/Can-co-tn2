@@ -1,46 +1,35 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 HANDOVER DOCUMENT — 2026-04-07T15:51
+📋 HANDOVER DOCUMENT - REFERRAL SYSTEM PHASE 02→03
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📍 Đang làm: Referral System & User Management
-🔢 Đến bước: Planning DONE. Chờ bắt đầu Phase 01 (DB Schema)
+🔢 Đến bước: Phase 03 - Backend Admin API
 
-✅ ĐÃ XONG HÔM NAY:
-   - Local Docker DB setup (plans/260407-1107-local-db-seed) ✓
-   - Brainstorm Referral System ✓
-   - Tạo plan đầy đủ 6 phases (65 tasks) ✓
-   - BRIEF.md + plan.md + 6 phase files ✓
+✅ ĐÃ XONG:
+   - Phase 01: Database ✓ (Cập nhật 4 model mới + fields mới cho Profile/UserStat/PointTransaction)
+   - Phase 02: Backend ✓ (ReferralService, 7 endpoint APIs, tích hợp Register Flow)
+   - Xác thực: Đã chạy thành công Diagnostic Route tại /api/dev/test-logic.
 
-⏳ VIỆC KẾ TIẾP (theo thứ tự):
-   Phase 01 — DB Schema
-     → Sửa schema.prisma: thêm 4 models mới, sửa 3 models có sẵn
-     → npx prisma db push
-   Phase 02 — Backend Referral + Boost API (11 endpoints)
-   Phase 03 — Backend Admin API (10 endpoints)
-   Phase 04 — Frontend User UI (3 trang, 9 components)
-   Phase 05 — Frontend Admin UI (3 trang, 8 components)
-   Phase 06 — Integration & Testing
+⏳ CÒN LẠI:
+   - Phase 03: Xây dựng Admin APIs (Quản lý User, Points, Redemptions)
+   - Phase 04 & 05: Xây dựng Giao diện (User & Admin)
+   - Phase 06: Kiểm thử tích hợp toàn diện.
 
 🔧 QUYẾT ĐỊNH QUAN TRỌNG:
-   - MVP: 1-level referral only. Multi-level là Phase 2.
-   - Fraud: Admin review thủ công. Không làm OTP phone ngay.
-   - Tier names: Đồng → Bạc → Vàng → Bạch Kim → Kim Cương
-   - Điểm giới thiệu: 20 pts/lượt. Boost bài: 50 pts/24h.
-   - Đổi quà: Admin duyệt thủ công, từ chối thì hoàn điểm.
+   - Auth: Dùng Email whitelist (test@admin.com...) dể phân quyền quản trị trong MVP.
+   - Points: Áp dụng cơ chế Atomic Decrypt (trừ điểm trực tiếp trong update) dể chống spam.
+   - Register: Logic referral được móc trực tiếp vào Server Action `registerUser`.
 
 ⚠️ LƯU Ý CHO SESSION SAU:
-   - Gõ `/code phase-01` để bắt đầu sửa Prisma schema
-   - File plan chính: plans/260407-1341-referral-system/plan.md
-   - Phase files chi tiết trong cùng folder
-   - Server đang chạy: http://localhost:4000 (npm run dev, port 4000)
-   - DB đang dùng: LOCAL Docker (localhost:5432, cancotn_local)
+   - Implementation Plan cho Phase 03 ĐÃ SẴN SÀNG và đang chờ User duyệt.
+   - File middleware.ts đang được bypass tạm thời cho /api/dev dể test logic.
+   - Cần dọn dẹp /api/dev/test-logic sau khi hoàn thành test E2E.
 
 📁 FILES QUAN TRỌNG:
-   - plans/260407-1341-referral-system/   (toàn bộ plan)
-   - app/prisma/schema.prisma             (cần sửa ở Phase 01)
-   - .brain/brain.json                    (context tổng quan dự án)
-   - .brain/session.json                  (trạng thái hiện tại)
+   - .brain/brain.json (Kiến trúc & Specs)
+   - .brain/session.json (Tiến độ & Quyết định)
+   - plans/260407-1341-referral-system/implementation_plan.md (Plan Phase 03)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📍 Đã lưu! Để tiếp tục: Gõ /recap hoặc /code phase-01
+📍 Đã lưu! Để tiếp tục: Gõ /recap
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

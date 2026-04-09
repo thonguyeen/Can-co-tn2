@@ -57,7 +57,11 @@
       {"name": "Conversation", "table": "conversations", "purpose": "Chat between users about intents"},
       {"name": "CrawlSource", "table": "crawl_sources", "purpose": "RSS/web sources for bot envoy crawling"},
       {"name": "PointTransaction", "table": "point_transactions", "purpose": "Track points for gamification"},
-      {"name": "UserAchievement", "table": "user_achievements", "purpose": "Awarded badges and levels"}
+      {"name": "UserAchievement", "table": "user_achievements", "purpose": "Awarded badges and levels"},
+      {"name": "ReferralLog", "table": "referral_logs", "purpose": "Primary source of referral relationships"},
+      {"name": "IntentBoost", "table": "intent_boosts", "purpose": "Tracks active intent listing boosts"},
+      {"name": "RewardRedemption", "table": "reward_redemptions", "purpose": "Tracks user point redemption requests"},
+      {"name": "RewardItem", "table": "reward_items", "purpose": "Catalog of redeemable items"}
     ],
     "relationships_explained": "1 User has 1 Profile. 1 Bot has many Posts. 1 Profile has many PointTransactions. 1 Intent has many Images, Comments, Matches. 1 Match links a CẦN intent to a CÓ intent. 1 Conversation has many Messages.",
     "special_notes": [
@@ -80,7 +84,15 @@
     {"path": "/api/conversations", "explained": "List user conversations"},
     {"path": "/api/bots", "explained": "Bot management (Admin)"},
     {"path": "/api/crawl-sources", "explained": "Crawl source management (Admin)"},
-    {"path": "/api/cron/*", "explained": "Scheduled tasks (crawler, digest, matching). Daily Digest and Breaking Push logs are now active."}
+    {"path": "/api/cron/*", "explained": "Scheduled tasks (crawler, digest, matching). Daily Digest and Breaking Push logs are now active."},
+    {"path": "/api/referral/code", "explained": "Get/generate personal referral code and invite link"},
+    {"path": "/api/referral/stats", "explained": "Referral progress, current tier, and point stats"},
+    {"path": "/api/referral/logs", "explained": "History of successful referrals"},
+    {"path": "/api/boosts", "explained": "Spend points to boost an intent for 24h"},
+    {"path": "/api/boosts/active", "explained": "List of currently boosted intent IDs"},
+    {"path": "/api/rewards", "explained": "Catalog of items for point redemption"},
+    {"path": "/api/rewards/redeem", "explained": "Request a reward redemption"},
+    {"path": "/api/rewards/my-redemptions", "explained": "User history of reward requests"}
   ],
   "business_rules": [
     "Gamification: Users earn 2 points per bot interaction.",
@@ -102,7 +114,7 @@
     {"name": "Gamification", "status": "implemented", "description": "Core logic restored: Point transactions for bot interactions, achievement tracking, and weekly leaderboard."},
     {"name": "Content Moderation", "status": "implemented", "description": "AI-powered content violation detection"},
     {"name": "Local Development Environment", "status": "implemented", "description": "Decoupled from Supabase with Dockerized pgvector and auto-seed script (Safety Lock equipped)"},
-    {"name": "Referral System & User Management", "status": "planned", "description": "5-tier referral system (Đồng→Kim Cương). User dashboard with referral code, leaderboard, rewards store. Admin control panel with full user management, point adjustment, and redemption approval. Plan: plans/260407-1341-referral-system/ (65 tasks, 6 phases)"}
+    {"name": "Referral System & User Management", "status": "in-progress", "description": "5-tier referral system (Đồng→Kim Cương). User dashboard with referral code, leaderboard, rewards store. Admin control panel with full user management, point adjustment, and redemption approval. Phase 01 & 02 complete."}
   ],
   "knowledge_items": {
     "patterns": [
