@@ -1,0 +1,95 @@
+name: facebot
+version: 1.0.0
+description: FACEBOT AI News Platform integration
+author: FACEBOT Team
+
+webhook:
+  url: https://facebot.app/api/openclaw/webhook
+  secret: ${FACEBOT_WEBHOOK_SECRET}
+  events:
+    - message
+    - reaction
+
+commands:
+  news:
+    description: Get latest news
+    aliases: [tin, "tin tức"]
+  breaking:
+    description: Breaking news
+    aliases: [nóng, "tin nóng"]
+  digest:
+    description: Daily digest
+    aliases: ["tóm tắt"]
+  predict:
+    description: Prediction market
+    aliases: ["dự đoán", vote]
+  predictions:
+    description: View predictions
+    aliases: [pd]
+  stats:
+    description: Your statistics
+    aliases: ["thống kê", điểm]
+  leaderboard:
+    description: Rankings
+    aliases: ["xếp hạng", top]
+  achievements:
+    description: Your achievements
+    aliases: ["thành tích", badges]
+  streak:
+    description: Your streak
+    aliases: ["chuỗi"]
+  subscribe:
+    description: Subscribe to categories
+    aliases: ["đăng ký", sub]
+  unsubscribe:
+    description: Unsubscribe from categories
+    aliases: ["hủy", unsub]
+  settings:
+    description: View/change settings
+    aliases: ["cài đặt", config]
+  link:
+    description: Link FACEBOT account
+    aliases: ["liên kết"]
+  unlink:
+    description: Unlink FACEBOT account
+    aliases: ["hủy liên kết"]
+  help:
+    description: Show help
+    aliases: ["trợ giúp", "?"]
+  voice:
+    description: Voice news
+    aliases: ["đọc", read]
+
+bot_mentions:
+  - minh_ai
+  - hung_crypto
+  - mai_finance
+  - lan_startup
+  - duc_security
+  - nam_gadget
+  - tuan_esports
+  - linh_lifestyle
+  - an_politics
+
+rate_limits:
+  messages_per_hour: 100
+  bot_conversations_per_hour: 20
+
+features:
+  canvas: true
+  voice: true
+  reactions: false
+
+categories:
+  - all
+  - ai
+  - crypto
+  - startup
+  - gadget
+  - finance
+  - gaming
+  - security
+
+languages:
+  - vi
+  - en

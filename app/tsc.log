@@ -1,0 +1,95 @@
+app/(main)/bot/[handle]/page.tsx(2,30): error TS2307: Cannot find module '@/lib/supabase/server' or its corresponding type declarations.
+app/(main)/layout.tsx(2,30): error TS2307: Cannot find module '@/lib/supabase/server' or its corresponding type declarations.
+app/(main)/saved/page.tsx(2,30): error TS2307: Cannot find module '@/lib/supabase/server' or its corresponding type declarations.
+app/api/intents/[id]/images/route.ts(34,41): error TS2307: Cannot find module '@/lib/supabase/server' or its corresponding type declarations.
+components/map/MapboxRenderer.tsx(114,39): error TS2339: Property 'originalEvent' does not exist on type 'MouseEvent<HTMLDivElement, MouseEvent>'.
+components/map/MapboxRenderer.tsx(130,39): error TS2339: Property 'originalEvent' does not exist on type 'MouseEvent<HTMLDivElement, MouseEvent>'.
+components/swipe/SwipeCard.tsx(130,13): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+lib/agents/knowledge-graph.ts(34,9): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+  Type 'Record<string, unknown>' is missing the following properties from type 'readonly (InputJsonValue | null)[]': length, concat, join, slice, and 26 more.
+lib/agents/knowledge-graph.ts(44,9): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue | undefined'.
+  Type 'Record<string, unknown>' is missing the following properties from type 'readonly (InputJsonValue | null)[]': length, concat, join, slice, and 26 more.
+lib/auth.ts(58,22): error TS2339: Property 'id' does not exist on type '{ name?: string | null | undefined; email?: string | null | undefined; image?: string | null | undefined; }'.
+lib/engine/matching.ts(407,5): error TS2353: Object literal may only specify known properties, and 'is_bot' does not exist in type 'Intent'.
+lib/gamification/achievements.ts(167,33): error TS2339: Property 'userAchievement' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/gamification/achievements.ts(177,16): error TS2339: Property 'userAchievement' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/gamification/achievements.ts(205,30): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/gamification/achievements.ts(263,41): error TS2339: Property 'userAchievement' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/gamification/achievements.ts(268,52): error TS7006: Parameter 'a' implicitly has an 'any' type.
+lib/gamification/achievements.ts(273,30): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/gamification/leaderboard.ts(39,36): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/gamification/leaderboard.ts(43,26): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/gamification/leaderboard.ts(56,35): error TS2551: Property 'pointTransaction' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean '$transaction'?
+lib/gamification/leaderboard.ts(62,22): error TS7006: Parameter 't' implicitly has an 'any' type.
+lib/gamification/leaderboard.ts(69,40): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/gamification/leaderboard.ts(78,41): error TS7006: Parameter 'u' implicitly has an 'any' type.
+lib/gamification/leaderboard.ts(90,36): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/gamification/leaderboard.ts(94,26): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/gamification/leaderboard.ts(104,40): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/gamification/leaderboard.ts(108,30): error TS7006: Parameter 's' implicitly has an 'any' type.
+lib/gamification/leaderboard.ts(128,5): error TS2322: Type '{ [k: string]: { displayName: string | null; avatarUrl: string | null; }; }' is not assignable to type 'Record<string, { displayName: string; avatarUrl?: string | null | undefined; }>'.
+  'string' index signatures are incompatible.
+    Type '{ displayName: string | null; avatarUrl: string | null; }' is not assignable to type '{ displayName: string; avatarUrl?: string | null | undefined; }'.
+      Types of property 'displayName' are incompatible.
+        Type 'string | null' is not assignable to type 'string'.
+          Type 'null' is not assignable to type 'string'.
+lib/gamification/leaderboard.ts(154,34): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/gamification/leaderboard.ts(161,36): error TS2551: Property 'userStats' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'userStat'?
+lib/intelligence/proactive/scheduler.ts(97,20): error TS18047: 'post.createdAt' is possibly 'null'.
+lib/openclaw/bot-conversation.ts(269,18): error TS2551: Property 'pointTransaction' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean '$transaction'?
+lib/openclaw/breaking-push.ts(46,40): error TS2339: Property 'level' does not exist on type '{ post: { content: string; id: string; bot: { name: string; handle: string; avatarUrl: string | null; }; } | null; } & { id: string; summary: string | null; postId: string | null; createdAt: Date | null; ... 4 more ...; urgencyLevel: string | null; }'.
+lib/openclaw/breaking-push.ts(67,16): error TS2339: Property 'pushLog' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/breaking-push.ts(137,15): error TS2353: Object literal may only specify known properties, and 'level' does not exist in type 'BreakingNewsSelect<DefaultArgs>'.
+lib/openclaw/breaking-push.ts(142,36): error TS2339: Property 'level' does not exist on type '{ id: string; summary: string | null; postId: string | null; createdAt: Date | null; isActive: boolean | null; category: string | null; expiresAt: Date | null; headline: string; urgencyLevel: string | null; }'.
+lib/openclaw/breaking-push.ts(144,33): error TS2339: Property 'shouldNotify' does not exist on type '{ id: string; summary: string | null; postId: string | null; createdAt: Date | null; isActive: boolean | null; category: string | null; expiresAt: Date | null; headline: string; urgencyLevel: string | null; }'.
+lib/openclaw/channel-manager.ts(52,16): error TS2339: Property 'channelLinkRequest' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(71,32): error TS2339: Property 'channelLinkRequest' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(85,33): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(95,30): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(103,18): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(124,18): error TS2339: Property 'channelLinkRequest' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(148,16): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(161,29): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(169,10): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(181,29): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(185,19): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/openclaw/channel-manager.ts(204,29): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(210,13): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/openclaw/channel-manager.ts(217,10): error TS7006: Parameter 'd' implicitly has an 'any' type.
+lib/openclaw/channel-manager.ts(233,32): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(244,16): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(255,16): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(266,16): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/channel-manager.ts(272,16): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/digest-scheduler.ts(27,30): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/digest-scheduler.ts(32,38): error TS7006: Parameter 'u' implicitly has an 'any' type.
+lib/openclaw/digest-scheduler.ts(81,16): error TS2339: Property 'pushLog' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/digest-scheduler.ts(135,15): error TS2353: Object literal may only specify known properties, and 'totalPoints' does not exist in type 'UserStatSelect<DefaultArgs>'.
+lib/openclaw/digest-scheduler.ts(145,14): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type 'PredictionWhereInput'.
+lib/openclaw/digest-scheduler.ts(171,19): error TS2339: Property 'totalPoints' does not exist on type '{ userId: string; createdAt: Date | null; updatedAt: Date | null; points: number | null; level: number | null; streakDays: number | null; lastActiveDate: Date | null; ... 5 more ...; totalPredictions: number | null; }'.
+lib/openclaw/digest-scheduler.ts(171,59): error TS2339: Property 'currentStreak' does not exist on type '{ userId: string; createdAt: Date | null; updatedAt: Date | null; points: number | null; level: number | null; streakDays: number | null; lastActiveDate: Date | null; ... 5 more ...; totalPredictions: number | null; }'.
+lib/openclaw/digest-scheduler.ts(186,21): error TS2339: Property 'totalPoints' does not exist on type '{ userId: string; createdAt: Date | null; updatedAt: Date | null; points: number | null; level: number | null; streakDays: number | null; lastActiveDate: Date | null; ... 5 more ...; totalPredictions: number | null; }'.
+lib/openclaw/digest-scheduler.ts(186,61): error TS2339: Property 'currentStreak' does not exist on type '{ userId: string; createdAt: Date | null; updatedAt: Date | null; points: number | null; level: number | null; streakDays: number | null; lastActiveDate: Date | null; ... 5 more ...; totalPredictions: number | null; }'.
+lib/openclaw/digest-scheduler.ts(218,36): error TS2339: Property 'userChannel' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/openclaw/gamification-commands.ts(65,14): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+lib/openclaw/gamification-commands.ts(244,14): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+lib/openclaw/persistence.ts(255,16): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type 'PostWhereInput'.
+lib/openclaw/persistence.ts(260,47): error TS2561: Object literal may only specify known properties, but 'nameVi' does not exist in type 'BotSelect<DefaultArgs>'. Did you mean to write 'name'?
+lib/openclaw/persistence.ts(277,47): error TS2561: Object literal may only specify known properties, but 'nameVi' does not exist in type 'BotSelect<DefaultArgs>'. Did you mean to write 'name'?
+lib/openclaw/persistence.ts(282,51): error TS2561: Object literal may only specify known properties, but 'nameVi' does not exist in type 'BotSelect<DefaultArgs>'. Did you mean to write 'name'?
+lib/openclaw/persistence.ts(411,21): error TS18047: 'bot.dailyQuota' is possibly 'null'.
+lib/openclaw/persistence.ts(411,38): error TS18047: 'bot.postsToday' is possibly 'null'.
+lib/openclaw/persistence.ts(414,5): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+lib/openclaw/persistence.ts(415,5): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+lib/openclaw/persistence.ts(505,54): error TS18047: 'b.postsToday' is possibly 'null'.
+lib/openclaw/persistence.ts(505,69): error TS18047: 'b.dailyQuota' is possibly 'null'.
+lib/openclaw/persistence.ts(513,20): error TS18047: 'b.postsToday' is possibly 'null'.
+lib/openclaw/persistence.ts(513,35): error TS18047: 'b.dailyQuota' is possibly 'null'.
+lib/openclaw/persistence.ts(514,24): error TS18047: 'b.dailyQuota' is possibly 'null'.
+lib/openclaw/persistence.ts(514,39): error TS18047: 'b.postsToday' is possibly 'null'.
+lib/openclaw/persistence.ts(514,56): error TS18047: 'a.dailyQuota' is possibly 'null'.
+lib/openclaw/persistence.ts(514,71): error TS18047: 'a.postsToday' is possibly 'null'.

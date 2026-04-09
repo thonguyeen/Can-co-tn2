@@ -1,0 +1,20 @@
+﻿
+ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+≡ƒº╣ PHASE 02: Dß╗ìn dß║╣p Trigger & RLS Policies
+ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+1∩╕ÅΓâú ─Éang xo├í Trigger `on_auth_user_created`...
+   Γ£à Xo├í Trigger th├ánh c├┤ng.
+
+2∩╕ÅΓâú ─Éang xo├í Function `public.handle_new_user`...
+   Γ£à Xo├í Function th├ánh c├┤ng.
+
+3∩╕ÅΓâú ─Éang v├┤ hiß╗çu ho├í RLS tr├¬n c├íc bß║úng public ch├¡nh...
+   Γ£à RLS ─æ├ú ─æ╞░ß╗úc disable tr├¬n bß║úng profiles
+   Γ£à RLS ─æ├ú ─æ╞░ß╗úc disable tr├¬n bß║úng intents
+   Γ£à RLS ─æ├ú ─æ╞░ß╗úc disable tr├¬n bß║úng posts
+   Γ£à RLS ─æ├ú ─æ╞░ß╗úc disable tr├¬n bß║úng comments
+   Γ£à RLS ─æ├ú ─æ╞░ß╗úc disable tr├¬n bß║úng crawl_sources
+   Γ£à RLS ─æ├ú ─æ╞░ß╗úc disable tr├¬n bß║úng bots
+
+≡ƒÄë Ho├án th├ánh dß╗ìn dß║╣p Database!

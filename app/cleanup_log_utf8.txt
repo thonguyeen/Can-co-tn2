@@ -1,0 +1,74 @@
+﻿node.exe : D:\SW\Can-co-tn
+\app\node_modules\@prisma\
+client\src\runtime\utils\v
+alidatePrismaClientOptions
+.ts:239
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (D  
+  :\SW\Can-co-tn...tOpt   
+ ions.ts:239:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+      throw new PrismaClie
+ntConstructorValidationErr
+or(
+            ^
+
+PrismaClientConstructorVal
+idationError: Unknown 
+property datasourceUrl 
+provided to PrismaClient 
+constructor.
+Read more at https://pris.
+ly/d/client-constructor
+    at validatePrismaClien
+tOptions (D:\SW\Can-co-tn\
+app\node_modules\@prisma\c
+lient\src\runtime\utils\va
+lidatePrismaClientOptions.
+ts:239:13)
+    at new t (D:\SW\Can-co
+-tn\app\node_modules\@pris
+ma\client\src\runtime\getP
+rismaClient.ts:342:7)
+    at <anonymous> (D:\SW\
+Can-co-tn\app\scripts\clea
+nup-db.ts:24:16)
+    at Object.<anonymous> 
+(D:\SW\Can-co-tn\app\scrip
+ts\cleanup-db.ts:72:2)
+    at Module._compile (no
+de:internal/modules/cjs/lo
+ader:1761:14)
+    at Object.transformer 
+(C:\Users\ITS\AppData\Loca
+l\npm-cache\_npx\fd45a72a5
+45557e9\node_modules\tsx\d
+ist\register-D46fvsV_.cjs:
+3:1104)
+    at Module.load (node:i
+nternal/modules/cjs/loader
+:1481:32)
+    at Module._load (node:
+internal/modules/cjs/loade
+r:1300:12)
+    at 
+TracingChannel.traceSync (
+node:diagnostics_channel:3
+28:14)
+    at wrapModuleLoad (nod
+e:internal/modules/cjs/loa
+der:245:24)
+
+Node.js v24.12.0

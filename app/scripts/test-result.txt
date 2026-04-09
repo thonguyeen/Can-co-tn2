@@ -1,0 +1,59 @@
+=== TEST 1: Kiểm tra kết nối DB ===
+✅ Kết nối DB thành công: [ { connected: 1 } ]
+
+=== TEST 2: Tạo user mới ===
+❌ Lỗi tạo user: 
+Invalid `prisma.user.create()` invocation in
+D:\SW\Can-co-tn\app\scripts\test-prisma.ts:28:36
+
+  25 const testId = crypto.randomUUID();
+  26 try {
+  27   const hashedPassword = await bcrypt.hash('Test1234!', 10);
+→ 28   const user = await prisma.user.create({
+         data: {
+           id: "2742a02c-e48b-43be-bcea-e6aca54034f3",
+           email: "test-1775201086969@example.com",
+           name: "Test User",
+           passwordHash: "$2b$10$s94xfkYBkJB0EcD6SQemhu3Rs3aHfPuzKvvouIaS/2s/ewGBD.sH.",
+           profile: {
+             create: {
+               id: "2742a02c-e48b-43be-bcea-e6aca54034f3",
+               ~~
+               displayName: "Test User",
+       ?       avatarUrl?: String | Null,
+       ?       createdAt?: DateTime | Null,
+       ?       updatedAt?: DateTime | Null,
+       ?       follows?: FollowCreateNestedManyWithoutUserInput,
+       ?       likes?: LikeCreateNestedManyWithoutUserInput,
+       ?       saves?: SaveCreateNestedManyWithoutUserInput,
+       ?       comments?: CommentCreateNestedManyWithoutUserInput,
+       ?       userStats?: UserStatCreateNestedOneWithoutUserInput,
+       ?       reactions?: ReactionCreateNestedManyWithoutUserInput,
+       ?       notifications?: NotificationCreateNestedManyWithoutUserInput
+             }
+           }
+         }
+       })
+
+Unknown argument `id`. Available options are marked with ?.
+
+=== TEST 3: Đọc lại user vừa tạo ===
+✅ Tìm thấy user: {
+  id: undefined,
+  email: undefined,
+  hasPassword: false,
+  profile: undefined
+}
+
+=== TEST 4: Xóa user test (cleanup) ===
+⚠️ Lỗi dọn dẹp: 
+Invalid `prisma.profile.delete()` invocation in
+D:\SW\Can-co-tn\app\scripts\test-prisma.ts:65:26
+
+  62 
+  63 console.log('\n=== TEST 4: Xóa user test (cleanup) ===');
+  64 try {
+→ 65   await prisma.profile.delete(
+An operation failed because it depends on one or more records that were required but not found. No record was found for a delete.
+
+🏁 Tất cả test hoàn tất!

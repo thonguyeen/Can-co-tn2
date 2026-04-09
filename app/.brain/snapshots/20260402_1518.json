@@ -1,0 +1,37 @@
+{
+  "updated_at": "2026-04-02T15:18:34.000Z",
+  "working_on": {
+    "feature": "Bot Operations Control Panel & AI Chatbot Fallback",
+    "status": "completed",
+    "tasks": [
+      "Implement AI client fallback (9Router -> SimpleVerse)",
+      "Create Bot Operations Admin UI (Start/Stop, Test/Live mode)",
+      "Add Orchestrator Status & Mode API",
+      "Auto-start Bot Orchestrator on startup (Dry-run mode default)",
+      "Integrated Chatbot with dynamic AI provider"
+    ],
+    "files": [
+      "app/api/chat/route.ts",
+      "app/api/orchestrator/route.ts",
+      "lib/ai/client.ts",
+      "lib/openclaw/orchestrator.ts",
+      "app/admin/components/BotOperationsTab.tsx",
+      "app/admin/page.tsx"
+    ],
+    "notes": "Hệ thống vận hành Bot đã hoàn thiện, sẵn sàng chạy LIVE hoặc TEST. AI chatbot đã ổn định nhờ cơ chế fallback."
+  },
+  "pending_tasks": [
+    {
+      "task": "Improve AI JSON parse success rate",
+      "priority": "medium",
+      "notes": "Vẫn còn tỷ lệ lỗi 40% cho tin tức không chuyên biệt BĐS."
+    }
+  ],
+  "recent_changes": [
+    {
+      "timestamp": "2026-04-02T22:15:00Z",
+      "type": "save",
+      "description": "Manual save triggered via /save-brain and /awf-auto-save"
+    }
+  ]
+}

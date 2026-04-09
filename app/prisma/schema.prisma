@@ -1,0 +1,816 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NEXTAUTH MODELS (Thay thế auth.users)
+// ═══════════════════════════════════════════════════════════════
+
+model User {
+  id            String    @id @default(uuid())
+  name          String?
+  email         String?   @unique
+  passwordHash  String?
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  userChannels  UserChannel[]
+  pushLogs      PushLog[]
+  profile       Profile?
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APP MODELS
+// ═══════════════════════════════════════════════════════════════
+
+model Profile {
+  id           String    @id
+  user         User      @relation(fields: [id], references: [id], onDelete: Cascade)
+  displayName  String?   @map("display_name")
+  avatarUrl    String?   @map("avatar_url")
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  // === Content Moderation (012_content_moderation.sql) ===
+  violationCount    Int?      @default(0) @map("violation_count")
+  isBanned          Boolean?  @default(false) @map("is_banned")
+  bannedAt          DateTime? @map("banned_at") @db.Timestamptz
+  banReason         String?   @map("ban_reason")
+
+  // === Trust & Verification (100_can_co_intents.sql) ===
+  verificationLevel String?   @default("none") @map("verification_level")
+  trustScore        Int?      @default(1) @map("trust_score")
+  phone             String?   @db.VarChar(15)
+
+  // === Gamification & Referral Extra (Phase 01) ===
+  referralCode      String?   @unique @map("referral_code")
+  /// Lưu ý: Đây là bộ đệm cache. DB gốc của quan hệ giới thiệu là ReferralLog
+  referredBy        String?   @map("referred_by")
+  tier              Int?      @default(1)
+  totalReferrals    Int?      @default(0) @map("total_referrals")
+
+  referralsMade     ReferralLog[]     @relation("Referrer")
+  referralsReceived ReferralLog[]     @relation("Referee")
+  intentBoosts      IntentBoost[]
+  rewardRedemptions RewardRedemption[]
+
+  follows       Follow[]
+  likes         Like[]
+  saves         Save[]
+  comments      Comment[]
+  userStats     UserStat?
+  reactions     Reaction[]
+  notifications Notification[]
+  userAchievements UserAchievement[]
+  pointTransactions PointTransaction[]
+
+  @@map("profiles")
+}
+
+model Bot {
+  id             String    @id @default(uuid())
+  name           String
+  handle         String    @unique
+  avatarUrl      String?   @map("avatar_url")
+  colorAccent    String?   @map("color_accent")
+  color          String?
+  bio            String?
+  expertise      String[]
+  personality    String?
+  systemPrompt   String?   @map("system_prompt")
+  postsCount     Int?      @default(0) @map("posts_count")
+  followersCount Int?      @default(0) @map("followers_count")
+  accuracyRate   Decimal?  @default(100.00) @db.Decimal(5, 2) @map("accuracy_rate")
+  isActive       Boolean?  @default(true) @map("is_active")
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  // === Bot Envoy System (200_bot_envoy.sql) ===
+  assignedProvince     String?   @map("assigned_province")
+  assignedDistrict     String?   @map("assigned_district")
+  assignedWard         String?   @map("assigned_ward")
+  assignedProvinceCode String?   @map("assigned_province_code")
+  assignedDistrictCode String?   @map("assigned_district_code")
+  assignedWardCode     String?   @map("assigned_ward_code")
+  assignedCategories   String[]  @default([]) @map("assigned_categories")
+  dailyQuota           Int?      @default(10) @map("daily_quota")
+  postsToday           Int?      @default(0) @map("posts_today")
+  isEnvoy              Boolean?  @default(false) @map("is_envoy")
+
+  // === Bot Stats (20260131_activity_logs.sql) ===
+  commentsCount  Int?      @default(0) @map("comments_count")
+  debatesCount   Int?      @default(0) @map("debates_count")
+
+  posts    Post[]
+  follows  Follow[]
+  comments Comment[]
+
+  @@map("bots")
+}
+
+model Source {
+  id               String    @id @default(uuid())
+  name             String
+  url              String
+  rssUrl           String?   @map("rss_url")
+  credibilityScore Int?      @default(70) @map("credibility_score")
+  category         String?
+  language         String?   @default("vi")
+  isActive         Boolean?  @default(true) @map("is_active")
+  lastCrawledAt    DateTime? @map("last_crawled_at") @db.Timestamptz
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  rawNews   RawNews[]
+  crawlLogs CrawlLog[]
+
+  @@map("sources")
+}
+
+model RawNews {
+  id             String    @id @default(uuid())
+  sourceId       String?   @map("source_id")
+  title          String
+  content        String?
+  summary        String?
+  originalUrl    String    @map("original_url")
+  imageUrl       String?   @map("image_url")
+  author         String?
+  publishedAt    DateTime? @map("published_at") @db.Timestamptz
+  isProcessed    Boolean?  @default(false) @map("is_processed")
+  postId         String?   @map("post_id")
+  contentHash    String?   @map("content_hash")
+  crawlMetadata  Json?     @default("{}") @map("crawl_metadata")
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  source Source? @relation(fields: [sourceId], references: [id])
+  post   Post?   @relation("RawNewsToPost", fields: [postId], references: [id])
+  posts  Post[]  @relation("PostToRawNews")
+
+  @@map("raw_news")
+}
+
+model Post {
+  id                 String    @id @default(uuid())
+  botId              String    @map("bot_id")
+  rawNewsId          String?   @map("raw_news_id")
+  content            String
+  verificationStatus String?   @default("unverified") @map("verification_status")
+  verificationNote   String?   @map("verification_note")
+  sources            Json?     @default("[]")
+  commentsCount      Int?      @default(0) @map("comments_count")
+  likesCount         Int?      @default(0) @map("likes_count")
+  savesCount         Int?      @default(0) @map("saves_count")
+  importanceScore    Int?      @default(50) @map("importance_score")
+  isBreaking         Boolean?  @default(false) @map("is_breaking")
+  createdAt          DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  bot        Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  rawNewsRef RawNews? @relation("PostToRawNews", fields: [rawNewsId], references: [id])
+
+  rawNews      RawNews[] @relation("RawNewsToPost")
+  postUpdates  PostUpdate[]
+  comments     Comment[]
+  likes        Like[]
+  saves        Save[]
+  breakingNews BreakingNews[]
+  clusterPosts ClusterPost[]
+  reactions    Reaction[]
+  predictions  Prediction[]
+
+  @@map("posts")
+}
+
+model PostUpdate {
+  id         String    @id @default(uuid())
+  postId     String    @map("post_id")
+  oldStatus  String?   @map("old_status")
+  newStatus  String    @map("new_status")
+  note       String?
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_updates")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  postId    String    @map("post_id")
+  userId    String?   @map("user_id")
+  botId     String?   @map("bot_id")
+  parentId  String?   @map("parent_id")
+  content   String
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user   Profile? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bot    Bot?     @relation(fields: [botId], references: [id], onDelete: Cascade)
+  parent Comment? @relation("CommentToComment", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentToComment")
+
+  @@map("comments")
+}
+
+model Follow {
+  userId    String    @map("user_id")
+  botId     String    @map("bot_id")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bot  Bot     @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@id([userId, botId])
+  @@map("follows")
+}
+
+model Like {
+  userId    String    @map("user_id")
+  postId    String    @map("post_id")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@map("likes")
+}
+
+model Save {
+  userId    String    @map("user_id")
+  postId    String    @map("post_id")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@map("saves")
+}
+
+model CrawlLog {
+  id            String    @id @default(uuid())
+  sourceId      String?   @map("source_id")
+  startedAt     DateTime? @default(now()) @map("started_at") @db.Timestamptz
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz
+  status        String?   @default("running")
+  articlesFound Int?      @default(0) @map("articles_found")
+  articlesNew   Int?      @default(0) @map("articles_new")
+  errorMessage  String?   @map("error_message")
+  metadata      Json?     @default("{}")
+
+  source Source? @relation(fields: [sourceId], references: [id])
+
+  @@map("crawl_logs")
+}
+
+model BreakingNews {
+  id           String    @id @default(uuid())
+  postId       String?   @map("post_id")
+  headline     String
+  summary      String?
+  urgencyLevel String?   @default("normal") @map("urgency_level")
+  category     String?
+  isActive     Boolean?  @default(true) @map("is_active")
+  expiresAt    DateTime? @map("expires_at") @db.Timestamptz
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  post Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("breaking_news")
+}
+
+model StoryCluster {
+  id        String    @id @default(uuid())
+  title     String
+  summary   String?
+  category  String?
+  postCount Int?      @default(0) @map("post_count")
+  isActive  Boolean?  @default(true) @map("is_active")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  posts ClusterPost[]
+
+  @@map("story_clusters")
+}
+
+model ClusterPost {
+  clusterId     String    @map("cluster_id")
+  postId        String    @map("post_id")
+  relevanceScore Decimal? @default(1.0) @db.Decimal(3, 2) @map("relevance_score")
+  addedAt       DateTime? @default(now()) @map("added_at") @db.Timestamptz
+
+  cluster StoryCluster @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  post    Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([clusterId, postId])
+  @@map("cluster_posts")
+}
+
+model UserStat {
+  userId             String    @id @map("user_id")
+  points             Int?      @default(0)
+  level              Int?      @default(1)
+  streakDays         Int?      @default(0) @map("streak_days")
+  lastActiveDate     DateTime? @db.Date @map("last_active_date")
+  postsRead          Int?      @default(0) @map("posts_read")
+  commentsMade       Int?      @default(0) @map("comments_made")
+  likesGiven         Int?      @default(0) @map("likes_given")
+  sharesMade         Int?      @default(0) @map("shares_made")
+  correctPredictions Int?      @default(0) @map("correct_predictions")
+  totalPredictions   Int?      @default(0) @map("total_predictions")
+
+  // === Spending Tracking Extra (Phase 01) ===
+  totalPointsEarned  Int?      @default(0) @map("total_points_earned")
+  totalPointsSpent   Int?      @default(0) @map("total_points_spent")
+  referralPoints     Int?      @default(0) @map("referral_points")
+
+  createdAt          DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model Reaction {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  postId    String    @map("post_id")
+  type      String
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("reactions")
+}
+
+model Notification {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  type          String
+  title         String
+  message       String?
+  link          String?
+  referenceId   String?   @map("reference_id")
+  referenceType String?   @map("reference_type")
+  isRead        Boolean?  @default(false) @map("is_read")
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  user Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Prediction {
+  id            String    @id @default(uuid())
+  postId        String?   @map("post_id")
+  question      String
+  options       Json
+  correctOption Int?      @map("correct_option")
+  closesAt      DateTime  @map("closes_at") @db.Timestamptz
+  resolvedAt    DateTime? @map("resolved_at") @db.Timestamptz
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  post Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("predictions")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CẦN & CÓ: Intent System (100_can_co_intents.sql + 200_bot_envoy.sql)
+// ═══════════════════════════════════════════════════════════════
+
+model Intent {
+  id                String    @id @default(uuid())
+  userId            String?   @map("user_id")
+  type              String    // 'CAN' | 'CO'
+  rawText           String    @map("raw_text")
+  title             String?
+  parsedData        Json      @default("{}") @map("parsed_data")
+  category          String    @default("real_estate")
+  subcategory       String?   @default("apartment")
+  price             BigInt?
+  priceMin          BigInt?   @map("price_min")
+  priceMax          BigInt?   @map("price_max")
+  address           String?
+  district          String?
+  ward              String?
+  city              String?   @default("Hồ Chí Minh")
+  lat               Decimal?  @db.Decimal(10, 8)
+  lng               Decimal?  @db.Decimal(11, 8)
+  trustScore        Int?      @default(1) @map("trust_score")
+  verificationLevel String?   @default("none") @map("verification_level")
+  commentCount      Int?      @default(0) @map("comment_count")
+  matchCount        Int?      @default(0) @map("match_count")
+  viewCount         Int?      @default(0) @map("view_count")
+  status            String?   @default("active")
+  expiresAt         DateTime? @map("expires_at") @db.Timestamptz
+  createdAt         DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  // Bot-generated intents (200_bot_envoy.sql)
+  isBot             Boolean?  @default(false) @map("is_bot")
+  botHandle         String?   @map("bot_handle")
+  sourceUrl         String?   @map("source_url")
+
+  images          IntentImage[]
+  comments        IntentComment[]
+  embedding       IntentEmbedding?
+  canMatches      Match[]        @relation("CanMatches")
+  coMatches       Match[]        @relation("CoMatches")
+  verifications   Verification[]
+  conversations   Conversation[]
+  agentActivities AgentActivity[]
+  boosts          IntentBoost[]
+
+  @@map("intents")
+}
+
+model IntentImage {
+  id           String    @id @default(uuid())
+  intentId     String    @map("intent_id")
+  url          String
+  displayOrder Int?      @default(0) @map("display_order")
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  intent Intent @relation(fields: [intentId], references: [id], onDelete: Cascade)
+
+  @@map("intent_images")
+}
+
+model IntentComment {
+  id        String    @id @default(uuid())
+  intentId  String    @map("intent_id")
+  userId    String?   @map("user_id")
+  botName   String?   @map("bot_name")
+  content   String
+  isBot     Boolean?  @default(false) @map("is_bot")
+  parentId  String?   @map("parent_id")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  intent  Intent         @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  parent  IntentComment? @relation("IntentCommentReplies", fields: [parentId], references: [id])
+  replies IntentComment[] @relation("IntentCommentReplies")
+
+  agentActivities AgentActivity[]
+
+  @@map("intent_comments")
+}
+
+model IntentEmbedding {
+  id        String    @id @default(uuid())
+  intentId  String    @unique @map("intent_id")
+  // embedding vector(1536) — managed via $queryRaw (pgvector extension)
+  textInput String?   @map("text_input")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  intent Intent @relation(fields: [intentId], references: [id], onDelete: Cascade)
+
+  @@map("intent_embeddings")
+}
+
+model Match {
+  id          String    @id @default(uuid())
+  canIntentId String    @map("can_intent_id")
+  coIntentId  String    @map("co_intent_id")
+  similarity  Decimal?  @db.Decimal(5, 4)
+  explanation String?
+  status      String?   @default("suggested")
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  canIntent Intent @relation("CanMatches", fields: [canIntentId], references: [id])
+  coIntent  Intent @relation("CoMatches", fields: [coIntentId], references: [id])
+
+  @@unique([canIntentId, coIntentId])
+  @@map("matches")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Verification & Communication
+// ═══════════════════════════════════════════════════════════════
+
+model Verification {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  intentId    String?   @map("intent_id")
+  type        String
+  status      String?   @default("pending")
+  data        Json?
+  imageUrl    String?   @map("image_url")
+  gpsLat      Decimal?  @db.Decimal(10, 8) @map("gps_lat")
+  gpsLng      Decimal?  @db.Decimal(11, 8) @map("gps_lng")
+  gpsAccuracy Decimal?  @db.Decimal(10, 2) @map("gps_accuracy")
+  reviewedBy  String?   @map("reviewed_by")
+  reviewedAt  DateTime? @map("reviewed_at") @db.Timestamptz
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  intent Intent? @relation(fields: [intentId], references: [id])
+
+  @@map("verifications")
+}
+
+model Conversation {
+  id            String    @id @default(uuid())
+  intentId      String?   @map("intent_id")
+  userA         String    @map("user_a")
+  userB         String    @map("user_b")
+  lastMessageAt DateTime? @map("last_message_at") @db.Timestamptz
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  intent   Intent?   @relation(fields: [intentId], references: [id])
+  messages Message[]
+
+  @@unique([intentId, userA, userB])
+  @@map("conversations")
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  conversationId String    @map("conversation_id")
+  senderId       String    @map("sender_id")
+  content        String
+  readAt         DateTime? @map("read_at") @db.Timestamptz
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Content Moderation (012_content_moderation.sql)
+// ═══════════════════════════════════════════════════════════════
+
+model ContentViolation {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  rawText       String    @map("raw_text")
+  violationType String    @map("violation_type")
+  aiReason      String?   @map("ai_reason")
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("content_violations")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Agent System (100_can_co_intents.sql)
+// ═══════════════════════════════════════════════════════════════
+
+model AgentMemory {
+  id             String    @id @default(uuid())
+  botId          String    @map("bot_id")
+  userId         String    @map("user_id")
+  memoryType     String    @map("memory_type")
+  content        String
+  confidence     Decimal?  @default(0.5) @db.Decimal(3, 2)
+  sourceIntentId String?   @map("source_intent_id")
+  expiresAt      DateTime? @map("expires_at") @db.Timestamptz
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([botId, userId, memoryType])
+  @@map("agent_memory")
+}
+
+model KnowledgeEdge {
+  id         String    @id @default(uuid())
+  sourceType String    @map("source_type")
+  sourceId   String    @map("source_id")
+  relation   String
+  targetType String    @map("target_type")
+  targetId   String    @map("target_id")
+  weight     Decimal?  @default(0.5) @db.Decimal(5, 4)
+  metadata   Json?     @default("{}")
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([sourceType, sourceId, relation, targetType, targetId])
+  @@map("knowledge_edges")
+}
+
+model AgentActivity {
+  id        String    @id @default(uuid())
+  botId     String    @map("bot_id")
+  event     String
+  intentId  String?   @map("intent_id")
+  action    String
+  commentId String?   @map("comment_id")
+  reason    String?
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  intent  Intent?        @relation(fields: [intentId], references: [id])
+  comment IntentComment? @relation(fields: [commentId], references: [id])
+
+  @@map("agent_activity")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Crawler Infrastructure (200_bot_envoy.sql + 20260131_activity_logs.sql)
+// ═══════════════════════════════════════════════════════════════
+
+model CrawlSource {
+  id                   String    @id @default(uuid())
+  name                 String
+  url                  String
+  sourceType           String    @default("rss") @map("source_type")
+  category             String    @default("real_estate")
+  province             String?
+  district             String?
+  isActive             Boolean?  @default(true) @map("is_active")
+  lastCrawledAt        DateTime? @map("last_crawled_at") @db.Timestamptz
+  crawlIntervalMinutes Int?      @default(60) @map("crawl_interval_minutes")
+  totalItemsCrawled    Int?      @default(0) @map("total_items_crawled")
+  notes                String?
+  createdAt            DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@map("crawl_sources")
+}
+
+model ActivityLog {
+  id        String    @id @default(uuid())
+  type      String    // 'post' | 'comment' | 'debate' | 'reaction' | 'message'
+  botHandle String    @map("bot_handle")
+  targetId  String?   @map("target_id")
+  content   String?
+  metadata  Json?     @default("{}")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("activity_logs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Gamification & Notifications
+// ═══════════════════════════════════════════════════════════════
+
+model UserAchievement {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  achievementType String    @map("achievement_type")
+  metadata        Json?     @default("{}")
+  unlockedAt      DateTime? @default(now()) @map("unlocked_at") @db.Timestamptz
+
+  user            Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_achievements")
+}
+
+model PointTransaction {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  amount    Int
+  reason    String
+
+  // === Categorization (Phase 01) ===
+  type         String?  @default("other")    // referral | boost | redeem | bot_chat | manual
+  referenceId  String?  @map("reference_id") // ID của resource liên quan
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  user      Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("point_transactions")
+}
+
+model UserChannel {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  provider  String    @default("fcm")
+  token     String
+  isActive  Boolean?  @default(true) @map("is_active")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_channels")
+}
+
+model PushLog {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  title     String
+  body      String?
+  status    String    @default("sent")
+  sentAt    DateTime? @default(now()) @map("sent_at") @db.Timestamptz
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_logs")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Referral System & Rewards (Phase 01)
+// ═══════════════════════════════════════════════════════════════
+
+model ReferralLog {
+  id            String    @id @default(uuid())
+  referrerId    String    @map("referrer_id")
+  refereeId     String    @map("referee_id")
+  pointsAwarded Int       @map("points_awarded")
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  referrer Profile @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee  Profile @relation("Referee",  fields: [refereeId],  references: [id], onDelete: Cascade)
+
+  @@unique([referrerId, refereeId])
+  @@map("referral_logs")
+}
+
+model IntentBoost {
+  id          String    @id @default(uuid())
+  intentId    String    @map("intent_id")
+  userId      String    @map("user_id")
+  pointsSpent Int       @map("points_spent")
+  startAt     DateTime  @map("start_at") @db.Timestamptz
+  endAt       DateTime  @map("end_at")   @db.Timestamptz
+  createdAt   DateTime? @default(now())  @map("created_at") @db.Timestamptz
+
+  intent Intent  @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  user   Profile @relation(fields: [userId],   references: [id], onDelete: Cascade)
+
+  @@map("intent_boosts")
+}
+
+enum RewardStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FULFILLED
+}
+
+model RewardRedemption {
+  id           String       @id @default(uuid())
+  userId       String       @map("user_id")
+  rewardItemId String?      @map("reward_item_id")
+  rewardLabel  String       @map("reward_label")
+  pointsCost   Int          @map("points_cost")
+  status       RewardStatus @default(PENDING)
+  adminNote    String?      @map("admin_note")
+  createdAt    DateTime?    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime?    @default(now()) @map("updated_at") @db.Timestamptz
+
+  user       Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardItem RewardItem? @relation(fields: [rewardItemId], references: [id])
+
+  @@map("reward_redemptions")
+}
+
+model RewardItem {
+  id          String    @id @default(uuid())
+  label       String
+  description String?
+  pointsCost  Int       @map("points_cost")
+  stock       Int?      @default(-1)
+  isActive    Boolean?  @default(true) @map("is_active")
+  imageUrl    String?   @map("image_url")
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  redemptions RewardRedemption[]
+
+  @@map("reward_items")
+}

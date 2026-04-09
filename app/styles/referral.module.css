@@ -1,0 +1,156 @@
+/* =========================================================================
+   Referral & Gamification Design System (Phase 04)
+   Vibe: Fintech, Professional, Dark Mode (Green accents)
+========================================================================= */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.section {
+  background-color: var(--card, #1E1F22); /* Fallback to a dark gray */
+  border: 1px solid var(--border, #3E4042);
+  border-radius: var(--radius, 12px);
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--card-foreground, #E4E6EB);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* -------------------------------------------------------------------------
+   Cards & Layouts
+------------------------------------------------------------------------- */
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 380px) {
+  .grid2 {
+    gap: 12px;
+  }
+}
+
+.actionButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #1B4D3E;
+  color: white;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.actionButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.actionButton:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.actionButton:disabled {
+  background-color: #3E4042;
+  color: #B0B3B8;
+  cursor: not-allowed;
+}
+
+/* -------------------------------------------------------------------------
+   Typography
+------------------------------------------------------------------------- */
+.statsNumber {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #E4E6EB;
+}
+
+.statsLabel {
+  font-size: 0.8125rem;
+  color: #B0B3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* -------------------------------------------------------------------------
+   Specific Components
+------------------------------------------------------------------------- */
+.tierBadgeCore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tierDong { background: rgba(184, 115, 51, 0.2); color: #EAA676; border-color: rgba(184, 115, 51, 0.4); }
+.tierBac { background: rgba(192, 192, 192, 0.2); color: #E0E0E0; border-color: rgba(192, 192, 192, 0.4); }
+.tierVang { background: rgba(255, 215, 0, 0.15); color: #FFDF00; border-color: rgba(255, 215, 0, 0.4); }
+.tierBachKim { background: rgba(229, 228, 226, 0.2); color: #F5F5DC; border-color: rgba(229, 228, 226, 0.6); }
+.tierKimCuong { background: rgba(185, 242, 255, 0.15); color: #B9F2FF; border-color: rgba(185, 242, 255, 0.5); }
+
+/* Leaderboard Elite Cards */
+.eliteCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.eliteCard1st {
+  transform: scale(1.05); /* Highlight first place */
+  z-index: 10;
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 8px 16px rgba(255, 215, 0, 0.1);
+}
+
+.rankCircle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.rankCircle1st { background: #FFDF00; color: #000; }
+.rankCircle2nd { background: #C0C0C0; color: #000; }
+.rankCircle3rd { background: #CD7F32; color: #000; }
+
+.highlightRow {
+  background-color: rgba(27, 77, 62, 0.2);
+}

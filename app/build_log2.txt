@@ -1,0 +1,265 @@
+﻿node.exe : ⚠ Warning: 
+Next.js inferred your 
+workspace root, but it 
+may not be correct.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (⚠  
+   Warning: Next...not    
+ be correct.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+ We detected multiple 
+lockfiles and selected 
+the directory of D:\SW\Can
+-co-tn\package-lock.json 
+as the root directory.
+ To silence this warning, 
+set `turbopack.root` in 
+your Next.js config, or 
+consider removing one of 
+the lockfiles if it's not 
+needed.
+   See https://nextjs.org/
+docs/app/api-reference/con
+fig/next-config-js/turbopa
+ck#root-directory for 
+more information.
+ Detected additional 
+lockfiles: 
+   * D:\SW\Can-co-tn\app\p
+ackage-lock.json
+
+▲ Next.js 16.1.3 (Turbopack)
+- Environments: .env.local, .env
+
+⚠ The "middleware" file 
+convention is deprecated. 
+Please use "proxy" 
+instead. Learn more: https
+://nextjs.org/docs/message
+s/middleware-to-proxy
+  Creating an optimized production build ...
+
+-----
+[1m[31mFATAL[39m[0m: 
+An unexpected Turbopack 
+error occurred. A panic 
+log has been written to C:
+\Users\ITS\AppData\Local\T
+emp\next-panic-93210a088d5
+53f34da44ce739aff0ca8.log.
+
+To help make Turbopack 
+better, report this error 
+by ]8;;https://github.com
+/vercel/next.js/discussion
+s/new?category=turbopack-e
+rror-report&title=Turbopac
+k%20Error%3A%20%5Bproject%
+5D%2Fapp%2Fapp%2Fglobals.c
+ss%20%5Bapp-client%5D%20%2
+8css%29&body=Turbopack%20v
+ersion%3A%20%60da605e0c%60
+%0ANext.js%20version%3A%20
+%600.0.0%60%0A%0AError%20m
+essage%3A%0A%60%60%60%0A%5
+Bproject%5D%2Fapp%2Fapp%2F
+globals.css%20%5Bapp-clien
+t%5D%20%28css%29%0A%0ACaus
+ed%20by%3A%0A-%20failed%20
+to%20receive%20message%0A-
+%20reading%20packet%20leng
+th%0A-%20An%20existing%20c
+onnection%20was%20forcibly
+%20closed%20by%20the%20rem
+ote%20host.%20%28os%20erro
+r%2010054%29%0A%0ADebug%20
+info%3A%0A-%20Execution%20
+of%20get_all_written_entry
+points_with_issues_operati
+on%20failed%0A-%20Executio
+n%20of%20EntrypointsOperat
+ion%3A%3Anew%20failed%0A-%
+20Execution%20of%20all_ent
+rypoints_write_to_disk_ope
+ration%20failed%0A-%20Exec
+ution%20of%20Project%3A%3A
+emit_all_output_assets%20f
+ailed%0A-%20Execution%20of
+%20%2Aemit_assets%20failed
+%0A-%20Execution%20of%20al
+l_assets_from_entries_oper
+ation%20failed%0A-%20Execu
+tion%20of%20%2Aall_assets_
+from_entries%20failed%0A-%
+20Execution%20of%20output_
+assets_operation%20failed%
+0A-%20Execution%20of%20%3C
+MiddlewareEndpoint%20as%20
+Endpoint%3E%3A%3Aoutput%20
+failed%0A-%20Execution%20o
+f%20MiddlewareEndpoint%3A%
+3Aoutput_assets%20failed%0
+A-%20Execution%20of%20Midd
+lewareEndpoint%3A%3Aedge_c
+hunk_group%20failed%0A-%20
+Execution%20of%20%2Aevalua
+ted_chunk_group_assets%20f
+ailed%0A-%20Execution%20of
+%20Project%3A%3Aedge_chunk
+ing_context%20failed%0A-%2
+0Execution%20of%20%2Aget_e
+dge_chunking_context%20fai
+led%0A-%20Execution%20of%2
+0Project%3A%3Amodule_ids%2
+0failed%0A-%20Execution%20
+of%20whole_app_module_grap
+h_operation%20failed%0A-%2
+0Execution%20of%20%2AModul
+eGraph%3A%3Afrom_single_gr
+aph%20failed%0A-%20Executi
+on%20of%20SingleModuleGrap
+h%3A%3Anew_with_entries%20
+failed%0A-%20%5Bproject%5D
+%2Fapp%2Fapp%2Fglobals.css
+%20%5Bapp-client%5D%20%28c
+ss%29%0A-%20Execution%20of
+%20primary_chunkable_refer
+enced_modules%20failed%0A-
+%20Execution%20of%20%3CCss
+ModuleAsset%20as%20Module%
+3E%3A%3Areferences%20faile
+d%0A-%20Execution%20of%20p
+arse_css%20failed%0A-%20Ex
+ecution%20of%20%3CPostCssT
+ransformedAsset%20as%20Ass
+et%3E%3A%3Acontent%20faile
+d%0A-%20Execution%20of%20P
+ostCssTransformedAsset%3A%
+3Aprocess%20failed%0A-%20E
+xecution%20of%20evaluate_w
+ebpack_loader%20failed%0A-
+%20failed%20to%20receive%2
+0message%0A-%20reading%20p
+acket%20length%0A-%20An%20
+existing%20connection%20wa
+s%20forcibly%20closed%20by
+%20the%20remote%20host.%20
+%28os%20error%2010054%29%0
+A%60%60%60&labels=Turbopac
+k,Turbopack%20Panic%20Back
+trace\clicking 
+here.]8;;\
+-----
+
+
+> Build error occurred
+Error 
+[TurbopackInternalError]: 
+[project]/app/app/globals.
+css [app-client] (css)
+
+Caused by:
+- failed to receive 
+message
+- reading packet length
+- An existing connection 
+was forcibly closed by 
+the remote host. (os 
+error 10054)
+
+Debug info:
+- Execution of get_all_wri
+tten_entrypoints_with_issu
+es_operation failed
+- Execution of 
+EntrypointsOperation::new 
+failed
+- Execution of all_entrypo
+ints_write_to_disk_operati
+on failed
+- Execution of Project::em
+it_all_output_assets 
+failed
+- Execution of 
+*emit_assets failed
+- Execution of all_assets_
+from_entries_operation 
+failed
+- Execution of 
+*all_assets_from_entries 
+failed
+- Execution of 
+output_assets_operation 
+failed
+- Execution of 
+<MiddlewareEndpoint as 
+Endpoint>::output failed
+- Execution of MiddlewareE
+ndpoint::output_assets 
+failed
+- Execution of MiddlewareE
+ndpoint::edge_chunk_group 
+failed
+- Execution of *evaluated_
+chunk_group_assets failed
+- Execution of Project::ed
+ge_chunking_context failed
+- Execution of *get_edge_c
+hunking_context failed
+- Execution of 
+Project::module_ids failed
+- Execution of whole_app_m
+odule_graph_operation 
+failed
+- Execution of *ModuleGrap
+h::from_single_graph 
+failed
+- Execution of SingleModul
+eGraph::new_with_entries 
+failed
+- [project]/app/app/global
+s.css [app-client] (css)
+- Execution of primary_chu
+nkable_referenced_modules 
+failed
+- Execution of 
+<CssModuleAsset as 
+Module>::references failed
+- Execution of parse_css 
+failed
+- Execution of 
+<PostCssTransformedAsset 
+as Asset>::content failed
+- Execution of PostCssTran
+sformedAsset::process 
+failed
+- Execution of 
+evaluate_webpack_loader 
+failed
+- failed to receive 
+message
+- reading packet length
+- An existing connection 
+was forcibly closed by 
+the remote host. (os 
+error 10054)
+    at <unknown> 
+(TurbopackInternalError: [
+project]/app/app/globals.c
+ss [app-client] (css)) {
+  type: 
+'TurbopackInternalError',
+  location: undefined
+}

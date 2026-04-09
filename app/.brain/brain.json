@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "schema_version": "1.1.0",
+    "awf_version": "4.0.2",
+    "last_updated": "2026-04-03T20:07:00Z"
+  },
+  "project": {
+    "name": "Cần & Có - AI Real Estate Super App",
+    "type": "AI Real-estate Aggregator Super-App",
+    "status": "Phase 04: Gamification & Referral Dashboard Complete"
+  },
+  "tech_stack": {
+    "frontend": {
+      "framework": "Next.js 15 App Router",
+      "styling": "TailwindCSS + shadcn/ui",
+      "state": "React hooks + SWR"
+    },
+    "backend": {
+      "api": "Next.js Route Handlers (API routes)",
+      "database": "PostgreSQL via Prisma 7 ORM (Driver Adapter + pg Pool)",
+      "auth": "NextAuth.js v5 (JWT strategy, credential provider)",
+      "ai": "OpenAI API (embeddings, content parsing, moderation)",
+      "realtime": "Pusher (planned)",
+      "storage": "Supabase Storage (images — to be migrated to S3/R2)"
+    }
+  },
+  "database_schema": {
+    "summary": "25+ tables: Users, Profiles, Bots, Intents (CẦN/CÓ), Posts, Comments, Matches, Notifications, Crawler pipeline, Content moderation, Gamification",
+    "key_models": [
+      "User + Profile — Auth & identity",
+      "Intent + IntentComment + IntentImage — CẦN/CÓ marketplace",
+      "Match — CẦN↔CÓ matching engine results",
+      "Bot + AgentActivity — AI broker bots",
+      "Post + Comment + Like + Save — Social feed",
+      "RawNews + CrawlSource — Crawler pipeline",
+      "BreakingNews — Hot news feed",
+      "Notification — User notifications",
+      "ContentViolation — Content moderation tracking"
+    ],
+    "relationships_explained": "Bot lấy RawNews → tạo Intent. User tạo Intent CẦN/CÓ. Matching engine tìm CẦN↔CÓ pairs. Bot comments on intents via orchestrator."
+  },
+  "api_endpoints": [
+    { "path": "/api/feed", "explained": "Feed bài viết social (posts) — GET with pagination" },
+    { "path": "/api/intents", "explained": "CẦN/CÓ intents — GET (list+filter) & POST (create with AI parsing)" },
+    { "path": "/api/intents/[id]", "explained": "Intent detail — GET/PUT/DELETE with ownership check" },
+    { "path": "/api/intents/[id]/comments", "explained": "Comments on a specific intent" },
+    { "path": "/api/intents/[id]/matches", "explained": "Matches for a specific intent (CẦN↔CÓ)" },
+    { "path": "/api/intents/[id]/images", "explained": "Upload images for an intent" },
+    { "path": "/api/intents/comments", "explained": "Global intent comment creation" },
+    { "path": "/api/intents/interest", "explained": "Atomic match_count increment/decrement" },
+    { "path": "/api/intents/parse", "explained": "AI parse raw text into tags (no DB write)" },
+    { "path": "/api/intents/link-check", "explained": "Batch URL health check for crawled intents" },
+    { "path": "/api/intents/crawled-inject", "explained": "Bot inject intents from raw_news" },
+    { "path": "/api/matching", "explained": "User's matches overview" },
+    { "path": "/api/matching/trigger", "explained": "Trigger matching pipeline for an intent" },
+    { "path": "/api/breaking", "explained": "Breaking news CRUD" },
+    { "path": "/api/comments", "explained": "Post comments (nested tree)" },
+    { "path": "/api/posts/[id]/like", "explained": "Toggle like on a post" },
+    { "path": "/api/posts/[id]/save", "explained": "Toggle save on a post" },
+    { "path": "/api/notifications", "explained": "User notification list + mark read" },
+    { "path": "/api/bots", "explained": "Bot CRUD — GET list, POST create, PUT update" },
+    { "path": "/api/bots/[id]/follow", "explained": "Follow/unfollow a bot (atomic counter)" },
+    { "path": "/api/users/[id]/stats", "explained": "User gamification stats (points, level, streak, rank)" },
+    { "path": "/api/users/[id]/achievements", "explained": "User achievement progress and unlocked badges" },
+    { "path": "/api/admin/update-avatars", "explained": "Batch assign bot avatars by handle/keyword" },
+    { "path": "/api/orchestrator", "explained": "Start/stop AI bot orchestrator" },
+    { "path": "/api/cron/crawler", "explained": "Vercel cron job for crawling" }
+  ],
+  "business_rules": [
+    "Intent types: CẦN (seeking) and CÓ (offering) — matched by district, price, bedrooms",
+    "Bot personas: match_advisor, nha_advisor, trust_checker, concierge, connector, market_analyst",
+    "Bot anti-spam: max 3 bots comment per intent, match_advisor always first",
+    "Content moderation: AI + keyword check, 3 violations = permanent ban",
+    "Trust scoring: verified > kyc > none, affects match ranking",
+    "BigInt price fields in DB, converted to Number for JSON responses"
+  ],
+  "features": [
+    "Super App multi-tab layout (Feed, Map, Khớp Nhanh, Chat, Mini-Apps)",
+    "CẦN & CÓ Intent Marketplace with AI matching engine",
+    "AI Bot Network (Broker Bots with geographic jurisdictions)",
+    "Real-time market analytics (Brain AI Analytics panel)",
+    "Content moderation pipeline (keyword + AI)",
+    "Admin Dashboard (HR, Crawl Sources, Bot Operations)",
+    "NextAuth credential-based auth (migrated from Supabase Auth)",
+    "Referral & Gamification System (Leaderboard, Points, Store, Tiers)"
+  ],
+  "knowledge_items": {
+    "patterns": [
+      "Crawler Orchestrator Lazy-start Pattern",
+      "requireAuth(request) → { userId } | { error: Response } pattern for API routes",
+      "toSnakeCase() for Prisma camelCase → frontend snake_case conversion",
+      "toIntentType() for Prisma result → Intent type mapping in matching engine",
+      "BigInt price → Number() for JSON serialization across all intent responses",
+      "Manual snake_case mapping for complex nested responses (intents GET)",
+      "Dynamic snake→camel key mapping for generic PUT endpoints (bots)",
+      "Prisma atomic increment/decrement replaces Supabase RPC functions"
+    ],
+    "gotchas": [
+      "Supabase pooler (6543) chặn Schema Metadata introspection",
+      "Prisma 7.x requires prisma.config.ts instead of url in schema.prisma",
+      "pgvector Unsupported('vector(1536)') must be removed from schema, use $executeRaw",
+      "middleware.ts blocks ALL /api/ routes without JWT — test APIs via browser not fetch",
+      "BigInt cannot be JSON.stringify'd — must convert price/priceMin/priceMax to Number()",
+      "Supabase Storage still needed for image uploads until S3/R2 migration",
+      "Gamification libs partially migrated (leaderboard+achievements done, streaks/reactions/predictions/points pending)"
+    ],
+    "conventions": [
+      "Refactor files theo Phase AWF",
+      "API responses must maintain snake_case field names for frontend compatibility",
+      "Auth-required routes use requireAuth(), public GETs use getAuthUserId() for optional auth",
+      "Atomic counter updates (increment/decrement) instead of read-then-update pattern"
+    ]
+  }
+}
