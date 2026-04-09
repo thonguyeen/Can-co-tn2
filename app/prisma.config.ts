@@ -7,6 +7,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
     // CLI (migrate, db push) cần dùng Session pooler (port 5432) hoặc Direct connection

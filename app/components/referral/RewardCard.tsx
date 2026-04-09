@@ -21,7 +21,7 @@ interface RewardCardProps {
 
 export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
   const canAfford = userPoints >= reward.pointsCost
-  const outOfStock = reward.stock !== null && reward.stock <= 0
+  const outOfStock = reward.stock != null && reward.stock <= 0
 
   return (
     <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden flex flex-col group relative">

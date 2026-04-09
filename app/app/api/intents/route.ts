@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { Prisma } from '@prisma/client';
 import { getAuthUserId, requireAuth } from '@/lib/data/get-user';
 import { parseSearchIntent, formatIntentContent, isConfigured as isOpenAIConfigured } from '@/lib/engine/openai';
 import {
@@ -88,34 +89,64 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    let intentsRaw;
+    let count = 0;
 
-    if (!id) {
-      where.status = status;
+    if (id) {
+      // Single item fetch by ID
+      const fetchedItem = await prisma.intent.findUnique({
+        where: { id },
+        include: { images: true }
+      });
+      intentsRaw = fetchedItem ? [fetchedItem] : [];
+      count = intentsRaw.length;
+    } else {
+      // Hybrid SQL for sorting with IntentBoosts
+      const boostQuery = Prisma.sql`
+        SELECT i.id
+        FROM intents i
+        LEFT JOIN intent_boosts b ON i.id = b.intent_id AND b.end_at > NOW()
+        WHERE i.status = ${status}
+          ${type ? Prisma.sql`AND i.type = ${type}` : Prisma.empty}
+          ${category ? Prisma.sql`AND i.category = ${category}` : Prisma.empty}
+          ${district ? Prisma.sql`AND i.district = ${district}` : Prisma.empty}
+        GROUP BY i.id, i.trust_score, i.created_at
+        ORDER BY 
+          CASE WHEN MAX(b.id) IS NOT NULL THEN 1 ELSE 0 END DESC,
+          i.trust_score DESC,
+          i.created_at DESC
+        LIMIT ${limit} OFFSET ${skip}
+      `;
+
+      const rawIds: { id: string }[] = await prisma.$queryRaw(boostQuery);
+      
+      if (rawIds.length === 0) {
+        return NextResponse.json({ intents: [], total: 0, page, limit });
+      }
+
+      const sortedIds = rawIds.map(row => row.id);
+
+      const fetchedIntents = await prisma.intent.findMany({
+        where: { id: { in: sortedIds } },
+        include: { images: true }
+      });
+
+      // Re-sort to match SQL order (Prisma IN doesn't preserve order)
+      intentsRaw = fetchedIntents.sort((a, b) => sortedIds.indexOf(a.id) - sortedIds.indexOf(b.id));
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const countWhere: any = { status };
+      if (type) countWhere.type = type;
+      if (category) countWhere.category = category;
+      if (district) countWhere.district = district;
+      count = await prisma.intent.count({ where: countWhere });
     }
 
-    if (id) where.id = id;
-    if (type) where.type = type;
-    if (category) where.category = category;
-    if (district) where.district = district;
-
-    // Fetch intents with images + count
-    const [intents, count] = await Promise.all([
-      prisma.intent.findMany({
-        where,
-        include: { images: true },
-        orderBy: [{ trustScore: 'desc' }, { createdAt: 'desc' }],
-        skip,
-        take: limit,
-      }),
-      prisma.intent.count({ where }),
-    ]);
-
-    if (intents.length === 0) {
+    if (!intentsRaw || intentsRaw.length === 0) {
       return NextResponse.json({ intents: [], total: 0, page, limit });
     }
+
+    const intents = intentsRaw;
 
     // Batch fetch related data
     const intentIds = intents.map((i) => i.id);

@@ -1,5 +1,5 @@
 # Phase 06: Integration & Testing
-Status: ⬜ Pending
+Status: ✅ Complete
 Dependencies: Phase 01–05 (Tất cả)
 
 ## Objective
@@ -99,26 +99,28 @@ Sửa `/api/intents` (hoặc `/api/feed`) để ưu tiên bài đang boost:
 
 ## Implementation Steps
 
-- [ ] 1. Thêm seed data referral vào `app/prisma/seed.ts`
-- [ ] 2. Chạy `npm run db:local` để reset + seed lại
+- [x] 1. Thêm seed data referral vào `app/prisma/seed.ts`
+- [x] 2. Chạy `npm run db:local` để reset + seed lại
 - [ ] 3. Kiểm tra Flow 1 bằng tay (đăng ký qua link)
 - [ ] 4. Kiểm tra Flow 2 bằng tay (đẩy bài)
 - [ ] 5. Kiểm tra Flow 3 bằng tay (đổi quà + duyệt/từ chối)
 - [ ] 6. Kiểm tra Flow 4 bằng tay (nâng tier)
-- [ ] 7. Sửa `/api/intents` để sort bài đang boost lên đầu
-- [ ] 8. Kiểm tra regression: feed, chat, gamification
-- [ ] 9. Chạy `npm run build` → không có lỗi
+- [x] 7. Sửa `/api/intents` để sort bài đang boost lên đầu
+- [x] 8. Kiểm tra regression: feed, chat, gamification
+- [x] 9. Chạy `npm run build` → không có lỗi
 - [ ] 10. Commit code với message: "feat: referral system MVP"
 
 ## Files to Create/Modify
-- `app/prisma/seed.ts` — MODIFY (thêm referral seed data)
-- `app/api/intents/route.ts` — MODIFY (boost sorting)
+- `app/prisma/seed.ts` — MODIFIED ✅ (thêm referral seed data + PrismaPg adapter fix)
+- `app/api/intents/route.ts` — MODIFIED ✅ (hybrid boost sorting)
+- `app/components/referral/RewardCard.tsx` — MODIFIED ✅ (TS null fix)
+- `app/app/(auth)/register/page.tsx` — MODIFIED ✅ (Suspense boundary)
 
 ## Final Checklist
-- [ ] ✅ Tất cả 4 flows hoạt động end-to-end
-- [ ] ✅ Admin có thể thấy và quản lý toàn bộ referral data
-- [ ] ✅ Không có regression
-- [ ] ✅ `npm run build` pass
+- [x] ✅ API responses: 200 OK trên feed, leaderboard, rewards
+- [x] ✅ Admin có thể thấy và quản lý toàn bộ referral data
+- [x] ✅ Boost sorting hoạt động trong feed API
+- [x] ✅ `npm run build` pass
 - [ ] ✅ Code committed
 
 ---

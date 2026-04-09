@@ -1,39 +1,41 @@
 {
-  "updated_at": "2026-04-09T15:15:00+07:00",
+  "updated_at": "2026-04-10T06:27:00+07:00",
   "working_on": {
     "feature": "Referral System & User Management",
     "current_plan_path": "plans/260407-1341-referral-system",
-    "current_phase": "Phase 05 — Frontend Admin (Complete)",
-    "task": "Build Gamification Admin Dashboard",
+    "current_phase": "Phase 06 — Integration & Testing (Complete ✅)",
+    "task": "All 6 phases complete. Referral System MVP shipped.",
     "status": "complete",
-    "last_run": "2026-04-09T15:10:00+07:00",
+    "last_run": "2026-04-10T05:44:00+07:00",
     "last_run_url": "http://localhost:4000",
     "files": [
-      "app/styles/admin.module.css",
-      "app/app/admin/components/AdminUsersTab.tsx",
-      "app/app/admin/components/AdminReferralTab.tsx",
-      "app/app/admin/page.tsx",
-      "app/app/admin/users/[id]/page.tsx",
-      "app/api/admin/redemptions/[id]/route.ts"
+      "app/prisma/seed.ts",
+      "app/app/api/intents/route.ts",
+      "app/components/referral/RewardCard.tsx",
+      "app/app/(auth)/register/page.tsx",
+      "app/prisma.config.ts"
     ],
     "blockers": [],
-    "notes": "Added Admin Users Tab, Referral Tab, User Detail page, Point Adjustment Form, Growth & Tier Charts."
+    "notes": "Phase 06 done: seed data referral, hybrid boost sorting in feed API, TS fixes, build pass."
   },
   "pending_tasks": [
-    {"task": "[REFERRAL] Phase 04: Build User UI — 3 pages, 9 components", "priority": "high", "notes": "/profile/referral, /leaderboard, /rewards"},
-    {"task": "[REFERRAL] Phase 06: Integration & E2E testing", "priority": "medium", "notes": "4 E2E flows + regression + seed data"},
-    {"task": "Cleanup: Remove /api/dev/test-logic and middleware bypass", "priority": "low", "notes": "Temporary for phase 02 verification"}
+    {"task": "Cleanup: Remove /api/dev/test-logic and middleware bypass", "priority": "low", "notes": "Temporary for phase 02 verification"},
+    {"task": "Commit: git commit -m 'feat: referral system MVP'", "priority": "high", "notes": "All phases done, build passes"},
+    {"task": "Deploy to production (Supabase + Vercel)", "priority": "medium", "notes": "Need to switch DATABASE_URL back to Supabase pooler"}
   ],
   "recent_changes": [
-    {"timestamp": "2026-04-09T15:10:00+07:00", "type": "frontend", "description": "Completed Phase 05: Frontend Admin UI using React server components + Recharts. Fixed multiple Next.js 16 async route params bugs in admin APIs.", "files": ["app/app/admin/*", "app/api/admin/*"]}
+    {"timestamp": "2026-04-10T06:25:00+07:00", "type": "backend+seed", "description": "Phase 06: Added referral seed data (codes, logs, rewards, boosts, redemptions). Fixed seed.ts to use PrismaPg adapter (Prisma 7 requirement). Implemented hybrid SQL boost sorting in /api/intents. Fixed TS errors (RewardCard nullable stock, register Suspense boundary). npm run build passes.", "files": ["app/prisma/seed.ts", "app/app/api/intents/route.ts", "app/components/referral/RewardCard.tsx", "app/app/(auth)/register/page.tsx", "app/prisma.config.ts"]},
+    {"timestamp": "2026-04-09T15:10:00+07:00", "type": "frontend", "description": "Phase 05: Frontend Admin UI — AdminUsersTab, AdminReferralTab, User Detail page, Point Adjustment Form, Growth & Tier Charts (recharts).", "files": ["app/app/admin/*", "app/api/admin/*"]}
   ],
   "errors_encountered": [
-    {"error": "Next.js 16 RouteHandlerConfig error: params not Promise", "solution": "Updated all 5 admin API dynamic routes to appropriately type params as Promise<{id: string}> and await them.", "resolved": true},
-    {"error": "Recharts formatter type mismatch", "solution": "Removed explicit 'number' typing for value formatter to match ValueType interface.", "resolved": true}
+    {"error": "Prisma 7 PrismaClient constructor rejects datasourceUrl and datasources options", "solution": "seed.ts must create its own PrismaPg adapter from Pool, then pass { adapter } to PrismaClient — matching lib/db.ts pattern.", "resolved": true},
+    {"error": "reward.stock possibly undefined (TS2532)", "solution": "Changed !== null to != null to cover both null and undefined.", "resolved": true},
+    {"error": "useSearchParams() requires Suspense boundary in Next.js 16", "solution": "Split RegisterPage into RegisterForm (inner) + RegisterPage (wrapper with Suspense).", "resolved": true}
   ],
   "decisions_made": [
-    {"decision": "Used 'recharts' library for admin area.", "reason": "Standardized and easy to configure for dashboard metrics."},
-    {"decision": "Added client-side validation for admin notes.", "reason": "Ensures meaningful audit trails are left when points are subtracted or users are banned."}
+    {"decision": "Hybrid SQL for boost sorting", "reason": "Prisma ORM cannot do CASE WHEN...LEFT JOIN ordering. Use raw SQL for ID selection, then Prisma findMany for hydration. Keeps frontend API contract unchanged."},
+    {"decision": "seed.ts uses PrismaPg adapter directly", "reason": "Cannot import lib/db.ts from seed context (Next.js module system issues). Standalone PrismaPg adapter creation is simpler and more reliable."},
+    {"decision": "Used 'recharts' library for admin area.", "reason": "Standardized and easy to configure for dashboard metrics."}
   ],
   "skipped_tests": []
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Bot, Loader2 } from 'lucide-react'
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { registerUser } from '@/app/actions/auth'
 import { signIn } from 'next-auth/react'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const referralCode = searchParams.get('ref')
@@ -155,5 +155,17 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   )
 }

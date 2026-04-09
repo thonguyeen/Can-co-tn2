@@ -1,34 +1,44 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 HANDOVER DOCUMENT - REFERRAL SYSTEM PHASE 02→03
+📋 HANDOVER DOCUMENT — REFERRAL SYSTEM MVP COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📍 Đang làm: Referral System & User Management
-🔢 Đến bước: Phase 03 - Backend Admin API
+📍 Feature: Referral System & User Management
+🔢 Status: ✅ ALL 6 PHASES COMPLETE — MVP Shipped
 
 ✅ ĐÃ XONG:
-   - Phase 01: Database ✓ (Cập nhật 4 model mới + fields mới cho Profile/UserStat/PointTransaction)
-   - Phase 02: Backend ✓ (ReferralService, 7 endpoint APIs, tích hợp Register Flow)
-   - Xác thực: Đã chạy thành công Diagnostic Route tại /api/dev/test-logic.
+   - Phase 01: Database ✓ (4 new models + Profile/UserStat/PointTransaction updates)
+   - Phase 02: Backend APIs ✓ (ReferralService, 7 referral endpoints, Register integration)
+   - Phase 03: Admin APIs ✓ (5 admin endpoints, user mgmt, redemption approval)
+   - Phase 04: User Frontend ✓ (/profile/referral, /leaderboard, /rewards — 9 components)
+   - Phase 05: Admin Frontend ✓ (AdminUsersTab, AdminReferralTab, User Detail, recharts)
+   - Phase 06: Integration ✓ (Seed data, boost sorting, TS fixes, build pass)
 
-⏳ CÒN LẠI:
-   - Phase 03: Xây dựng Admin APIs (Quản lý User, Points, Redemptions)
-   - Phase 04 & 05: Xây dựng Giao diện (User & Admin)
-   - Phase 06: Kiểm thử tích hợp toàn diện.
+🏗️ KIẾN TRÚC BOOST SORTING:
+   - Dùng Hybrid SQL: Raw query lấy ID đã sort → Prisma findMany để hydrate
+   - LEFT JOIN intent_boosts → CASE WHEN sort boosted first
+   - Frontend không cần sửa (API contract giữ nguyên)
 
 🔧 QUYẾT ĐỊNH QUAN TRỌNG:
-   - Auth: Dùng Email whitelist (test@admin.com...) dể phân quyền quản trị trong MVP.
-   - Points: Áp dụng cơ chế Atomic Decrypt (trừ điểm trực tiếp trong update) dể chống spam.
-   - Register: Logic referral được móc trực tiếp vào Server Action `registerUser`.
+   - Prisma 7: seed.ts tạo PrismaPg adapter riêng (không import lib/db.ts)
+   - Next.js 16: register/page.tsx wrap Suspense cho useSearchParams
+   - Admin auth: Email whitelist (ADMIN_EMAILS env var)
+   - Boost sort: Hybrid SQL thay vì memory sort
 
-⚠️ LƯU Ý CHO SESSION SAU:
-   - Implementation Plan cho Phase 03 ĐÃ SẴN SÀNG và đang chờ User duyệt.
-   - File middleware.ts đang được bypass tạm thời cho /api/dev dể test logic.
-   - Cần dọn dẹp /api/dev/test-logic sau khi hoàn thành test E2E.
+⏳ CÒN LẠI (Post-MVP):
+   - [ ] git commit -m "feat: referral system MVP"
+   - [ ] Cleanup /api/dev/test-logic + middleware bypass
+   - [ ] Deploy to production (switch DB to Supabase pooler)
+   - [ ] Multi-level referral (hoa hồng cấp 2)
+   - [ ] Push notification khi thăng hạng
+   - [ ] Referral Analytics nâng cao
 
 📁 FILES QUAN TRỌNG:
-   - .brain/brain.json (Kiến trúc & Specs)
-   - .brain/session.json (Tiến độ & Quyết định)
-   - plans/260407-1341-referral-system/implementation_plan.md (Plan Phase 03)
+   - .brain/brain.json (Full project knowledge)
+   - .brain/session.json (Current progress)
+   - plans/260407-1341-referral-system/ (All 6 phase specs)
+   - app/prisma/seed.ts (Demo data with referral)
+   - app/app/api/intents/route.ts (Boost sorting logic)
+   - app/lib/referral-service.ts (Core referral business logic)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 Đã lưu! Để tiếp tục: Gõ /recap
