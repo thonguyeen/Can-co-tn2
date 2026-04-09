@@ -1,0 +1,855 @@
+/* ═══════════════════════════════════════════════════════
+   Admin Dashboard — Phase 05 Styles
+   Extends WorldMonitor (wm-*) design system
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Search & Filter Bar ── */
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 220px;
+  background: var(--wm-input-bg);
+  border: 1px solid var(--wm-border);
+  border-radius: 6px;
+  color: var(--wm-text);
+  font-size: 13px;
+  padding: 10px 14px 10px 36px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.searchInput::placeholder { color: var(--wm-text-faint); }
+.searchInput:focus {
+  border-color: var(--wm-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--wm-primary) 15%, transparent);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--wm-text-faint);
+  pointer-events: none;
+}
+
+.searchWrapper {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.filterSelect {
+  background: var(--wm-input-bg);
+  border: 1px solid var(--wm-border);
+  border-radius: 6px;
+  color: var(--wm-text);
+  font-size: 13px;
+  padding: 10px 14px;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+  transition: border-color 0.15s;
+}
+.filterSelect:focus {
+  border-color: var(--wm-primary);
+}
+
+/* ── Data Table ── */
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dataTable th {
+  text-align: left;
+  color: var(--wm-text-muted);
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--wm-border);
+  white-space: nowrap;
+}
+
+.dataTable td {
+  padding: 12px;
+  border-bottom: 1px solid var(--wm-border-subtle);
+  color: var(--wm-text-secondary);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.dataTable tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.dataTable tbody tr:hover {
+  background: var(--wm-surface-hover);
+}
+
+/* ── User Row ── */
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--wm-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.userAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.userName {
+  color: var(--wm-text);
+  font-weight: 500;
+}
+
+.userEmail {
+  font-size: 11px;
+  color: var(--wm-text-dim);
+}
+
+/* ── Tier Badge ── */
+.tierBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tierBadge[data-tier="1"] {
+  background: color-mix(in srgb, #CD7F32 15%, transparent);
+  color: #CD7F32;
+  border: 1px solid color-mix(in srgb, #CD7F32 25%, transparent);
+}
+.tierBadge[data-tier="2"] {
+  background: color-mix(in srgb, #C0C0C0 15%, transparent);
+  color: #C0C0C0;
+  border: 1px solid color-mix(in srgb, #C0C0C0 25%, transparent);
+}
+.tierBadge[data-tier="3"] {
+  background: color-mix(in srgb, #FFD700 12%, transparent);
+  color: #FFD700;
+  border: 1px solid color-mix(in srgb, #FFD700 20%, transparent);
+}
+.tierBadge[data-tier="4"] {
+  background: color-mix(in srgb, #E5E4E2 12%, transparent);
+  color: #E5E4E2;
+  border: 1px solid color-mix(in srgb, #E5E4E2 20%, transparent);
+}
+.tierBadge[data-tier="5"] {
+  background: color-mix(in srgb, #B9F2FF 12%, transparent);
+  color: #B9F2FF;
+  border: 1px solid color-mix(in srgb, #B9F2FF 20%, transparent);
+}
+
+/* ── Status Chip ── */
+.statusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.statusActive {
+  background: color-mix(in srgb, #22C55E 12%, transparent);
+  color: #22C55E;
+  border: 1px solid color-mix(in srgb, #22C55E 25%, transparent);
+}
+
+.statusBanned {
+  background: color-mix(in srgb, #EF4444 12%, transparent);
+  color: #EF4444;
+  border: 1px solid color-mix(in srgb, #EF4444 25%, transparent);
+}
+
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  font-size: 13px;
+  color: var(--wm-text-dim);
+}
+
+.paginationInfo {
+  font-size: 12px;
+}
+
+.paginationButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.pageBtn {
+  padding: 6px 14px;
+  background: var(--wm-surface);
+  border: 1px solid var(--wm-border);
+  border-radius: 6px;
+  color: var(--wm-text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pageBtn:hover:not(:disabled) {
+  background: var(--wm-surface-hover);
+  border-color: var(--wm-border-strong);
+}
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pageBtnActive {
+  background: var(--wm-primary);
+  border-color: var(--wm-primary);
+  color: #fff;
+}
+
+/* ── Summary Cards ── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summaryCard {
+  background: var(--wm-surface);
+  border: 1px solid var(--wm-border);
+  border-radius: 8px;
+  padding: 20px;
+  transition: border-color 0.15s;
+}
+.summaryCard:hover {
+  border-color: var(--wm-border-strong);
+}
+
+.summaryValue {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--wm-text);
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--wm-text-muted);
+  margin-top: 6px;
+}
+
+.summaryIcon {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+/* ── Stat Cards (User Detail) ── */
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.statCard {
+  background: var(--wm-surface);
+  border: 1px solid var(--wm-border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  color: var(--wm-text);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--wm-text-muted);
+  margin-top: 8px;
+}
+
+/* ── Charts Layout ── */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chartPanel {
+  background: var(--wm-surface);
+  border: 1px solid var(--wm-border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.chartTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wm-text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Point Adjust Form ── */
+.adjustForm {
+  background: var(--wm-surface);
+  border: 1px solid var(--wm-border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.adjustTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wm-text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adjustFields {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--wm-text-muted);
+}
+
+.adjustInput {
+  background: var(--wm-input-bg);
+  border: 1px solid var(--wm-border);
+  border-radius: 6px;
+  color: var(--wm-text);
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  width: 120px;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s;
+}
+.adjustInput:focus {
+  border-color: var(--wm-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--wm-primary) 15%, transparent);
+}
+
+.reasonInput {
+  composes: adjustInput;
+  flex: 1;
+  min-width: 200px;
+  width: auto;
+}
+
+.submitBtn {
+  padding: 10px 20px;
+  background: var(--wm-primary);
+  border: 1px solid var(--wm-primary);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.submitBtn:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dangerBtn {
+  composes: submitBtn;
+  background: #EF4444;
+  border-color: #EF4444;
+}
+.dangerBtn:hover:not(:disabled) {
+  background: #DC2626;
+}
+
+/* ── Transaction Log ── */
+.txnRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--wm-border-subtle);
+  transition: background 0.1s;
+}
+.txnRow:hover {
+  background: var(--wm-surface-hover);
+}
+
+.txnAmount {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 60px;
+  text-align: right;
+}
+
+.txnPositive { color: #22C55E; }
+.txnNegative { color: #EF4444; }
+.txnManual { color: #F59E0B; }
+.txnRefund { color: #3B82F6; }
+
+.txnType {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--wm-surface-hover);
+  color: var(--wm-text-dim);
+}
+
+.txnReason {
+  flex: 1;
+  font-size: 13px;
+  color: var(--wm-text-secondary);
+}
+
+.txnDate {
+  font-size: 11px;
+  color: var(--wm-text-dim);
+  white-space: nowrap;
+}
+
+/* ── Referral Tree ── */
+.treeSection {
+  margin-bottom: 24px;
+}
+
+.treeSectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--wm-text-muted);
+  margin-bottom: 12px;
+}
+
+.referralCard {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--wm-surface);
+  border: 1px solid var(--wm-border);
+  border-radius: 8px;
+  margin: 0 8px 8px 0;
+}
+
+.referralGrid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* ── Modal Overlay ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modalContent {
+  background: var(--wm-surface);
+  border: 1px solid var(--wm-border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 440px;
+  animation: slideUp 0.2s ease-out;
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--wm-text);
+  margin-bottom: 16px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.cancelBtn {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--wm-border);
+  border-radius: 6px;
+  color: var(--wm-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cancelBtn:hover {
+  background: var(--wm-surface-hover);
+}
+
+/* ── Redemption List ── */
+.redemptionRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--wm-border-subtle);
+  transition: background 0.1s;
+}
+.redemptionRow:hover {
+  background: var(--wm-surface-hover);
+}
+
+.redemptionInfo {
+  flex: 1;
+}
+
+.redemptionReward {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wm-text);
+}
+
+.redemptionCost {
+  font-size: 11px;
+  color: var(--wm-text-dim);
+}
+
+.actionBtn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+
+.approveBtn {
+  composes: actionBtn;
+  background: color-mix(in srgb, #22C55E 15%, transparent);
+  color: #22C55E;
+  border-color: color-mix(in srgb, #22C55E 30%, transparent);
+}
+.approveBtn:hover {
+  background: color-mix(in srgb, #22C55E 25%, transparent);
+}
+
+.rejectBtn {
+  composes: actionBtn;
+  background: color-mix(in srgb, #EF4444 15%, transparent);
+  color: #EF4444;
+  border-color: color-mix(in srgb, #EF4444 30%, transparent);
+}
+.rejectBtn:hover {
+  background: color-mix(in srgb, #EF4444 25%, transparent);
+}
+
+/* ── User Detail Header ── */
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--wm-border);
+  margin-bottom: 24px;
+}
+
+.detailAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--wm-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.detailAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detailInfo {
+  flex: 1;
+}
+
+.detailName {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--wm-text);
+}
+
+.detailMeta {
+  font-size: 12px;
+  color: var(--wm-text-dim);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Tabs ── */
+.tabBar {
+  display: flex;
+  border-bottom: 1px solid var(--wm-border);
+  margin-bottom: 24px;
+  gap: 4px;
+}
+
+.tab {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wm-text-dim);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.tab:hover {
+  color: var(--wm-text-secondary);
+}
+
+.tabActive {
+  composes: tab;
+  color: var(--wm-text);
+  border-bottom-color: var(--wm-primary);
+}
+
+/* ── Achievement ── */
+.achievementRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--wm-border-subtle);
+}
+
+.achievementIcon {
+  font-size: 20px;
+}
+
+.achievementName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wm-text);
+}
+
+.achievementDate {
+  font-size: 11px;
+  color: var(--wm-text-dim);
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 100;
+  animation: slideUp 0.3s ease-out;
+}
+
+.toastSuccess {
+  composes: toast;
+  background: color-mix(in srgb, #22C55E 20%, var(--wm-surface));
+  color: #22C55E;
+  border: 1px solid color-mix(in srgb, #22C55E 30%, transparent);
+}
+
+.toastError {
+  composes: toast;
+  background: color-mix(in srgb, #EF4444 20%, var(--wm-surface));
+  color: #EF4444;
+  border: 1px solid color-mix(in srgb, #EF4444 30%, transparent);
+}
+
+/* ── Empty State ── */
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--wm-text-dim);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.emptyText {
+  font-size: 14px;
+}
+
+/* ── Skeleton Loading ── */
+.skeleton {
+  background: linear-gradient(90deg, var(--wm-surface) 25%, var(--wm-surface-hover) 50%, var(--wm-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* ── Back Link ── */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--wm-text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.backLink:hover {
+  color: var(--wm-text);
+}
+
+/* ── Pie Legend ── */
+.pieLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pieLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--wm-text-secondary);
+}
+
+.pieLegendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pieLegendValue {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--wm-text-dim);
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .statGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+  .adjustFields {
+    flex-direction: column;
+  }
+  .adjustInput {
+    width: 100%;
+  }
+}

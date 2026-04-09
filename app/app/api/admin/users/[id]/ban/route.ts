@@ -4,12 +4,12 @@ import { requireAdmin } from "@/lib/admin/guard"
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const guard = await requireAdmin()
   if (!guard.isAdmin) return guard.response
 
-  const { id } = params
+  const { id } = await params
 
   let body: { ban: boolean; reason?: string }
   try {

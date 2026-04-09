@@ -6,12 +6,12 @@ import { RewardStatus } from "@prisma/client"
 // ─── PATCH: Sửa thông tin quà / Ẩn/hiện quà ───
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const guard = await requireAdmin()
   if (!guard.isAdmin) return guard.response
 
-  const { id } = params
+  const { id } = await params
 
   let body: {
     label?: string
@@ -69,12 +69,12 @@ export async function PATCH(
 // ─── DELETE: Xóa quà khỏi catalog ───
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const guard = await requireAdmin()
   if (!guard.isAdmin) return guard.response
 
-  const { id } = params
+  const { id } = await params
 
   // Kiểm tra còn đơn PENDING trỏ vào quà này không (dùng enum đúng chuẩn)
   const pendingCount = await prisma.rewardRedemption.count({

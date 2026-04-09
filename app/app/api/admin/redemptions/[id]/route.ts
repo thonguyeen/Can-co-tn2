@@ -12,12 +12,12 @@ const STATUS_MAP: Record<AllowedStatus, RewardStatus> = {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const guard = await requireAdmin()
   if (!guard.isAdmin) return guard.response
 
-  const { id } = params
+  const { id } = await params
 
   let body: { status: AllowedStatus; adminNote?: string }
   try {
