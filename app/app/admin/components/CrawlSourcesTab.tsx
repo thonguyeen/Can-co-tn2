@@ -6,7 +6,7 @@ interface CrawlSource {
   id: string;
   name: string;
   url: string;
-  source_type: 'rss' | 'html' | 'api';
+  source_type: 'rss' | 'html' | 'facebook_group' | 'facebook_page';
   category: string;
   province?: string;
   district?: string;
@@ -19,12 +19,19 @@ export default function CrawlSourcesTab() {
   const [sources, setSources] = useState<CrawlSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
+  // Test crawl state
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<{
+    sourceName: string;
+    crawled: number; saved: number; duplicate: number; duration: number;
+  } | null>(null);
+
   // Form states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
-  const [sourceType, setSourceType] = useState<'rss' | 'html'>('rss');
+  const [sourceType, setSourceType] = useState<'rss' | 'html' | 'facebook_group' | 'facebook_page'>('rss');
   const [actionLoading, setActionLoading] = useState(false);
   const [triggering, setTriggering] = useState(false);
 
@@ -52,7 +59,7 @@ export default function CrawlSourcesTab() {
       setEditingId(source.id);
       setName(source.name);
       setUrl(source.url);
-      setSourceType(source.source_type as 'rss' | 'html');
+      setSourceType(source.source_type as 'rss' | 'html' | 'facebook_group' | 'facebook_page');
     } else {
       setEditingId(null);
       setName('');
@@ -60,6 +67,56 @@ export default function CrawlSourcesTab() {
       setSourceType('rss');
     }
     setIsModalOpen(true);
+  };
+
+  // Detect preset từ URL để hiện hint trong modal
+  const getPresetHint = (inputUrl: string): string | null => {
+    const presets: Record<string, string> = {
+      'batdongsan.com.vn': 'BatDongSan.com.vn',
+      'alonhadat.com.vn': 'AlonhaDat.com.vn',
+      'cafeland.vn': 'CafeLand.vn',
+      'muabannhadat.com.vn': 'MuaBanNhaDat.com.vn',
+    };
+    try {
+      const hostname = new URL(inputUrl).hostname.replace('www.', '');
+      for (const [domain, label] of Object.entries(presets)) {
+        if (hostname.includes(domain)) return label;
+      }
+    } catch { /* ignore */ }
+    return null;
+  };
+
+  const presetHint = sourceType === 'html' ? getPresetHint(url) : null;
+  const isFacebook = sourceType === 'facebook_group' || sourceType === 'facebook_page';
+
+  // Test crawl 1 nguồn
+  const handleTestCrawl = async (source: CrawlSource) => {
+    setTestingId(source.id);
+    try {
+      const res = await fetch('/api/crawler/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceId: source.id }),
+      });
+      const data = await res.json();
+      if (data.success && data.result) {
+        setTestResult({
+          sourceName: source.name,
+          crawled: data.result.itemsCrawled || 0,
+          saved: data.result.itemsSaved || 0,
+          duplicate: data.result.itemsDuplicate || 0,
+          duration: Math.round((data.result.duration || 0) / 100) / 10,
+        });
+        fetchSources();
+      } else {
+        alert(`Lỗi test crawl: ${data.error || 'Unknown'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Không thể kết nối server.');
+    } finally {
+      setTestingId(null);
+    }
   };
 
   const handleSave = async () => {
@@ -170,11 +227,9 @@ export default function CrawlSourcesTab() {
                       <div className="font-medium text-slate-100">{source.name}</div>
                       <div className="text-xs text-slate-400 max-w-[200px] md:max-w-[300px] truncate">{source.url}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs uppercase font-medium">
-                        {source.source_type}
-                      </span>
-                    </td>
+                      <td className="px-6 py-4">
+                        <SourceTypeBadge type={source.source_type} />
+                      </td>
                     <td className="px-6 py-4">
                       <button 
                         onClick={() => handleToggleActive(source.id, source.is_active)}
@@ -189,10 +244,17 @@ export default function CrawlSourcesTab() {
                       <div className="text-slate-300">Đã cào: <span className="font-medium text-teal-400">{source.total_items_crawled}</span></div>
                       <div className="text-slate-500 mt-0.5">Lần cuối: {source.last_crawled_at ? new Date(source.last_crawled_at).toLocaleDateString('vi-VN') : 'Chưa cào'}</div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button onClick={() => handleOpenModal(source)} className="text-sky-400 hover:text-sky-300 mr-4 text-xs font-medium">Sửa</button>
-                      <button onClick={() => handleDelete(source.id)} className="text-red-400 hover:text-red-300 text-xs font-medium">Xóa</button>
-                    </td>
+                      <td className="px-6 py-4 text-right">
+                        <button onClick={() => handleOpenModal(source)} className="text-sky-400 hover:text-sky-300 mr-3 text-xs font-medium">Sửa</button>
+                        <button
+                          onClick={() => handleTestCrawl(source)}
+                          disabled={testingId === source.id}
+                          className="text-teal-400 hover:text-teal-300 mr-3 text-xs font-medium disabled:opacity-50"
+                        >
+                          {testingId === source.id ? '⏳' : 'Test'}
+                        </button>
+                        <button onClick={() => handleDelete(source.id)} className="text-red-400 hover:text-red-300 text-xs font-medium">Xóa</button>
+                      </td>
                   </tr>
                 ))
               )}
@@ -232,25 +294,47 @@ export default function CrawlSourcesTab() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Loại Nguồn</label>
-                <div className="flex gap-4 mt-2">
-                  <label className="flex items-center gap-2 cursor-pointer touch-none">
-                    <input 
-                      type="radio" name="sourceType" value="rss"
-                      checked={sourceType === 'rss'} onChange={() => setSourceType('rss')}
-                      className="accent-teal-500"
-                    />
-                    <span className="text-sm">RSS Feed (Nhanh & Ổn định)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer touch-none">
-                    <input 
-                      type="radio" name="sourceType" value="html"
-                      checked={sourceType === 'html'} onChange={() => setSourceType('html')}
-                      className="accent-teal-500"
-                    />
-                    <span className="text-sm">HTML Scraping (Chậm)</span>
-                  </label>
+                <label className="block text-xs font-medium text-slate-400 mb-2">Loại Nguồn</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { value: 'rss', label: '📡 RSS Feed', desc: 'Nhanh & ổn định' },
+                    { value: 'html', label: '🔍 HTML Scraping', desc: 'Cào trực tiếp' },
+                    { value: 'facebook_group', label: '👥 Facebook Group', desc: 'Cần Access Token' },
+                    { value: 'facebook_page', label: '📄 Facebook Page', desc: 'Công khai' },
+                  ] as const).map(opt => (
+                    <label key={opt.value} className={`flex items-start gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
+                      sourceType === opt.value
+                        ? 'border-teal-500 bg-teal-500/10'
+                        : 'border-slate-700 hover:border-slate-500'
+                    }`}>
+                      <input
+                        type="radio" name="sourceType" value={opt.value}
+                        checked={sourceType === opt.value}
+                        onChange={() => setSourceType(opt.value)}
+                        className="accent-teal-500 mt-0.5"
+                      />
+                      <div>
+                        <div className="text-sm font-medium">{opt.label}</div>
+                        <div className="text-xs text-slate-500">{opt.desc}</div>
+                      </div>
+                    </label>
+                  ))}
                 </div>
+
+                {/* Preset hint khi chọn HTML + URL có preset */}
+                {sourceType === 'html' && url && presetHint && (
+                  <div className="mt-2 p-2.5 bg-teal-500/10 border border-teal-500/30 rounded-lg text-xs text-teal-400">
+                    ✅ Preset tìm thấy: <strong>{presetHint}</strong> — Em biết cách đọc trang này rồi!
+                  </div>
+                )}
+
+                {/* Facebook note */}
+                {isFacebook && (
+                  <div className="mt-2 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-400">
+                    ⚠️ Facebook Groups cần <code className="bg-slate-800 px-1 rounded">FACEBOOK_ACCESS_TOKEN</code> trong .env để hoạt động.
+                    {sourceType === 'facebook_page' && ' Pages công khai có thể crawl qua RSS.'}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -273,6 +357,59 @@ export default function CrawlSourcesTab() {
         </div>
       )}
 
+      {/* Test Crawl Result Modal */}
+      {testResult && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-sm shadow-2xl p-6">
+            <h3 className="font-semibold text-lg mb-4">🔍 Kết quả Test Crawl</h3>
+            <p className="text-sm text-slate-400 mb-4 truncate">{testResult.sourceName}</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Items crawled:</span>
+                <span className="text-slate-100 font-medium">{testResult.crawled}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Lưu mới:</span>
+                <span className="text-green-400 font-medium">{testResult.saved}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Trùng lặp:</span>
+                <span className="text-amber-400 font-medium">{testResult.duplicate}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Thời gian:</span>
+                <span className="text-slate-300">{testResult.duration}s</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setTestResult(null)}
+              className="mt-5 w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Badge component
+// ─────────────────────────────────────────────────────────────
+
+function SourceTypeBadge({ type }: { type: string }) {
+  const config: Record<string, { label: string; className: string }> = {
+    rss:            { label: 'RSS',       className: 'bg-green-500/10 text-green-400 border-green-500/20' },
+    html:           { label: 'HTML',      className: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+    facebook_group: { label: 'FB GROUP', className: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
+    facebook_page:  { label: 'FB PAGE',  className: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
+  };
+  const c = config[type] || { label: type.toUpperCase(), className: 'bg-slate-700 text-slate-300 border-slate-600' };
+  return (
+    <span className={`px-2 py-1 rounded border text-xs font-semibold uppercase ${c.className}`}>
+      {c.label}
+    </span>
   );
 }

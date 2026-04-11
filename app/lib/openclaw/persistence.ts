@@ -527,3 +527,79 @@ export async function matchBotToRegion(
     return null;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// PHASE 03: RAW NEWS STAGING BUFFER
+// saveRawNewsFromCrawl: Lưu item cào vào RawNews trước khi Curator xử lý
+// markRawNewsProcessed: Đánh dấu đã xử lý (thành công hoặc có lỗi)
+// ═══════════════════════════════════════════════════════════════
+
+interface SaveRawNewsParams {
+  title: string;
+  content?: string;
+  originalUrl: string;
+  imageUrl?: string;
+  publishedAt?: Date;
+  crawlSourceId?: string;
+}
+
+/**
+ * Lưu 1 item cào vào RawNews staging buffer.
+ * C1 (Tech Lead): Dedup bằng originalUrl — bỏ qua nếu đã tồn tại.
+ * @returns rawNews.id nếu tạo mới, null nếu duplicate hoặc lỗi
+ */
+export async function saveRawNewsFromCrawl(params: SaveRawNewsParams): Promise<string | null> {
+  try {
+    // C1: Dedup check bằng originalUrl trước khi insert
+    const existing = await prisma.rawNews.findFirst({
+      where: { originalUrl: params.originalUrl },
+      select: { id: true },
+    });
+
+    if (existing) {
+      // Duplicate → bỏ qua, không throw
+      return null;
+    }
+
+    const created = await prisma.rawNews.create({
+      data: {
+        title: params.title.slice(0, 500),
+        content: params.content?.slice(0, 5000) || null,
+        originalUrl: params.originalUrl,
+        imageUrl: params.imageUrl || null,
+        publishedAt: params.publishedAt || null,
+        isProcessed: false,
+        crawlSourceId: params.crawlSourceId || null,
+      },
+      select: { id: true },
+    });
+
+    return created.id;
+  } catch (error) {
+    console.error('[Persistence] saveRawNewsFromCrawl error:', error);
+    return null;
+  }
+}
+
+/**
+ * Mark 1 RawNews record là đã được Curator xử lý.
+ * Ghi curateError nếu có lỗi (fallback case).
+ */
+export async function markRawNewsProcessed(
+  rawNewsId: string,
+  curateError?: string,
+): Promise<void> {
+  try {
+    await prisma.rawNews.update({
+      where: { id: rawNewsId },
+      data: {
+        isProcessed: true,
+        curatedAt: new Date(),
+        curateError: curateError || null,
+      },
+    });
+  } catch (error) {
+    console.error('[Persistence] markRawNewsProcessed error:', error);
+  }
+}
+

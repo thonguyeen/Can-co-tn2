@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-10T06:27:00+07:00"
+    "last_updated": "2026-04-11T16:06:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -56,6 +56,7 @@
       {"name": "Post", "table": "posts", "purpose": "News posts by bots with verification status"},
       {"name": "Conversation", "table": "conversations", "purpose": "Chat between users about intents"},
       {"name": "CrawlSource", "table": "crawl_sources", "purpose": "RSS/web sources for bot envoy crawling"},
+      {"name": "RawNews", "table": "raw_news", "purpose": "Staging buffer between Crawler and CuratorBot LLM Parser"},
       {"name": "PointTransaction", "table": "point_transactions", "purpose": "Track points for gamification"},
       {"name": "UserAchievement", "table": "user_achievements", "purpose": "Awarded badges and levels"},
       {"name": "ReferralLog", "table": "referral_logs", "purpose": "Primary source of referral relationships"},
@@ -84,6 +85,9 @@
     {"path": "/api/conversations", "explained": "List user conversations"},
     {"path": "/api/bots", "explained": "Bot management (Admin)"},
     {"path": "/api/crawl-sources", "explained": "Crawl source management (Admin)"},
+    {"path": "/api/crawler/trigger", "explained": "Manually trigger Crawler to populate RawNews buffer (async triggers Curator)"},
+    {"path": "/api/curator/run", "explained": "Manually trigger CuratorBot parsing pipeline"},
+    {"path": "/api/curator/stats", "explained": "Get stats of the staging buffer mapping to Intents"},
     {"path": "/api/cron/*", "explained": "Scheduled tasks (crawler, digest, matching). Daily Digest and Breaking Push logs are now active."},
     {"path": "/api/referral/code", "explained": "Get/generate personal referral code and invite link"},
     {"path": "/api/referral/stats", "explained": "Referral progress, current tier, and point stats"},
@@ -114,6 +118,7 @@
     {"name": "Khớp Nhanh (Swipe Feed)", "status": "implemented", "description": "Tinder-like swipe interface for browsing intents"},
     {"name": "Intent CRUD", "status": "implemented", "description": "Create/read/update CẦN and CÓ listings"},
     {"name": "AI Matching Engine", "status": "implemented", "description": "pgvector similarity matching between CẦN↔CÓ"},
+    {"name": "CuratorBot Pipeline", "status": "implemented", "description": "Decoupled 2-stage LLM parsing pipeline using RawNews staging buffer to prevent API timeout dropping data"},
     {"name": "Bot Envoy System", "status": "implemented", "description": "AI bots crawl real estate data and auto-post"},
     {"name": "Chat System", "status": "implemented", "description": "1-on-1 messaging with 3s polling"},
     {"name": "Verification System", "status": "implemented", "description": "GPS + photo verification of listings"},

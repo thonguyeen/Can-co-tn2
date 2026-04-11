@@ -858,9 +858,12 @@ Viết response của bạn (2-4 câu). Có thể mention người khác (@handl
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // CRAWLED DATA → INTENT (Phase 03 sẽ gọi hàm này)
+  // CRAWLED DATA → INTENT
   // ═══════════════════════════════════════════════════════════════
 
+  /**
+   * @deprecated Use CuratorBot.processUnprocessedNews() instead (Phase 03)
+   */
   async createIntentFromCrawledData(rawData: {
     title: string;
     content: string;

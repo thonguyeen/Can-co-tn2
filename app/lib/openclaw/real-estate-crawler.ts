@@ -1,12 +1,15 @@
 // ═══════════════════════════════════════════════════════════════
-// REAL ESTATE CRAWLER - Cào tin BĐS từ nguồn RSS/HTML
+// GENERIC CRAWLER (formerly RealEstateCrawler)
+// Cào tin từ nguồn RSS/HTML/Facebook — category-agnostic
 // Đọc nguồn từ bảng crawl_sources (Admin nhập)
-// Pipeline: crawl → dedup → orchestrator.createIntentFromCrawledData()
+// Pipeline (Phase 03): crawl → dedup → saveRawNewsFromCrawl() (Staging buffer) → CuratorBot
 // ═══════════════════════════════════════════════════════════════
 
 import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 import { prisma } from '@/lib/db';
+import { getSelectorsForUrl, DEFAULT_SELECTORS } from './crawl-selectors';
+import { saveRawNewsFromCrawl } from './persistence';
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -46,24 +49,9 @@ export interface CrawlResult {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// DEFAULT HTML SELECTORS (cho các trang phổ biến)
+// NOTE: DEFAULT_SELECTORS và SITE_PRESETS đã chuyển sang
+// crawl-selectors.ts — import từ đó để dùng
 // ═══════════════════════════════════════════════════════════════
-
-interface HTMLSelectors {
-  listItem: string;     // Container mỗi tin
-  title: string;        // Tiêu đề
-  link: string;         // Link chi tiết
-  content: string;      // Nội dung/mô tả
-  price?: string;       // Giá
-}
-
-const DEFAULT_SELECTORS: HTMLSelectors = {
-  listItem: 'article, .item, .listing, .property-item, .news-item',
-  title: 'h2 a, h3 a, .title a, .property-title a',
-  link: 'h2 a, h3 a, .title a',
-  content: '.summary, .description, .excerpt, p',
-  price: '.price, .property-price',
-};
 
 // ═══════════════════════════════════════════════════════════════
 // CRAWLER CONFIG
@@ -81,7 +69,7 @@ const CRAWLER_CONFIG = {
 // REAL ESTATE CRAWLER CLASS
 // ═══════════════════════════════════════════════════════════════
 
-export class RealEstateCrawler {
+export class GenericCrawler {
   private parser: Parser;
 
   constructor() {
@@ -222,6 +210,15 @@ export class RealEstateCrawler {
         case 'html':
           items = await this.crawlHTML(source.url, source.notes || undefined);
           break;
+        case 'facebook_group':
+        case 'facebook_page': {
+          const { getFacebookCrawler } = await import('./facebook-crawler');
+          items = await getFacebookCrawler().crawl(
+            source.url,
+            source.sourceType as 'facebook_group' | 'facebook_page',
+          );
+          break;
+        }
         default:
           console.warn(`[Crawler] Unsupported sourceType: ${source.sourceType}`);
           items = [];
@@ -232,6 +229,10 @@ export class RealEstateCrawler {
     }
 
     console.log(`[Crawler] ${source.name}: ${items.length} raw items`);
+    // Stale selector warning: nếu HTML source mà 0 items → có thể selector lỗi thời
+    if (items.length === 0 && source.sourceType === 'html') {
+      console.warn(`[Crawler] ⚠️ STALE SELECTOR? Source "${source.name}" returned 0 HTML items. Check selectors.`);
+    }
 
     // 2. Process (dedup + gọi orchestrator)
     const processResult = await this.processItems(items, source);
@@ -280,15 +281,12 @@ export class RealEstateCrawler {
 
   async crawlHTML(url: string, notesJson?: string): Promise<RawCrawlItem[]> {
     try {
-      // Parse custom selectors nếu có
-      let selectors = DEFAULT_SELECTORS;
-      if (notesJson) {
-        try {
-          const custom = JSON.parse(notesJson);
-          selectors = { ...DEFAULT_SELECTORS, ...custom };
-        } catch {
-          // Invalid JSON → dùng default
-        }
+      // Auto-detect selectors: customJson > domain preset > DEFAULT
+      const { selectors, presetName } = getSelectorsForUrl(url, notesJson);
+      if (presetName) {
+        console.log(`[Crawler] Using preset selectors: ${presetName}`);
+      } else {
+        console.log(`[Crawler] Using DEFAULT selectors for ${url}`);
       }
 
       // Fetch HTML
@@ -351,40 +349,30 @@ export class RealEstateCrawler {
     let duplicate = 0;
     let saved = 0;
 
-    // Lazy import orchestrator (tránh circular dependency)
-    const { getOrchestrator } = await import('./orchestrator');
-    const orchestrator = getOrchestrator();
-
     for (const item of items) {
       // Skip nếu content quá ngắn
       if (item.title.length < 5 && item.content.length < 10) continue;
 
       try {
-        const activity = await orchestrator.createIntentFromCrawledData({
+        // Phase 03: Lưu vào RawNews buffer (Dedup check C1 nằm bên trong saveRawNewsFromCrawl)
+        const rawNewsId = await saveRawNewsFromCrawl({
           title: item.title,
           content: item.content || item.title,
-          url: item.url,
-          province: source.province || undefined,
-          district: source.district || undefined,
+          originalUrl: item.url,
+          imageUrl: item.imageUrl,
+          publishedAt: item.publishedAt,
+          crawlSourceId: source.id,
         });
 
-        if (activity === null) {
-          // null = duplicate hoặc no bot available
+        if (!rawNewsId) {
+          // null means duplicate or failed
           duplicate++;
-        } else if (activity.status === 'completed') {
+        } else {
           saved++;
-        } else if (activity.status === 'failed') {
-          // Quota exceeded hoặc duplicate source_url
-          if (activity.error?.includes('Duplicate')) {
-            duplicate++;
-          }
         }
       } catch (err) {
         console.error(`[Crawler] Process item error:`, err);
       }
-
-      // Delay nhỏ giữa mỗi item (tránh spam DB)
-      await this.delay(500);
     }
 
     return { crawled: items.length, duplicate, saved };
@@ -446,11 +434,21 @@ export class RealEstateCrawler {
 // SINGLETON
 // ═══════════════════════════════════════════════════════════════
 
-let crawlerInstance: RealEstateCrawler | null = null;
+// ─────────────────────────────────────────────────────────────
+// Type alias để backward compat
+// ─────────────────────────────────────────────────────────────
+export type RealEstateCrawler = GenericCrawler;
 
-export function getRealEstateCrawler(): RealEstateCrawler {
+let crawlerInstance: GenericCrawler | null = null;
+
+export function getGenericCrawler(): GenericCrawler {
   if (!crawlerInstance) {
-    crawlerInstance = new RealEstateCrawler();
+    crawlerInstance = new GenericCrawler();
   }
   return crawlerInstance;
+}
+
+// Backward compat alias — trigger/route.ts và cron/crawler/route.ts dùng cái này
+export function getRealEstateCrawler(): GenericCrawler {
+  return getGenericCrawler();
 }

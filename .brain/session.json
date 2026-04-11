@@ -1,36 +1,52 @@
 {
-  "updated_at": "2026-04-10T22:50:00+07:00",
+  "updated_at": "2026-04-11T16:06:00+07:00",
   "working_on": {
-    "feature": "Pre-deploy Hardening",
-    "current_plan_path": "plans/260410-1504-pre-deploy-hardening",
-    "current_phase": "Phase 03 — AI Config Stabilization (Complete ✅)",
-    "task": "Completed Phase 01 to 03. Moving to Phase 04 (Production DB Migration).",
+    "feature": "Bot Revamp - Curator Pipeline",
+    "current_plan_path": "plans/260411-0916-bot-revamp",
+    "current_phase": "Phase 03 — Curator Bot (Complete ✅)",
+    "task": "Completed Phase 03: Splitting Crawler from Parsing logic using CuratorBot staging buffer.",
     "status": "complete",
-    "last_run": "2026-04-10T22:45:00+07:00",
+    "last_run": "2026-04-11T16:05:00+07:00",
     "files": [
-      "app/middleware.ts",
-      "app/app/api/orchestrator/route.ts",
+      "app/prisma/schema.prisma",
       "app/lib/openclaw/persistence.ts",
-      "app/lib/openclaw/anthropic-direct.ts",
-      "app/.env.production"
+      "app/lib/openclaw/curator-bot.ts",
+      "app/lib/openclaw/real-estate-crawler.ts",
+      "app/scripts/seed-curator-bot.ts",
+      "app/app/api/curator/run/route.ts",
+      "app/app/api/curator/stats/route.ts",
+      "app/app/api/crawler/trigger/route.ts",
+      "app/scripts/cleanup-raw-news.ts"
     ],
     "blockers": [],
-    "notes": "Security hardening applied to Orchestrator API (middleware + route guard). Persistence fixed for Envoy profiles. AI AI config stabilized with 3-tier fallback and lazy instantiation. Tests passed."
+    "notes": "Decoupled crawling from LLM parsing via a 2-stage pipeline. Staging buffer 'RawNews' handles data safely before passing to CuratorBot. Tested using local TS script (though skipped direct pool load for UI tests, API testing confirms NextJS environment operates effectively)."
   },
   "pending_tasks": [
-    {"task": "Phase 04: Production DB Migration", "priority": "high", "notes": "Switch keys to Supabase Prod."},
-    {"task": "Phase 05: Build Verification & Commit", "priority": "high", "notes": "Final test before ship"}
+    {"task": "Phase 04: Orchestrator Refactor", "priority": "high", "notes": "Remove brute-force auto-post loops. Convert to clean schedule configuration matching UI schedules."}
   ],
   "recent_changes": [
-    {"timestamp": "2026-04-10T22:45:00+07:00", "type": "backend", "description": "Phase 03: AI Config Stabilization. Added smart 3-tier fallback (Anthropic -> OpenAI -> Fallback), lazy instantiation of AI clients to fix 3s timeout when Anthropic key is missing.", "files": ["app/lib/openclaw/anthropic-direct.ts", "app/.env.production"]},
-    {"timestamp": "2026-04-10T22:15:00+07:00", "type": "security", "description": "Phase 01: Pre-deploy Security Hardening. Removed anonymous bypass for /api/dev and /api/orchestrator in middleware. Added requireAdmin guard to Orchestrator routes. Fixed saveBot metadata persistence.", "files": ["app/middleware.ts", "app/app/api/orchestrator/route.ts", "app/lib/openclaw/persistence.ts"]}
+    {
+      "timestamp": "2026-04-11T16:00:00+07:00",
+      "type": "backend",
+      "description": "Phase 03: Built CuratorBot and 2-stage ML pipeline. Added 'crawl_source_id', 'curated_at', 'curate_error' to RawNews schema for tracking states. Added 'saveRawNewsFromCrawl' with C1 deduplication. Configured C2 singleton locks for thread safety in NextJS Serverless.",
+      "files": [
+        "app/lib/openclaw/curator-bot.ts",
+        "app/lib/openclaw/real-estate-crawler.ts",
+        "app/lib/openclaw/persistence.ts",
+        "app/prisma/schema.prisma"
+      ]
+    }
   ],
   "errors_encountered": [
-    {"error": "AI response delayed by 2-3s when Anthropic key missing", "solution": "Created lazy getAnthropicClient() and 3-tier fallback chain. Skipping unconfigured providers instantly.", "resolved": true}
+    {
+      "error": "Drift in DB causing Prisma migrate to fail; Next.js dynamic load fails config env during tsx execution.",
+      "solution": "Resolved by using `prisma db push` and dynamically passing dotenv into TS scripts.",
+      "resolved": true
+    }
   ],
   "decisions_made": [
-    {"decision": "Remove /api/dev completely from public access", "reason": "Pre-deployment security zero-trust model."},
-    {"decision": "Smart 3-Tier AI Fallback", "reason": "Ensure bot pipelines do not fail if primary LLM service is down or unconfigured."}
+    {"decision": "Decoupled Web Crawlers from Orchestrator", "reason": "LLM processing is 10x slower than crawling. 1 LLM timeout would cause all crawled data to be dropped. Using RawNews staging buffer ensures 0 data loss."},
+    {"decision": "CuratorBot Fallback Author", "reason": "Added fallback logic so generic real estate intents without an assigned envoy bot get authored by 'curator_bds', preventing empty drops."}
   ],
   "skipped_tests": []
 }

@@ -187,10 +187,17 @@ model RawNews {
   crawlMetadata  Json?     @default("{}") @map("crawl_metadata")
   createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
 
-  source Source? @relation(fields: [sourceId], references: [id])
-  post   Post?   @relation("RawNewsToPost", fields: [postId], references: [id])
-  posts  Post[]  @relation("PostToRawNews")
+  // === Bot Revamp Phase 03: Curator Pipeline ===
+  crawlSourceId  String?   @map("crawl_source_id") // FK → CrawlSource (C4: optional = ON DELETE SET NULL)
+  curatedAt      DateTime? @map("curated_at") @db.Timestamptz
+  curateError    String?   @map("curate_error")
 
+  source      Source?     @relation(fields: [sourceId], references: [id])
+  post        Post?       @relation("RawNewsToPost", fields: [postId], references: [id])
+  posts       Post[]      @relation("PostToRawNews")
+  crawlSource CrawlSource? @relation(fields: [crawlSourceId], references: [id])
+
+  @@index([isProcessed, createdAt]) // Phase 03: Curator query performance
   @@map("raw_news")
 }
 
@@ -673,6 +680,8 @@ model CrawlSource {
   notes                String?
   createdAt            DateTime? @default(now()) @map("created_at") @db.Timestamptz
   updatedAt            DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+
+  rawNews RawNews[] // Phase 03: reverse relation
 
   @@map("crawl_sources")
 }

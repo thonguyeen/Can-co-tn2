@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getRealEstateCrawler } from '@/lib/openclaw/real-estate-crawler';
 import { prisma } from '@/lib/db';
 import { toSnakeCase } from '@/lib/data/helpers';
+import { getCuratorBot } from '@/lib/openclaw/curator-bot';
 
 // POST /api/crawler/trigger
 // Body: { sourceId?: string } — sourceId → cào 1 nguồn; không có → cào tất cả
@@ -19,6 +20,13 @@ export async function POST(request: NextRequest) {
     const result = sourceId
       ? await crawler.crawlSourceById(sourceId)
       : await crawler.crawlAll();
+
+    // === Phase 03: Trigger CuratorBot asynchronously ===
+    // We do not await this, it runs in the background.
+    const curator = getCuratorBot();
+    curator.processUnprocessedNews(20).catch(e =>
+      console.warn('[API Crawler] Curator async error:', e.message)
+    );
 
     return NextResponse.json({
       success: true,
