@@ -21,6 +21,10 @@ export async function saveBot(bot: GeneratedBot): Promise<string | null> {
         personality: bot.tone,
         colorAccent: bot.color,
         systemPrompt: `Bot ${bot.category} - ${bot.expertise.join(', ')}`,
+        ...(bot.isEnvoy !== undefined && { isEnvoy: bot.isEnvoy }),
+        ...(bot.assignedProvince && { assignedProvince: bot.assignedProvince }),
+        ...(bot.assignedDistrict && { assignedDistrict: bot.assignedDistrict }),
+        ...(bot.dailyQuota !== undefined && { dailyQuota: bot.dailyQuota }),
       },
       create: {
         handle: bot.handle,
@@ -32,6 +36,10 @@ export async function saveBot(bot: GeneratedBot): Promise<string | null> {
         colorAccent: bot.color,
         systemPrompt: `Bot ${bot.category} - ${bot.expertise.join(', ')}`,
         isActive: true,
+        isEnvoy: bot.isEnvoy ?? false,
+        assignedProvince: bot.assignedProvince ?? null,
+        assignedDistrict: bot.assignedDistrict ?? null,
+        dailyQuota: bot.dailyQuota ?? 0,
       }
     });
     return savedBot.id;

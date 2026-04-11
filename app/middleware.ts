@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Các Cron Job được check bảo mật bằng CRON_SECRET bên trong code Route, được đi qua
-  if (pathname.startsWith('/api/cron') || pathname.startsWith('/api/dev')) {
+  if (pathname.startsWith('/api/cron')) {
     return NextResponse.next()
   }
 

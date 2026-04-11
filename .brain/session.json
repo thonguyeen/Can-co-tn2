@@ -1,41 +1,36 @@
 {
-  "updated_at": "2026-04-10T06:27:00+07:00",
+  "updated_at": "2026-04-10T22:50:00+07:00",
   "working_on": {
-    "feature": "Referral System & User Management",
-    "current_plan_path": "plans/260407-1341-referral-system",
-    "current_phase": "Phase 06 — Integration & Testing (Complete ✅)",
-    "task": "All 6 phases complete. Referral System MVP shipped.",
+    "feature": "Pre-deploy Hardening",
+    "current_plan_path": "plans/260410-1504-pre-deploy-hardening",
+    "current_phase": "Phase 03 — AI Config Stabilization (Complete ✅)",
+    "task": "Completed Phase 01 to 03. Moving to Phase 04 (Production DB Migration).",
     "status": "complete",
-    "last_run": "2026-04-10T05:44:00+07:00",
-    "last_run_url": "http://localhost:4000",
+    "last_run": "2026-04-10T22:45:00+07:00",
     "files": [
-      "app/prisma/seed.ts",
-      "app/app/api/intents/route.ts",
-      "app/components/referral/RewardCard.tsx",
-      "app/app/(auth)/register/page.tsx",
-      "app/prisma.config.ts"
+      "app/middleware.ts",
+      "app/app/api/orchestrator/route.ts",
+      "app/lib/openclaw/persistence.ts",
+      "app/lib/openclaw/anthropic-direct.ts",
+      "app/.env.production"
     ],
     "blockers": [],
-    "notes": "Phase 06 done: seed data referral, hybrid boost sorting in feed API, TS fixes, build pass."
+    "notes": "Security hardening applied to Orchestrator API (middleware + route guard). Persistence fixed for Envoy profiles. AI AI config stabilized with 3-tier fallback and lazy instantiation. Tests passed."
   },
   "pending_tasks": [
-    {"task": "Cleanup: Remove /api/dev/test-logic and middleware bypass", "priority": "low", "notes": "Temporary for phase 02 verification"},
-    {"task": "Commit: git commit -m 'feat: referral system MVP'", "priority": "high", "notes": "All phases done, build passes"},
-    {"task": "Deploy to production (Supabase + Vercel)", "priority": "medium", "notes": "Need to switch DATABASE_URL back to Supabase pooler"}
+    {"task": "Phase 04: Production DB Migration", "priority": "high", "notes": "Switch keys to Supabase Prod."},
+    {"task": "Phase 05: Build Verification & Commit", "priority": "high", "notes": "Final test before ship"}
   ],
   "recent_changes": [
-    {"timestamp": "2026-04-10T06:25:00+07:00", "type": "backend+seed", "description": "Phase 06: Added referral seed data (codes, logs, rewards, boosts, redemptions). Fixed seed.ts to use PrismaPg adapter (Prisma 7 requirement). Implemented hybrid SQL boost sorting in /api/intents. Fixed TS errors (RewardCard nullable stock, register Suspense boundary). npm run build passes.", "files": ["app/prisma/seed.ts", "app/app/api/intents/route.ts", "app/components/referral/RewardCard.tsx", "app/app/(auth)/register/page.tsx", "app/prisma.config.ts"]},
-    {"timestamp": "2026-04-09T15:10:00+07:00", "type": "frontend", "description": "Phase 05: Frontend Admin UI — AdminUsersTab, AdminReferralTab, User Detail page, Point Adjustment Form, Growth & Tier Charts (recharts).", "files": ["app/app/admin/*", "app/api/admin/*"]}
+    {"timestamp": "2026-04-10T22:45:00+07:00", "type": "backend", "description": "Phase 03: AI Config Stabilization. Added smart 3-tier fallback (Anthropic -> OpenAI -> Fallback), lazy instantiation of AI clients to fix 3s timeout when Anthropic key is missing.", "files": ["app/lib/openclaw/anthropic-direct.ts", "app/.env.production"]},
+    {"timestamp": "2026-04-10T22:15:00+07:00", "type": "security", "description": "Phase 01: Pre-deploy Security Hardening. Removed anonymous bypass for /api/dev and /api/orchestrator in middleware. Added requireAdmin guard to Orchestrator routes. Fixed saveBot metadata persistence.", "files": ["app/middleware.ts", "app/app/api/orchestrator/route.ts", "app/lib/openclaw/persistence.ts"]}
   ],
   "errors_encountered": [
-    {"error": "Prisma 7 PrismaClient constructor rejects datasourceUrl and datasources options", "solution": "seed.ts must create its own PrismaPg adapter from Pool, then pass { adapter } to PrismaClient — matching lib/db.ts pattern.", "resolved": true},
-    {"error": "reward.stock possibly undefined (TS2532)", "solution": "Changed !== null to != null to cover both null and undefined.", "resolved": true},
-    {"error": "useSearchParams() requires Suspense boundary in Next.js 16", "solution": "Split RegisterPage into RegisterForm (inner) + RegisterPage (wrapper with Suspense).", "resolved": true}
+    {"error": "AI response delayed by 2-3s when Anthropic key missing", "solution": "Created lazy getAnthropicClient() and 3-tier fallback chain. Skipping unconfigured providers instantly.", "resolved": true}
   ],
   "decisions_made": [
-    {"decision": "Hybrid SQL for boost sorting", "reason": "Prisma ORM cannot do CASE WHEN...LEFT JOIN ordering. Use raw SQL for ID selection, then Prisma findMany for hydration. Keeps frontend API contract unchanged."},
-    {"decision": "seed.ts uses PrismaPg adapter directly", "reason": "Cannot import lib/db.ts from seed context (Next.js module system issues). Standalone PrismaPg adapter creation is simpler and more reliable."},
-    {"decision": "Used 'recharts' library for admin area.", "reason": "Standardized and easy to configure for dashboard metrics."}
+    {"decision": "Remove /api/dev completely from public access", "reason": "Pre-deployment security zero-trust model."},
+    {"decision": "Smart 3-Tier AI Fallback", "reason": "Ensure bot pipelines do not fail if primary LLM service is down or unconfigured."}
   ],
   "skipped_tests": []
 }

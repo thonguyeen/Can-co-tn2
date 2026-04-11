@@ -1,5 +1,5 @@
 async function testAdminBot() {
-  const BUID_URL = 'http://localhost:3000/api/orchestrator';
+  const BUID_URL = 'http://localhost:4000/api/orchestrator';
   console.log('🧪 Bắt đầu kiểm tra Admin Bot API (FACEBOT Orchestrator)...\\n');
 
   try {

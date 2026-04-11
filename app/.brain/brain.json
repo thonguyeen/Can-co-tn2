@@ -7,7 +7,7 @@
   "project": {
     "name": "Cần & Có - AI Real Estate Super App",
     "type": "AI Real-estate Aggregator Super-App",
-    "status": "Phase 04: Gamification & Referral Dashboard Complete"
+    "status": "Phase 04: Bot System Hardening for Production in progress"
   },
   "tech_stack": {
     "frontend": {
@@ -86,14 +86,8 @@
   ],
   "knowledge_items": {
     "patterns": [
-      "Crawler Orchestrator Lazy-start Pattern",
-      "requireAuth(request) → { userId } | { error: Response } pattern for API routes",
-      "toSnakeCase() for Prisma camelCase → frontend snake_case conversion",
-      "toIntentType() for Prisma result → Intent type mapping in matching engine",
-      "BigInt price → Number() for JSON serialization across all intent responses",
-      "Manual snake_case mapping for complex nested responses (intents GET)",
-      "Dynamic snake→camel key mapping for generic PUT endpoints (bots)",
-      "Prisma atomic increment/decrement replaces Supabase RPC functions"
+      "Atomic counter updates (increment/decrement) instead of read-then-update pattern",
+      "Direct AI calls via SessionManager bypass OpenClaw Gateway for internal/mock testing"
     ],
     "gotchas": [
       "Supabase pooler (6543) chặn Schema Metadata introspection",
@@ -102,7 +96,9 @@
       "middleware.ts blocks ALL /api/ routes without JWT — test APIs via browser not fetch",
       "BigInt cannot be JSON.stringify'd — must convert price/priceMin/priceMax to Number()",
       "Supabase Storage still needed for image uploads until S3/R2 migration",
-      "Gamification libs partially migrated (leaderboard+achievements done, streaks/reactions/predictions/points pending)"
+      "Gamification libs partially migrated (leaderboard+achievements done, streaks/reactions/predictions/points pending)",
+      "persistence.ts saveBot() misses isEnvoy and region fields — requires manual DB update after creation",
+      "Orchestrator.ts has hard dependency on OpenClaw Gateway WebSocket which may fail in dev"
     ],
     "conventions": [
       "Refactor files theo Phase AWF",

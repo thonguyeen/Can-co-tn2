@@ -1,58 +1,61 @@
 {
-  "updated_at": "2026-04-08T20:30:00+07:00",
+  "updated_at": "2026-04-10T16:55:00+07:00",
   "working_on": {
-    "feature": "Frontend User Dashboard (Gamification & Referral)",
-    "task": "Phase 04",
-    "status": "running",
-    "last_run": "2026-04-09T09:44:00+07:00",
+    "feature": "Bot System Hardening for Production",
+    "task": "Phase 01: Security & Stability",
+    "status": "in_progress",
+    "last_run": "2026-04-10T16:26:00+07:00",
     "last_run_url": "http://localhost:4000",
     "files": [
-      "app/styles/referral.module.css",
-      "app/components/referral/TierCard.tsx",
-      "app/components/referral/StatsRow.tsx",
-      "app/components/referral/ReferralCodeBox.tsx",
-      "app/components/referral/ReferralLogTable.tsx",
-      "app/components/referral/TierInfoModal.tsx",
-      "app/components/referral/LeaderboardTopCards.tsx",
-      "app/components/referral/LeaderboardTable.tsx",
-      "app/components/referral/LeaderboardTabs.tsx",
-      "app/components/referral/RewardCard.tsx",
-      "app/components/referral/BoostFeatureCard.tsx",
-      "app/components/referral/ConfirmSpendModal.tsx",
-      "app/components/referral/RedemptionHistory.tsx",
-      "app/app/(main)/profile/referral/page.tsx",
-      "app/app/(main)/leaderboard/page.tsx",
-      "app/app/(main)/rewards/page.tsx",
-      "app/components/layout/Sidebar.tsx",
-      "app/components/layout/MobileNav.tsx"
+      "app/.env.local",
+      "app/lib/openclaw/persistence.ts",
+      "app/lib/openclaw/orchestrator.ts",
+      "app/lib/openclaw/sessions.ts"
     ],
-    "blockers": [],
-    "notes": "Đã hoàn thành toàn bộ UI cho Hệ thống Giới Thiệu (Referral), Bảng Xếp Hạng (Leaderboard), và Tích Điểm Đổi Quà (Rewards)."
+    "blockers": [
+      "saveBot() function in persistence.ts is incomplete (missing isEnvoy/region fields)."
+    ],
+    "notes": "Đã tạo và kiểm tra thành công 5 Envoy Bots cho các khu vực Q1, Q2, Q7, Cầu Giấy, Hải Châu. Đã ổn định cấu hình AI Providers (9Router -> OpenAI)."
   },
   "pending_tasks": [
     {
-      "task": "Phase 05: Admin Gamification Dashboard",
+      "task": "Hardening Phase 01: Secure /admin and /api/orchestrator routes",
       "priority": "high",
-      "notes": "Xây dựng trang Dashboard quản lý Gamification cho Admin (Approve/Reject quà, theo dõi log)."
+      "notes": "Xóa middleware bypass và áp dụng RBAC cho admin."
+    },
+    {
+      "task": "Hardening Phase 02: Cleanup /api/dev endpoints",
+      "priority": "medium",
+      "notes": "Dọn dẹp các script test cũ và endpoints không an toàn."
+    },
+    {
+      "task": "Hardening Phase 03: Fix persistence.ts saveBot function",
+      "priority": "medium",
+      "notes": "Bổ sung các trường isEnvoy, assignedProvince... vào database sync."
     }
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-08T20:21:00+07:00",
-      "type": "feature",
-      "description": "Thêm 13 UI Components và 3 Pages cho hệ thống Gamification. Tích hợp Sidebar và MobileNav.",
+      "timestamp": "2026-04-10T16:45:00+07:00",
+      "type": "test",
+      "description": "Tạo và kiểm tra 5 bot bất động sản (Envoy) với dữ liệu Cần & Có tại 3 miền. Xác nhận hiển thị đúng trên Home Feed và Admin.",
       "files": [
-        "app/app/(main)/profile/referral/page.tsx",
-        "app/app/(main)/leaderboard/page.tsx",
-        "app/app/(main)/rewards/page.tsx"
+        "app/scripts/force-create-envoy-posts.ts",
+        "app/.env.local"
       ]
     }
   ],
-  "errors_encountered": [],
+  "errors_encountered": [
+    {
+      "error": "OpenClaw Gateway WebSocket error",
+      "solution": "Bypass gateway connection bằng cách gọi trực tiếp sessionManager + direct AI module cho internal scripts.",
+      "resolved": true
+    }
+  ],
   "decisions_made": [
     {
-      "decision": "Fetch API trực tiếp qua useEffect trên Client Components thay vì SWR",
-      "reason": "Giám sát bundle size và tính độc lập, dùng state lock để cản double-submission khi click mua quà."
+      "decision": "Sử dụng OpenAI (9Router) làm primary AI provider và Futrix làm fallback",
+      "reason": "Claude/Anthropic qua 9Router thường xuyên bị 403 Forbidden hoặc lag, OpenAI ổn định hơn."
     }
   ]
 }

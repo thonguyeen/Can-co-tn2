@@ -4,14 +4,44 @@
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+let _anthropic: Anthropic | null = null;
+let _openai: OpenAI | null = null;
+let _fallback: OpenAI | null = null;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  ...(process.env.OPENAI_BASE_URL ? { baseURL: process.env.OPENAI_BASE_URL } : {}),
-});
+function getAnthropicClient(): Anthropic | null {
+  if (!process.env.ANTHROPIC_API_KEY) return null;
+  if (!_anthropic) {
+    _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  }
+  return _anthropic;
+}
+
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = process.env.AI_PRIMARY_API_KEY || process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+  if (!_openai) {
+    _openai = new OpenAI({
+      apiKey,
+      ...(process.env.AI_PRIMARY_BASE_URL || process.env.OPENAI_BASE_URL
+        ? { baseURL: process.env.AI_PRIMARY_BASE_URL || process.env.OPENAI_BASE_URL }
+        : {}),
+    });
+  }
+  return _openai;
+}
+
+function getFallbackClient(): OpenAI | null {
+  if (!process.env.AI_FALLBACK_API_KEY) return null;
+  if (!_fallback) {
+    _fallback = new OpenAI({
+      apiKey: process.env.AI_FALLBACK_API_KEY,
+      ...(process.env.AI_FALLBACK_BASE_URL
+        ? { baseURL: process.env.AI_FALLBACK_BASE_URL }
+        : {}),
+    });
+  }
+  return _fallback;
+}
 
 interface ChatOptions {
   maxTokens?: number;
@@ -21,12 +51,14 @@ interface ChatOptions {
 
 // Try Anthropic, fallback to OpenAI
 async function anthropicChatDirect(
+  client: Anthropic,
+  model: string,
   systemPrompt: string,
   userMessage: string,
   options?: ChatOptions
 ): Promise<string> {
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+  const response = await client.messages.create({
+    model,
     max_tokens: options?.maxTokens || 1024,
     system: systemPrompt,
     messages: [
@@ -42,12 +74,14 @@ async function anthropicChatDirect(
 }
 
 async function openaiChatDirect(
+  client: OpenAI,
+  model: string,
   systemPrompt: string,
   userMessage: string,
   options?: ChatOptions
 ): Promise<string> {
-  const response = await openai.chat.completions.create({
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+  const response = await client.chat.completions.create({
+    model,
     max_tokens: options?.maxTokens || 1024,
     messages: [
       { role: 'system', content: systemPrompt },
@@ -63,25 +97,51 @@ export async function anthropicChat(
   userMessage: string,
   options?: ChatOptions
 ): Promise<string> {
-  try {
-    return await anthropicChatDirect(systemPrompt, userMessage, options);
-  } catch (error) {
-    console.log('[AI] Anthropic failed, falling back to OpenAI');
-    return await openaiChatDirect(systemPrompt, userMessage, options);
+  // === Tầng 1: Thử Anthropic (nếu có key) ===
+  const anthropicClient = getAnthropicClient();
+  if (anthropicClient) {
+    try {
+      const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
+      return await anthropicChatDirect(anthropicClient, model, systemPrompt, userMessage, options);
+    } catch (error) {
+      console.warn('[AI] Anthropic failed, trying OpenAI...');
+    }
   }
+
+  // === Tầng 2: OpenAI / AI_PRIMARY ===
+  const openaiClient = getOpenAIClient();
+  if (openaiClient) {
+    try {
+      const model = process.env.AI_PRIMARY_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini';
+      return await openaiChatDirect(openaiClient, model, systemPrompt, userMessage, options);
+    } catch (error) {
+      console.warn('[AI] Primary OpenAI failed, trying fallback...');
+    }
+  }
+
+  // === Tầng 3: AI_FALLBACK ===
+  const fallbackClient = getFallbackClient();
+  if (fallbackClient) {
+    const model = process.env.AI_FALLBACK_MODEL || 'gpt-4o-mini';
+    return await openaiChatDirect(fallbackClient, model, systemPrompt, userMessage, options);
+  }
+
+  throw new Error('[AI] Không có AI provider nào khả dụng. Check ANTHROPIC_API_KEY hoặc AI_PRIMARY_API_KEY.');
 }
 
 // Simple in-memory session store for bot conversations
 const sessionHistory = new Map<string, Array<{ role: 'user' | 'assistant'; content: string }>>();
 
 async function anthropicChatWithHistoryDirect(
+  client: Anthropic,
+  model: string,
   sessionId: string,
   systemPrompt: string,
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
   options?: ChatOptions
 ): Promise<string> {
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+  const response = await client.messages.create({
+    model,
     max_tokens: options?.maxTokens || 1024,
     system: systemPrompt,
     messages: history,
@@ -92,6 +152,8 @@ async function anthropicChatWithHistoryDirect(
 }
 
 async function openaiChatWithHistoryDirect(
+  client: OpenAI,
+  model: string,
   systemPrompt: string,
   history: Array<{ role: 'user' | 'assistant'; content: string }>,
   options?: ChatOptions
@@ -101,8 +163,8 @@ async function openaiChatWithHistoryDirect(
     ...history,
   ];
 
-  const response = await openai.chat.completions.create({
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+  const response = await client.chat.completions.create({
+    model,
     max_tokens: options?.maxTokens || 1024,
     messages,
   });
@@ -134,17 +196,42 @@ export async function anthropicChatWithHistory(
 
   let assistantMessage: string;
 
-  try {
-    assistantMessage = await anthropicChatWithHistoryDirect(sessionId, systemPrompt, history, options);
-  } catch (error) {
-    console.log('[AI] Anthropic failed, falling back to OpenAI');
-    assistantMessage = await openaiChatWithHistoryDirect(systemPrompt, history, options);
+  // === Tầng 1: Thử Anthropic (nếu có key) ===
+  const anthropicClient = getAnthropicClient();
+  if (anthropicClient) {
+    try {
+      const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
+      assistantMessage = await anthropicChatWithHistoryDirect(anthropicClient, model, sessionId, systemPrompt, history, options);
+      history.push({ role: 'assistant', content: assistantMessage });
+      return assistantMessage;
+    } catch (error) {
+      console.warn('[AI] Anthropic history chat failed, trying OpenAI...');
+    }
   }
 
-  // Add assistant response to history
-  history.push({ role: 'assistant', content: assistantMessage });
+  // === Tầng 2: OpenAI / AI_PRIMARY ===
+  const openaiClient = getOpenAIClient();
+  if (openaiClient) {
+    try {
+      const model = process.env.AI_PRIMARY_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini';
+      assistantMessage = await openaiChatWithHistoryDirect(openaiClient, model, systemPrompt, history, options);
+      history.push({ role: 'assistant', content: assistantMessage });
+      return assistantMessage;
+    } catch (error) {
+      console.warn('[AI] Primary OpenAI history chat failed, trying fallback...');
+    }
+  }
 
-  return assistantMessage;
+  // === Tầng 3: AI_FALLBACK ===
+  const fallbackClient = getFallbackClient();
+  if (fallbackClient) {
+    const model = process.env.AI_FALLBACK_MODEL || 'gpt-4o-mini';
+    assistantMessage = await openaiChatWithHistoryDirect(fallbackClient, model, systemPrompt, history, options);
+    history.push({ role: 'assistant', content: assistantMessage });
+    return assistantMessage;
+  }
+
+  throw new Error('[AI] Không có AI provider nào khả dụng cho History Chat. Check cấu hình env.');
 }
 
 export function clearSessionHistory(sessionId: string): void {

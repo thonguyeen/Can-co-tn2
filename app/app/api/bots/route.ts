@@ -79,6 +79,16 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Whitelist: chỉ cho phép update các field này qua API
+const ALLOWED_UPDATE_FIELDS = new Set([
+  'system_prompt', 'knowledge_text', 'schedule_config', 'bot_type',
+  'is_active', 'is_envoy',
+  'assigned_province', 'assigned_district', 'assigned_ward',
+  'assigned_province_code', 'assigned_district_code', 'assigned_ward_code',
+  'assigned_categories', 'daily_quota',
+  'name', 'bio', 'expertise', 'personality', 'color', 'color_accent', 'avatar_url',
+]);
+
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
@@ -91,13 +101,29 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Map snake_case body fields to camelCase Prisma fields
+    // Filter: chỉ chấp nhận fields trong whitelist
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const prismaData: any = {};
+    const rejected: string[] = [];
     for (const [key, value] of Object.entries(updateFields)) {
+      if (!ALLOWED_UPDATE_FIELDS.has(key)) {
+        rejected.push(key);
+        continue;
+      }
       // Convert common snake_case keys to camelCase
-      const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+      const camelKey = key.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
       prismaData[camelKey] = value;
+    }
+
+    if (rejected.length > 0) {
+      console.warn(`[Bots API PUT] Rejected fields: ${rejected.join(', ')}`);
+    }
+
+    if (Object.keys(prismaData).length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No valid update fields provided' },
+        { status: 400 }
+      );
     }
 
     const data = await prisma.bot.update({

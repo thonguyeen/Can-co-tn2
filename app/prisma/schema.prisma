@@ -137,6 +137,11 @@ model Bot {
   postsToday           Int?      @default(0) @map("posts_today")
   isEnvoy              Boolean?  @default(false) @map("is_envoy")
 
+  // === Bot Revamp Phase 01 ===
+  botType            String?   @default("facebot") @map("bot_type")
+  knowledgeText      String?   @map("knowledge_text") @db.Text
+  scheduleConfig     Json?     @default("{}") @map("schedule_config")
+
   // === Bot Stats (20260131_activity_logs.sql) ===
   commentsCount  Int?      @default(0) @map("comments_count")
   debatesCount   Int?      @default(0) @map("debates_count")
@@ -813,4 +818,35 @@ model RewardItem {
   redemptions RewardRedemption[]
 
   @@map("reward_items")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Bot Revamp Phase 01: AI Chat History & Market Reports
+// ═══════════════════════════════════════════════════════════════
+
+model AIChatMessage {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  role      String    // "user" | "bot"
+  content   String    @db.Text
+  metadata  Json?     @default("{}")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId, createdAt])
+  @@map("ai_chat_messages")
+}
+
+model MarketReport {
+  id        String    @id @default(uuid())
+  botHandle String    @map("bot_handle")
+  category  String    @default("real_estate")
+  region    String?
+  period    String    // "daily" | "weekly" | "monthly"
+  title     String
+  content   String    @db.Text
+  stats     Json?     @default("{}")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([category, createdAt])
+  @@map("market_reports")
 }

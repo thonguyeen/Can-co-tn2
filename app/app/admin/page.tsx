@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import BotHRTab from './components/BotHRTab';
+import BotConfigTab from './components/BotConfigTab';
 import CrawlSourcesTab from './components/CrawlSourcesTab';
 import OrchestratorTab from './components/OrchestratorTab';
 import BotDashboardTab from './components/BotDashboardTab';
@@ -10,7 +11,7 @@ import AdminUsersTab from './components/AdminUsersTab';
 import AdminReferralTab from './components/AdminReferralTab';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'ops' | 'bots' | 'sources' | 'system' | 'users' | 'referral'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'ops' | 'bots' | 'config' | 'sources' | 'system' | 'users' | 'referral'>('dashboard');
   const [bots, setBots] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -81,6 +82,16 @@ export default function AdminPage() {
               👨‍💼 Nhân Sự Bot
             </button>
             <button
+              onClick={() => setActiveTab('config')}
+              className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition-all ${
+                activeTab === 'config' 
+                  ? 'bg-slate-800 text-teal-400 border-t-2 border-teal-500' 
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              🧠 Bot Config
+            </button>
+            <button
               onClick={() => setActiveTab('sources')}
               className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition-all ${
                 activeTab === 'sources' 
@@ -90,6 +101,7 @@ export default function AdminPage() {
             >
               🌐 Nguồn Cào
             </button>
+
             <button
               onClick={() => setActiveTab('system')}
               className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition-all ${
@@ -128,6 +140,7 @@ export default function AdminPage() {
           {activeTab === 'dashboard' && <BotDashboardTab bots={bots} />}
           {activeTab === 'ops' && <BotOperationsTab />}
           {activeTab === 'bots' && <BotHRTab bots={bots} onUpdate={fetchBots} />}
+          {activeTab === 'config' && <BotConfigTab bots={bots} />}
           {activeTab === 'sources' && <CrawlSourcesTab />}
           {activeTab === 'system' && <OrchestratorTab bots={bots} fetchBots={fetchBots} />}
           {activeTab === 'users' && <AdminUsersTab />}

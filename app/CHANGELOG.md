@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-10] - Phase 04: Bot System Hardening & Deployment Prep
+### Added
+- **Envoy Bot Network Deployment**: Successfully generated and tested 5 Area Agent bots (Quận 1, 2, 7, Cầu Giấy, Hải Châu).
+- **Bot-driven Intent Feeding**: Automated rao vặt (CẦN/CÓ) posts from AI bots now visible on Home Feed and Admin Dashboard.
+- **AI Stabilization**: Configured multi-provider fallback system (OpenAI primary, simpleverse fallback) via `.env.local`.
+
+### Fixed
+- Fixed bot visibility issue by manually syncing `isEnvoy` and region flags in database.
+- Bypassed OpenClaw Gateway WebSocket dependency for internal bot orchestration scripts.
+
 ## [2026-04-08] - Phase 04: Gamification Dashboard Complete
 ### Added
 - **Referral User Dashboard (`/profile/referral`)**: View tier, track invites, copy referral code, view points and point history.
