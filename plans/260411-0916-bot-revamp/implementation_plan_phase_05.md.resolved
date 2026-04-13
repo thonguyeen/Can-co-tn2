@@ -1,0 +1,49 @@
+# Implementation Plan: Phase 05 - Admin UI Dashboard Updates
+
+Finalize the "Command Center" for bot management by adding real-time status indicators and detailed bot operation monitoring.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Performance Optimization**: Since determining if a bot is "Sleeping" requires checking its `scheduleConfig` against the current time, I will optimize the API to batch-fetch bot schedules rather than checking one by one.
+
+## Proposed Changes
+
+### Backend Infrastructure
+
+#### [MODIFY] [orchestrator.ts](file:///d:/SW/Can-co-tn/app/lib/openclaw/orchestrator.ts)
+- Add `getDetailedBotStatuses()` method.
+- Implement efficient status calculation:
+    - **Busy**: If handle exists in `this.activeBots` (Set).
+    - **Sleeping**: If `scheduleConfig` exists and current time is outside bounds.
+    - **Active**: If awake and not busy.
+- Expose `config` to the status return for UI sync.
+
+#### [MODIFY] [route.ts](file:///d:/SW/Can-co-tn/app/app/api/orchestrator/route.ts)
+- Update `case 'status'` to include `botStatuses: orchestrator.getDetailedBotStatuses()`.
+
+### Frontend (Admin Dashboard)
+
+#### [MODIFY] [BotOperationsTab.tsx](file:///d:/SW/Can-co-tn/app/app/admin/components/BotOperationsTab.tsx)
+- **Status Badges**: Implement 5-tier status logic:
+    - 🟢 **Active**: Awake and ready.
+    - 💤 **Sleeping**: Outside active hours/days.
+    - ⏳ **Busy**: Currently generating a post/comment.
+    - 🔴 **Disabled**: `isActive = false` in DB.
+- **Bot Grid View**:
+    - Add a scrollable grid showing all bots.
+    - Mini-cards with Handle, Status icon, and Envoy badge.
+- **Enhanced KPIs**:
+    - Add "Sleeping Bots" count.
+    - Add "Today's Throughput" (interacts/hr).
+
+## Verification Plan
+
+### Automated Tests
+- Run `scripts/test-orchestrator-status.ts` (new) to verify the API returns correct status codes for bots with various schedules.
+
+### Manual Verification
+1. Open Admin Panel -> Orchestrator Tab.
+2. Verify bots outside their `activeHours` show the 💤 icon.
+3. Trigger a manual crawl and observe bots switching from 🟢 to ⏳.
+4. Verify Envoy bots have distinct badges.

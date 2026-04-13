@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       // In Serverless environments, background setIntervals are unpredictable.
       // Force trigger manual bot actions to ensure activity.
       console.log('[CRON] Orchestrator already running, triggering random post manual fallback...');
-      await orchestrator.triggerRandomPost();
+      await orchestrator.triggerCrawlAndCurate();
     }
 
     // 3. Trigger crawling of Real Estate sources

@@ -1,44 +1,32 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 HANDOVER DOCUMENT — REFERRAL SYSTEM MVP COMPLETE
+📋 HANDOVER DOCUMENT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📍 Feature: Referral System & User Management
-🔢 Status: ✅ ALL 6 PHASES COMPLETE — MVP Shipped
+📍 Đang làm: Cần & Có System Integration
+🔢 Đến bước: Hoàn thiện Phase 07 (Chuẩn bị sang Phase 08: Deploy)
 
-✅ ĐÃ XONG:
-   - Phase 01: Database ✓ (4 new models + Profile/UserStat/PointTransaction updates)
-   - Phase 02: Backend APIs ✓ (ReferralService, 7 referral endpoints, Register integration)
-   - Phase 03: Admin APIs ✓ (5 admin endpoints, user mgmt, redemption approval)
-   - Phase 04: User Frontend ✓ (/profile/referral, /leaderboard, /rewards — 9 components)
-   - Phase 05: Admin Frontend ✓ (AdminUsersTab, AdminReferralTab, User Detail, recharts)
-   - Phase 06: Integration ✓ (Seed data, boost sorting, TS fixes, build pass)
+✅ ĐÃ XONG MỚI NHẤT:
+   - Phase 05: Analyst Bot (Auto Market Reports via Prisma _avg/_count) ✓
+   - Phase 06: Global Chatbot Personalization (History + Context Injection + Quota) ✓ 
+   - Phase 06b: n8n Crawler Infrastructure (Docker + Webhook + Zod-like Validation) ✓
+   - Phase 07: Integration Testing (14/14 local tests pass, UI verified) ✓
 
-🏗️ KIẾN TRÚC BOOST SORTING:
-   - Dùng Hybrid SQL: Raw query lấy ID đã sort → Prisma findMany để hydrate
-   - LEFT JOIN intent_boosts → CASE WHEN sort boosted first
-   - Frontend không cần sửa (API contract giữ nguyên)
+⏳ CÒN LẠI:
+   - Hệ thống sẵn sàng cho bước triển khai Production (/deploy).
 
 🔧 QUYẾT ĐỊNH QUAN TRỌNG:
-   - Prisma 7: seed.ts tạo PrismaPg adapter riêng (không import lib/db.ts)
-   - Next.js 16: register/page.tsx wrap Suspense cho useSearchParams
-   - Admin auth: Email whitelist (ADMIN_EMAILS env var)
-   - Boost sort: Hybrid SQL thay vì memory sort
+   - Dùng n8n qua Webhook thay vì chèn DB trực tiếp (để tận dụng lại logic deduplication ở Next.js).
+   - NHA.AI lấy data thực từ Analyst Bot để tránh bịa số liệu (Zero Hallucination approach for Market Data).
+   - E2E Testing thiết lập tính ràng buộc nghiêm ngặt ở lớp schema (không có Intent từ Bot bị thiếu thông tin bắt buộc, C1/C2/C3 assertions).
 
-⏳ CÒN LẠI (Post-MVP):
-   - [ ] git commit -m "feat: referral system MVP"
-   - [ ] Cleanup /api/dev/test-logic + middleware bypass
-   - [ ] Deploy to production (switch DB to Supabase pooler)
-   - [ ] Multi-level referral (hoa hồng cấp 2)
-   - [ ] Push notification khi thăng hạng
-   - [ ] Referral Analytics nâng cao
+⚠️ LƯU Ý CHO SESSION SAU:
+   - Trước khi test n8n thực tế trên VPS, cần đổi `N8N_WEBHOOK_SECRET` trong `.env.production`.
+   - Chuẩn bị review và chạy `/deploy` lên Production (Phase 08).
 
 📁 FILES QUAN TRỌNG:
-   - .brain/brain.json (Full project knowledge)
-   - .brain/session.json (Current progress)
-   - plans/260407-1341-referral-system/ (All 6 phase specs)
-   - app/prisma/seed.ts (Demo data with referral)
-   - app/app/api/intents/route.ts (Boost sorting logic)
-   - app/lib/referral-service.ts (Core referral business logic)
+   - `app/scripts/test-bot-revamp.ts` (Test script vừa được add)
+   - `.brain/session.json` (Progress lưu giữ)
+   - `.brain/brain.json` (Kiến trúc, DB đã cập nhật)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 Đã lưu! Để tiếp tục: Gõ /recap

@@ -204,11 +204,11 @@ export default function OrchestratorTab({ bots, fetchBots }: { bots: GeneratedBo
             <h2 className="text-xl font-semibold mb-4 text-white">Manual Triggers</h2>
             <div className="space-y-3">
               <button
-                onClick={() => executeAction('trigger_random_post')}
+                onClick={() => executeAction('trigger_crawl_and_curate')}
                 disabled={actionLoading}
                 className="w-full py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-medium rounded-lg transition"
               >
-                📝 Trigger Random Post
+                🕷️ Trigger Crawl & Curate
               </button>
               <button
                 onClick={() => executeAction('trigger_random_debate')}

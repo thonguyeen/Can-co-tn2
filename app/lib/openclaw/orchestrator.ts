@@ -25,6 +25,7 @@ interface OrchestratorConfig {
   postInterval: number;        // How often bots create posts
   commentInterval: number;     // How often bots comment
   debateInterval: number;      // How often debates are initiated
+  analystInterval: number;     // How often to check for market reports
 
   // Limits
   maxConcurrentActivities: number;
@@ -36,6 +37,7 @@ interface OrchestratorConfig {
   enableAutoCommenting: boolean;
   enableDebates: boolean;
   enableInterBotChat: boolean;
+  enableAnalystReports: boolean;
   dryRun: boolean;  // true = chế độ Test (chỉ log, không đăng thật)
 }
 
@@ -43,6 +45,7 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
   postInterval: 5 * 60 * 1000,      // 5 minutes
   commentInterval: 2 * 60 * 1000,   // 2 minutes
   debateInterval: 15 * 60 * 1000,   // 15 minutes
+  analystInterval: 15 * 60 * 1000,  // 15 minutes
   maxConcurrentActivities: 10,
   maxPostsPerHour: 50,
   maxCommentsPerHour: 200,
@@ -50,6 +53,7 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
   enableAutoCommenting: true,
   enableDebates: true,
   enableInterBotChat: true,
+  enableAnalystReports: true,
   dryRun: false,  // Mặc định: chế độ LIVE (đăng thật)
 };
 
@@ -115,6 +119,7 @@ export class BotOrchestrator {
   private postTimer: NodeJS.Timeout | null = null;
   private commentTimer: NodeJS.Timeout | null = null;
   private debateTimer: NodeJS.Timeout | null = null;
+  private analystTimer: NodeJS.Timeout | null = null;
 
   private isRunning = false;
   private startedAt: number | null = null;
@@ -150,13 +155,16 @@ export class BotOrchestrator {
 
     // Start activity loops
     if (this.config.enableAutoPosting) {
-      this.startPostingLoop();
+      this.startCrawlCurateLoop();
     }
     if (this.config.enableAutoCommenting) {
       this.startCommentingLoop();
     }
     if (this.config.enableDebates) {
       this.startDebateLoop();
+    }
+    if (this.config.enableAnalystReports) {
+      this.startAnalystLoop();
     }
 
     // Start news reactor
@@ -172,6 +180,7 @@ export class BotOrchestrator {
     if (this.postTimer) clearInterval(this.postTimer);
     if (this.commentTimer) clearInterval(this.commentTimer);
     if (this.debateTimer) clearInterval(this.debateTimer);
+    if (this.analystTimer) clearInterval(this.analystTimer);
 
     // Stop news reactor
     this.newsReactor.stop();
@@ -193,149 +202,114 @@ export class BotOrchestrator {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // AUTO POSTING
+  // CRAWL & CURATE LOOP (PHASE 04)
   // ═══════════════════════════════════════════════════════════════
 
-  private startPostingLoop(): void {
+  private startCrawlCurateLoop(): void {
     this.postTimer = setInterval(async () => {
       if (!this.isRunning) return;
-      await this.triggerRandomPost();
+      await this.triggerCrawlAndCurate();
     }, this.config.postInterval);
 
     // Immediate first post
-    this.triggerRandomPost();
+    this.triggerCrawlAndCurate();
   }
 
-  async triggerRandomPost(): Promise<void> {
-    const bots = this.sessionManager.getAllSessions();
-    if (bots.length === 0) return;
-
-    // Pick a random bot that's not currently active
-    const availableBots = bots.filter(b => !this.activeBots.has(b.botHandle));
-    if (availableBots.length === 0) return;
-
-    const bot = availableBots[Math.floor(Math.random() * availableBots.length)];
-    await this.createPost(bot.botHandle);
-  }
-
-  async createPost(botHandle: string, topic?: string): Promise<Activity> {
-    const activity: Activity = {
-      id: `post_${Date.now()}_${botHandle}`,
-      type: 'post',
-      botHandle,
-      status: 'pending',
-      createdAt: Date.now(),
-    };
-
-    this.activities.set(activity.id, activity);
-    this.activeBots.add(botHandle);
+  async triggerCrawlAndCurate(): Promise<void> {
+    if (this.config.dryRun) {
+      console.log(`[Orchestrator][TEST] triggerCrawlAndCurate called (skipped in dry run)`);
+      return;
+    }
 
     try {
-      activity.status = 'running';
+      // 1. Crawl all
+      const { getGenericCrawler } = await import('./real-estate-crawler');
+      console.log('[Orchestrator] Triggering generic crawler...');
+      await getGenericCrawler().crawlAll();
 
-      // Generate post topic if not provided
-      const postTopic = topic || await this.generatePostTopic(botHandle);
-
-      // Determine post type based on persona
-      let postType: 'short' | 'medium' | 'long' | 'analysis' = 'medium';
-      const persona = DEEP_PERSONAS[botHandle];
-      if (persona) {
-        const ratio = persona.preferredContentRatio;
-        const rand = Math.random() * 100;
-        if (rand < ratio.short) postType = 'short';
-        else if (rand < ratio.short + ratio.medium) postType = 'medium';
-        else postType = 'long';
-      }
-
-      // Use deep persona to generate post
-      const content = await this.sessionManager.generatePost(botHandle, postTopic, postType);
-
-      activity.content = content;
-      activity.status = 'completed';
-      activity.completedAt = Date.now();
-
-      // Skip database save if in dryRun mode
-      if (this.config.dryRun) {
-        console.log(`[Orchestrator][TEST] @${botHandle} generated: ${content.slice(0, 50)}... (NOT SAVED)`);
-        return activity;
-      }
-
-      // Save to database
-      const postId = await savePost({
-        botHandle,
-        content,
-        topic: postTopic,
-        metadata: { activityId: activity.id },
-      });
-
-      // Log activity
-      await logActivity({
-        type: 'post',
-        botHandle,
-        targetId: postId || undefined,
-        content,
-      });
-
-      console.log(`[Orchestrator] @${botHandle} posted: ${content.slice(0, 50)}...`);
-
-      return activity;
-    } catch (error) {
-      activity.status = 'failed';
-      activity.error = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`[Orchestrator] Post failed for @${botHandle}:`, activity.error);
-      return activity;
-    } finally {
-      this.activeBots.delete(botHandle);
+      // 2. Curate news
+      const { getCuratorBot } = await import('./curator-bot');
+      console.log('[Orchestrator] Triggering curator bot...');
+      await getCuratorBot().processUnprocessedNews(20);
+    } catch (e) {
+      console.error('[Orchestrator] Error in triggerCrawlAndCurate:', e);
     }
   }
 
-  private async generatePostTopic(botHandle: string): Promise<string> {
-    const topics = [
-      'Tin tức công nghệ mới nhất hôm nay',
-      'Xu hướng AI đang thay đổi ngành công nghiệp',
-      'Phân tích thị trường crypto tuần này',
-      'Startup Việt Nam gọi vốn thành công',
-      'Review sản phẩm công nghệ hot',
-      'Esports Việt Nam thi đấu quốc tế',
-      'Bảo mật mạng và privacy',
-      'Chính sách công nghệ mới',
-    ];
-    return topics[Math.floor(Math.random() * topics.length)];
-  }
-
   // ═══════════════════════════════════════════════════════════════
-  // AUTO COMMENTING
+  // INTENT COMMENTING (PHASE 04)
   // ═══════════════════════════════════════════════════════════════
 
   private startCommentingLoop(): void {
     this.commentTimer = setInterval(async () => {
       if (!this.isRunning) return;
-      await this.triggerRandomComment();
+      await this.triggerIntentComment();
     }, this.config.commentInterval);
   }
 
-  async triggerRandomComment(): Promise<void> {
+  private async isBotAvailable(botHandle: string): Promise<boolean> {
+     // Fetch bot schedule
+     const { getBotByHandle } = await import('./persistence');
+     const botData = await getBotByHandle(botHandle) as any;
+     if (!botData || !botData.scheduleConfig) return true; // Default active
+
+     const config = botData.scheduleConfig;
+     const now = new Date();
+     const dayOfWeek = now.getDay(); // 0-6 (Sun-Sat)
+     const hour = now.getHours(); // 0-23
+     
+     if (config.activeDays && Array.isArray(config.activeDays)) {
+         if (!config.activeDays.includes(dayOfWeek)) return false;
+     }
+
+     if (config.activeHours && Array.isArray(config.activeHours)) {
+         if (!config.activeHours.includes(hour)) return false;
+     }
+
+     return true;
+  }
+
+  async triggerIntentComment(): Promise<void> {
     const bots = this.sessionManager.getAllSessions();
     if (bots.length === 0) return;
 
     const availableBots = bots.filter(b => !this.activeBots.has(b.botHandle));
     if (availableBots.length === 0) return;
 
-    const bot = availableBots[Math.floor(Math.random() * availableBots.length)];
-    // In real implementation, would fetch recent posts and comment on one
-    // await this.createComment(bot.botHandle, randomPostId);
+    // Filter by schedule
+    const awakeBots = [];
+    for (const b of availableBots) {
+      if (await this.isBotAvailable(b.botHandle)) awakeBots.push(b);
+    }
+
+    if (awakeBots.length === 0) {
+        console.log(`[Orchestrator] No bots are awake for commenting.`);
+        return;
+    }
+
+    // Throttling: handle max 3 intents per loop run
+    const batchSize = Math.min(3, awakeBots.length);
+    for (let i = 0; i < batchSize; i++) {
+        // Pick random awake bot
+        const bot = awakeBots[Math.floor(Math.random() * awakeBots.length)];
+        
+        await this.createIntentComment(bot.botHandle);
+        
+        // Delay 3-5 seconds between requests (Rate Limit Prevention)
+        if (i < batchSize - 1) {
+             const delayMs = Math.floor(Math.random() * 2000) + 3000; 
+             await new Promise(r => setTimeout(r, delayMs));
+        }
+    }
   }
 
-  async createComment(
-    botHandle: string,
-    postId: string,
-    postContent: string
-  ): Promise<Activity> {
+  async createIntentComment(
+    botHandle: string
+  ): Promise<Activity | null> {
     const activity: Activity = {
-      id: `comment_${Date.now()}_${botHandle}`,
+      id: `comment_intent_${Date.now()}_${botHandle}`,
       type: 'comment',
       botHandle,
-      targetId: postId,
       status: 'pending',
       createdAt: Date.now(),
     };
@@ -345,38 +319,45 @@ export class BotOrchestrator {
 
     try {
       activity.status = 'running';
+      
+      const { getLatestIntentForComment, saveIntentComment, logActivity } = await import('./persistence');
+      const intent = await getLatestIntentForComment(botHandle) as any;
+      
+      if (!intent) {
+         activity.status = 'completed';
+         return activity; // Nothing to comment
+      }
+
+      const prompt = `Đây là một tin đăng bất động sản. Hãy đóng vai một người quan tâm hoặc chuyên gia BĐS, để lại bình luận ngắn gọn (1-2 câu).\n\nTiêu đề: ${intent.title}\nNội dung: ${(intent.rawText || '').substring(0, 500)}`;
 
       const content = await this.sessionManager.chat(
         botHandle,
-        `Đọc bài viết sau và viết một comment ngắn (1-2 câu) thể hiện quan điểm của bạn:\n\n"${postContent}"`
+        prompt
       );
 
       activity.content = content;
       activity.status = 'completed';
       activity.completedAt = Date.now();
 
-      // Skip database save if in dryRun mode
       if (this.config.dryRun) {
-        console.log(`[Orchestrator][TEST] @${botHandle} commented: ${content.slice(0, 50)}... (NOT SAVED)`);
+        console.log(`[Orchestrator][TEST] @${botHandle} commented on intent ${intent.id}: ${content.slice(0, 50)}... (NOT SAVED)`);
         return activity;
       }
 
-      // Save to database
-      const commentId = await saveComment({
+      await saveIntentComment({
+        intentId: intent.id,
         botHandle,
-        postId,
-        content,
+        content
       });
 
-      // Log activity
       await logActivity({
         type: 'comment',
         botHandle,
-        targetId: commentId || undefined,
-        content,
+        targetId: intent.id,
+        content: `Intent comment: ${content}`,
       });
 
-      console.log(`[Orchestrator] @${botHandle} commented: ${content.slice(0, 50)}...`);
+      console.log(`[Orchestrator] @${botHandle} commented on intent: ${content.slice(0, 50)}...`);
 
       return activity;
     } catch (error) {
@@ -955,6 +936,73 @@ Cấu trúc yêu cầu:
 
   getDebates(): DebateSession[] {
     return Array.from(this.debates.values());
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // MARKET ANALYST LOOP (PHASE 05)
+  // ═══════════════════════════════════════════════════════════════
+
+  private startAnalystLoop(): void {
+    this.analystTimer = setInterval(async () => {
+      if (!this.isRunning) return;
+      await this.checkAndTriggerAnalystReport();
+    }, this.config.analystInterval);
+    
+    // Immediate check on startup
+    this.checkAndTriggerAnalystReport();
+  }
+
+  private async checkAndTriggerAnalystReport(): Promise<void> {
+    if (this.config.dryRun) {
+      console.log(`[Orchestrator][TEST] checkAndTriggerAnalystReport called (skipped in dry run)`);
+      return;
+    }
+
+    try {
+      const { getAnalystBot } = await import('./analyst-bot');
+      const analystBot = getAnalystBot();
+      const botData = await import('./persistence').then(m => m.getBotByHandle(analystBot.botHandle)) as any;
+      
+      if (!botData || !botData.scheduleConfig) return;
+
+      const schedule = botData.scheduleConfig;
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+
+      // Check current time matches autoReportAt HH:MM string array tolerance
+      const activeTimes = schedule.autoReportAt as string[] || [];
+      const currentHmStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      
+      let isTimeMatch = false;
+      for (const t of activeTimes) {
+        // Tolerances logic here could be added, for now let's do exact hour check if we run 15min interval
+        const hr = parseInt(t.split(':')[0], 10);
+        if (hr === h) isTimeMatch = true;
+      }
+      
+      if (!isTimeMatch) return;
+      
+      // Check day
+      const currentDay = now.getDay();
+      if (schedule.autoReportDays && Array.isArray(schedule.autoReportDays)) {
+        if (!schedule.autoReportDays.includes(currentDay)) return;
+      }
+
+      // Check if we already ran today
+      if (!analystBot.shouldRunToday()) return;
+
+      console.log(`[Orchestrator] Analyst loop triggered: Daily Report...`);
+      await analystBot.generateDailyReport();
+
+      // Trigger weekly report on Monday
+      if (currentDay === 1) {
+        console.log(`[Orchestrator] Analyst loop triggered: Weekly Report...`);
+        await analystBot.generateWeeklyReport();
+      }
+    } catch (e) {
+      console.error('[Orchestrator] Error in checkAndTriggerAnalystReport:', e);
+    }
   }
 }
 

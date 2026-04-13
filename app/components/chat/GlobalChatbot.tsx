@@ -6,9 +6,15 @@ import { MessageCircle } from 'lucide-react';
 import ChatPanel from '@/components/chat/ChatPanel';
 import { useChat } from '@/hooks/useChat';
 
-export default function GlobalChatbot() {
+interface GlobalChatbotProps {
+  activeTab?: string;
+}
+
+export default function GlobalChatbot({ activeTab }: GlobalChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, isTyping, scrollRef, sendMessage, scrollToBottom } = useChat();
+  const { messages, isTyping, isLoadingHistory, scrollRef, sendMessage, scrollToBottom, unreadCount, clearUnread } = useChat({
+    activeCategory: activeTab || 'real_estate',
+  });
 
   const handleOpen = useCallback(() => {
     setIsOpen(true);
@@ -27,6 +33,7 @@ export default function GlobalChatbot() {
           <ChatPanel
             messages={messages}
             isTyping={isTyping}
+            isLoadingHistory={isLoadingHistory}
             scrollRef={scrollRef}
             onSend={sendMessage}
             onClose={handleClose}

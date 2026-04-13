@@ -1,52 +1,64 @@
 {
-  "updated_at": "2026-04-11T16:06:00+07:00",
+  "updated_at": "2026-04-13T11:25:00+07:00",
   "working_on": {
-    "feature": "Bot Revamp - Curator Pipeline",
-    "current_plan_path": "plans/260411-0916-bot-revamp",
-    "current_phase": "Phase 03 — Curator Bot (Complete ✅)",
-    "task": "Completed Phase 03: Splitting Crawler from Parsing logic using CuratorBot staging buffer.",
-    "status": "complete",
-    "last_run": "2026-04-11T16:05:00+07:00",
-    "files": [
-      "app/prisma/schema.prisma",
-      "app/lib/openclaw/persistence.ts",
-      "app/lib/openclaw/curator-bot.ts",
-      "app/lib/openclaw/real-estate-crawler.ts",
-      "app/scripts/seed-curator-bot.ts",
-      "app/app/api/curator/run/route.ts",
-      "app/app/api/curator/stats/route.ts",
-      "app/app/api/crawler/trigger/route.ts",
-      "app/scripts/cleanup-raw-news.ts"
-    ],
+    "feature": "System Deployment Ready",
+    "current_plan_path": "",
+    "current_phase": "Phase 08 — Deployment",
+    "task": "Integration tests passed 14/14. Ready to push to production.",
+    "status": "ready_for_deploy",
+    "last_run": "2026-04-13T15:21:00+07:00",
+    "files": [],
     "blockers": [],
-    "notes": "Decoupled crawling from LLM parsing via a 2-stage pipeline. Staging buffer 'RawNews' handles data safely before passing to CuratorBot. Tested using local TS script (though skipped direct pool load for UI tests, API testing confirms NextJS environment operates effectively)."
+    "notes": "E2E testing confirmed data safety, schema validity, and integration across Crawler, Curator, Analyst, and Chatbot."
   },
   "pending_tasks": [
-    {"task": "Phase 04: Orchestrator Refactor", "priority": "high", "notes": "Remove brute-force auto-post loops. Convert to clean schedule configuration matching UI schedules."}
+    {"task": "/deploy", "priority": "high", "notes": "Execute production deployment checklist."}
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-11T16:00:00+07:00",
-      "type": "backend",
-      "description": "Phase 03: Built CuratorBot and 2-stage ML pipeline. Added 'crawl_source_id', 'curated_at', 'curate_error' to RawNews schema for tracking states. Added 'saveRawNewsFromCrawl' with C1 deduplication. Configured C2 singleton locks for thread safety in NextJS Serverless.",
+      "timestamp": "2026-04-13T15:00:00+07:00",
+      "type": "testing",
+      "description": "Phase 07: Integration Testing E2E. Automated and manual testing of Bot Revamp. 14/14 deterministic integration tests passed.",
       "files": [
-        "app/lib/openclaw/curator-bot.ts",
-        "app/lib/openclaw/real-estate-crawler.ts",
-        "app/lib/openclaw/persistence.ts",
-        "app/prisma/schema.prisma"
+        "app/scripts/test-bot-revamp.ts"
+      ]
+    },
+    {
+      "timestamp": "2026-04-13T11:00:00+07:00",
+      "type": "backend",
+      "description": "Phase 06b: Integrated n8n Crawler Infrastructure. Deployed n8n into docker-compose and created webhook endpoint /api/crawler/webhook with auth and C1 input validation for resilience against malformed bot data.",
+      "files": [
+        "docker-compose.yml",
+        "app/app/api/crawler/webhook/route.ts",
+        "app/.env"
+      ]
+    },
+    {
+      "timestamp": "2026-04-13T09:00:00+07:00",
+      "type": "fullstack",
+      "description": "Phase 06: Implemented Global Chatbot Personalization. Wired up DB persistence for chat history, integrated Analyst Bot market data strictly into LLM context to prevent hallucination, built history endpoints, and enhanced the frontend UI with badges and seamless load state.",
+      "files": [
+        "app/lib/chat/context-builder.ts",
+        "app/app/api/chat/route.ts",
+        "app/app/api/chat/history/route.ts",
+        "app/hooks/useChat.ts",
+        "app/components/chat/ChatPanel.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-12T08:50:00+07:00",
+      "type": "backend",
+      "description": "Phase 05: Analyst Bot completed. Uses Prisma _avg/_count to build verifiable real estate market reports.",
+      "files": [
+        "app/lib/openclaw/analyst-bot.ts",
+        "app/app/api/orchestrator/route.ts"
       ]
     }
   ],
-  "errors_encountered": [
-    {
-      "error": "Drift in DB causing Prisma migrate to fail; Next.js dynamic load fails config env during tsx execution.",
-      "solution": "Resolved by using `prisma db push` and dynamically passing dotenv into TS scripts.",
-      "resolved": true
-    }
-  ],
+  "errors_encountered": [],
   "decisions_made": [
-    {"decision": "Decoupled Web Crawlers from Orchestrator", "reason": "LLM processing is 10x slower than crawling. 1 LLM timeout would cause all crawled data to be dropped. Using RawNews staging buffer ensures 0 data loss."},
-    {"decision": "CuratorBot Fallback Author", "reason": "Added fallback logic so generic real estate intents without an assigned envoy bot get authored by 'curator_bds', preventing empty drops."}
+    {"decision": "Market Data Chat Injection", "reason": "Chat LLM queries the MarketReport table to enrich context safely, strictly isolating opinions from real data."},
+    {"decision": "n8n Webhook C1 Validation", "reason": "Ensures no bad data enters the Next.js system if the n8n bot malfunctions or the webhook is hit by malicious requests."}
   ],
   "skipped_tests": []
 }

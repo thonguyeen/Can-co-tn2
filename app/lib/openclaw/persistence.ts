@@ -603,3 +603,48 @@ export async function markRawNewsProcessed(
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// INTENT COMMENT PERSISTENCE (Phase 04)
+// ═══════════════════════════════════════════════════════════════
+
+interface SaveIntentCommentParams {
+  intentId: string;
+  botHandle: string;
+  content: string;
+}
+
+export async function saveIntentComment(params: SaveIntentCommentParams): Promise<string | null> {
+  try {
+    const created = await prisma.intentComment.create({
+      data: {
+        intentId: params.intentId,
+        botName: params.botHandle,
+        content: params.content,
+        isBot: true,
+      },
+      select: { id: true },
+    });
+
+    return created.id;
+  } catch (error) {
+    console.error('[Persistence] Save intent comment error:', error);
+    return null;
+  }
+}
+
+export async function getLatestIntentForComment(botHandle: string) {
+  try {
+    return await prisma.intent.findFirst({
+      where: {
+        status: 'active',
+        comments: {
+          none: { botName: botHandle }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (e) {
+    return null;
+  }
+}
+

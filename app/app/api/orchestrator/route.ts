@@ -153,32 +153,20 @@ export async function POST(request: NextRequest) {
       // MANUAL TRIGGERS
       // ─────────────────────────────────────────────────────────
       case 'trigger_post':
-        const { botHandle: postBotHandle, topic } = params;
-        if (!postBotHandle) {
+        return NextResponse.json({
+          success: false,
+          error: 'Action disabled in Phase 04 - Use Intent Commenting instead',
+        });
+
+      case 'trigger_comment':
+        const { botHandle: commentBotHandle } = params;
+        if (!commentBotHandle) {
           return NextResponse.json(
             { success: false, error: 'botHandle required' },
             { status: 400 }
           );
         }
-        const postActivity = await orchestrator.createPost(postBotHandle, topic);
-        return NextResponse.json({
-          success: true,
-          data: postActivity,
-        });
-
-      case 'trigger_comment':
-        const { botHandle: commentBotHandle, postId, postContent } = params;
-        if (!commentBotHandle || !postId || !postContent) {
-          return NextResponse.json(
-            { success: false, error: 'botHandle, postId, postContent required' },
-            { status: 400 }
-          );
-        }
-        const commentActivity = await orchestrator.createComment(
-          commentBotHandle,
-          postId,
-          postContent
-        );
+        const commentActivity = await orchestrator.createIntentComment(commentBotHandle);
         return NextResponse.json({
           success: true,
           data: commentActivity,
@@ -217,11 +205,28 @@ export async function POST(request: NextRequest) {
           data: { response },
         });
 
-      case 'trigger_random_post':
-        await orchestrator.triggerRandomPost();
+      case 'trigger_crawl_and_curate':
+        await orchestrator.triggerCrawlAndCurate();
         return NextResponse.json({
           success: true,
-          message: 'Random post triggered',
+          message: 'Crawl and curate triggered',
+        });
+
+      case 'trigger_analyst_report':
+        const { period = 'daily', analystCategory, analystRegion } = params;
+        const { getAnalystBot } = await import('@/lib/openclaw/analyst-bot');
+        const analystBot = getAnalystBot();
+        
+        let reportResult;
+        if (period === 'weekly') {
+          reportResult = await analystBot.generateWeeklyReport(analystCategory, analystRegion);
+        } else {
+          reportResult = await analystBot.generateDailyReport(analystCategory, analystRegion);
+        }
+        
+        return NextResponse.json({
+          success: true,
+          data: reportResult,
         });
 
       case 'trigger_random_debate':

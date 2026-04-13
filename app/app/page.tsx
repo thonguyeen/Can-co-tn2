@@ -42,7 +42,7 @@ export default function SuperAppContainer() {
       <BottomNavMobile activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* 🤖 Global Chatbot FAB — hiện ở mọi tab */}
-      <GlobalChatbot />
+      <GlobalChatbot activeTab={activeTab} />
       
     </div>
   );

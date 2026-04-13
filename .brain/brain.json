@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-11T16:06:00+07:00"
+    "last_updated": "2026-04-13T15:42:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -102,7 +102,10 @@
     {"path": "/api/admin/users/[id]", "explained": "Admin: User detail, point adjustment, ban/unban"},
     {"path": "/api/admin/redemptions", "explained": "Admin: List pending reward redemptions"},
     {"path": "/api/admin/redemptions/[id]", "explained": "Admin: Approve/reject redemption request"},
-    {"path": "/api/admin/stats", "explained": "Admin: Dashboard aggregate statistics"}
+    {"path": "/api/admin/stats", "explained": "Admin: Dashboard aggregate statistics"},
+    {"path": "/api/chat", "explained": "Phase 06: Core Chat API for NHA.AI Global Bot (re-written with Auth and Market context injection)"},
+    {"path": "/api/chat/history", "explained": "Phase 06: Chat History API allowing chronological retrieval of previous messages"},
+    {"path": "/api/crawler/webhook", "explained": "Phase 06b: Authorized webhook ingestion endpoint parsing raw payloads from n8n instances"}
   ],
   "business_rules": [
     "Gamification: Users earn 2 points per bot interaction.",
@@ -112,20 +115,28 @@
     "Referral Tiers: Đồng=0 refs, Bạc=3+, Vàng=10+, Bạch Kim=30+, Kim Cương=100+.",
     "Tier Multipliers: Đồng=1.0x, Bạc=1.2x, Vàng=1.5x, Bạch Kim=2.0x, Kim Cương=3.0x.",
     "Boost: Spending 50 points pushes an intent to top of feed for 24 hours.",
-    "Reward Redemption: Admin manually fulfills in MVP. Rejected orders are refunded."
+    "Reward Redemption: Admin manually fulfills in MVP. Rejected orders are refunded.",
+    "Bot Schedule: Bot.scheduleConfig JSON chứa { activeDays: [0-6], activeHours: [0-23] }. Bot ngoài giờ sẽ 'ngủ' và không comment.",
+    "Bot Comment Rate Limit: Tối đa 3 bot comment mỗi vòng lặp, delay ngẫu nhiên 3-5s giữa mỗi request LLM.",
+    "Orchestrator: Không còn auto-post giả. Pipeline là Crawl → Curate → Bot Comment trên Intent thật."
   ],
   "features": [
     {"name": "Khớp Nhanh (Swipe Feed)", "status": "implemented", "description": "Tinder-like swipe interface for browsing intents"},
     {"name": "Intent CRUD", "status": "implemented", "description": "Create/read/update CẦN and CÓ listings"},
     {"name": "AI Matching Engine", "status": "implemented", "description": "pgvector similarity matching between CẦN↔CÓ"},
     {"name": "CuratorBot Pipeline", "status": "implemented", "description": "Decoupled 2-stage LLM parsing pipeline using RawNews staging buffer to prevent API timeout dropping data"},
+    {"name": "Bot Auto-Interaction Orchestrator", "status": "implemented", "description": "Schedule-aware bot interactions dropping comments upon Intents via batching and rate-limiting"},
     {"name": "Bot Envoy System", "status": "implemented", "description": "AI bots crawl real estate data and auto-post"},
     {"name": "Chat System", "status": "implemented", "description": "1-on-1 messaging with 3s polling"},
     {"name": "Verification System", "status": "implemented", "description": "GPS + photo verification of listings"},
     {"name": "Gamification", "status": "implemented", "description": "Core logic restored: Point transactions for bot interactions, achievement tracking, and weekly leaderboard."},
     {"name": "Content Moderation", "status": "implemented", "description": "AI-powered content violation detection"},
     {"name": "Local Development Environment", "status": "implemented", "description": "Decoupled from Supabase with Dockerized pgvector and auto-seed script (Safety Lock equipped)"},
-    {"name": "Referral System & User Management", "status": "implemented", "description": "5-tier referral system MVP complete (6/6 phases). Includes: user referral dashboard, leaderboard, rewards store, admin control panel with user management/point adjustment/redemption approval, boost sorting in feed API, and full seed data for demo."}
+    {"name": "Referral System & User Management", "status": "implemented", "description": "5-tier referral system MVP complete (6/6 phases). Includes: user referral dashboard, leaderboard, rewards store, admin control panel with user management/point adjustment/redemption approval, boost sorting in feed API, and full seed data for demo."},
+    {"name": "Analyst Bot (Phase 05)", "status": "implemented", "description": "Market report generator querying DB intents to aggregate real stats and using LLM strictly for markdown formatting (no hallucination)."},
+    {"name": "Global Chatbot Personalization (Phase 06)", "status": "implemented", "description": "Context-aware NHA.AI chatbot accessible on all screens. Uses DB to persist chat history and injects real market data from the Analyst Bot into its system prompts. Enforces strict limits (~50 queries/day)."},
+    {"name": "n8n Crawler Infrastructure (Phase 06b)", "status": "implemented", "description": "Dual-source architecture scaling enabling n8n docker workflows to bypass SPA blocks and push curated JSON to Nextjs via a highly validated /api/crawler/webhook."},
+    {"name": "E2E Integration Testing Pipeline (Phase 07)", "status": "implemented", "description": "A robust E2E test script (test-bot-revamp.ts) covering integration points from Crawling to Curating, Analyst report generation, Context injection, and Comment orchestrations."}
   ],
   "knowledge_items": {
     "patterns": [
@@ -142,13 +153,17 @@
       "profiles.id FK points to auth.users(id) NOT public.users(id) — dual-table approach",
       "NEXTAUTH_URL must match the port (currently :4000)",
       "Next.js 16: useSearchParams() must be wrapped in Suspense boundary (register page fixed)",
-      "Next.js 16: Dynamic route params are Promise<{id: string}> — must await them"
+      "Next.js 16: Dynamic route params are Promise<{id: string}> — must await them",
+      "Phase 04: getBotByHandle chưa export từ persistence.ts — isBotAvailable() dùng dynamic import cần hàm này tồn tại",
+      "Phase 04: orchestrator.ts import logActivity từ persistence nhưng cũng import local — cẩn thận trùng tên biến",
+      "Phase 04: trigger_post API action đã bị DISABLED — trả về error message thay vì gọi createPost"
     ],
     "conventions": [
       "Port: Always run on port 4000 (npm run dev -- -p 4000)",
       "Prisma CLI: Uses DIRECT_URL (port 5432) not DATABASE_URL (port 6543)",
       "Git: 3 commits planned — baseline + phase 05 + referral MVP",
-      "Seed: prisma/seed.ts uses PrismaPg adapter directly (not lib/db.ts) to avoid Next.js module issues"
+      "Seed: prisma/seed.ts uses PrismaPg adapter directly (not lib/db.ts) to avoid Next.js module issues",
+      "Orchestrator API actions: trigger_crawl_and_curate (thay cho trigger_random_post cũ), trigger_comment (giờ gọi createIntentComment)"
     ]
   },
   "migration_history": {
