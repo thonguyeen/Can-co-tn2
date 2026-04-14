@@ -135,8 +135,8 @@
     {"name": "Referral System & User Management", "status": "implemented", "description": "5-tier referral system MVP complete (6/6 phases). Includes: user referral dashboard, leaderboard, rewards store, admin control panel with user management/point adjustment/redemption approval, boost sorting in feed API, and full seed data for demo."},
     {"name": "Analyst Bot (Phase 05)", "status": "implemented", "description": "Market report generator querying DB intents to aggregate real stats and using LLM strictly for markdown formatting (no hallucination)."},
     {"name": "Global Chatbot Personalization (Phase 06)", "status": "implemented", "description": "Context-aware NHA.AI chatbot accessible on all screens. Uses DB to persist chat history and injects real market data from the Analyst Bot into its system prompts. Enforces strict limits (~50 queries/day)."},
-    {"name": "n8n Crawler Infrastructure (Phase 06b)", "status": "implemented", "description": "Dual-source architecture scaling enabling n8n docker workflows to bypass SPA blocks and push curated JSON to Nextjs via a highly validated /api/crawler/webhook."},
-    {"name": "E2E Integration Testing Pipeline (Phase 07)", "status": "implemented", "description": "A robust E2E test script (test-bot-revamp.ts) covering integration points from Crawling to Curating, Analyst report generation, Context injection, and Comment orchestrations."}
+    {"name": "E2E Integration Testing Pipeline (Phase 07)", "status": "implemented", "description": "A robust E2E test script (test-bot-revamp.ts) covering integration points from Crawling to Curating, Analyst report generation, Context injection, and Comment orchestrations."},
+    {"name": "Admin Dashboard Split", "status": "planning", "description": "Decoupled the massive /admin screen into separate Data-Dense dashboards for Members vs. Bots, joined by a Navigation Hub."}
   ],
   "knowledge_items": {
     "patterns": [

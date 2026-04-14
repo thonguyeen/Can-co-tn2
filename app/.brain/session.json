@@ -1,61 +1,79 @@
 {
-  "updated_at": "2026-04-10T16:55:00+07:00",
+  "updated_at": "2026-04-14T04:14:00Z",
   "working_on": {
-    "feature": "Bot System Hardening for Production",
-    "task": "Phase 01: Security & Stability",
-    "status": "in_progress",
-    "last_run": "2026-04-10T16:26:00+07:00",
-    "last_run_url": "http://localhost:4000",
-    "files": [
-      "app/.env.local",
-      "app/lib/openclaw/persistence.ts",
-      "app/lib/openclaw/orchestrator.ts",
-      "app/lib/openclaw/sessions.ts"
-    ],
-    "blockers": [
-      "saveBot() function in persistence.ts is incomplete (missing isEnvoy/region fields)."
-    ],
-    "notes": "Đã tạo và kiểm tra thành công 5 Envoy Bots cho các khu vực Q1, Q2, Q7, Cầu Giấy, Hải Châu. Đã ổn định cấu hình AI Providers (9Router -> OpenAI)."
+    "feature": "Admin Dashboard Hub-and-Spoke Architecture",
+    "current_plan_path": "plans/260414-0811-admin-split/",
+    "current_phase": "COMPLETE",
+    "task": "All 4 phases done. Build passing.",
+    "status": "done"
   },
-  "pending_tasks": [
-    {
-      "task": "Hardening Phase 01: Secure /admin and /api/orchestrator routes",
-      "priority": "high",
-      "notes": "Xóa middleware bypass và áp dụng RBAC cho admin."
-    },
-    {
-      "task": "Hardening Phase 02: Cleanup /api/dev endpoints",
-      "priority": "medium",
-      "notes": "Dọn dẹp các script test cũ và endpoints không an toàn."
-    },
-    {
-      "task": "Hardening Phase 03: Fix persistence.ts saveBot function",
-      "priority": "medium",
-      "notes": "Bổ sung các trường isEnvoy, assignedProvince... vào database sync."
-    }
-  ],
+  "pending_tasks": [],
   "recent_changes": [
     {
-      "timestamp": "2026-04-10T16:45:00+07:00",
-      "type": "test",
-      "description": "Tạo và kiểm tra 5 bot bất động sản (Envoy) với dữ liệu Cần & Có tại 3 miền. Xác nhận hiển thị đúng trên Home Feed và Admin.",
+      "timestamp": "2026-04-14T02:20:00Z",
+      "type": "feature",
+      "description": "Phase 01: Admin Layout & Hub — Tạo layout.tsx với topbar nav và page.tsx Hub với stats cards",
       "files": [
-        "app/scripts/force-create-envoy-posts.ts",
-        "app/.env.local"
+        "app/admin/layout.tsx",
+        "app/admin/page.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-14T02:50:00Z",
+      "type": "feature",
+      "description": "Phase 02: Members Page — Tạo /admin/members với 2 tabs, di dời user detail page sang /admin/members/[id]",
+      "files": [
+        "app/admin/members/page.tsx",
+        "app/admin/members/[id]/page.tsx",
+        "app/admin/components/AdminUsersTab.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-14T03:21:00Z",
+      "type": "feature",
+      "description": "Phase 03: Bots Page — Tạo /admin/bots với 6 tabs và fetchBots logic",
+      "files": [
+        "app/admin/bots/page.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-14T04:11:00Z",
+      "type": "fix",
+      "description": "Phase 04: Fix pre-existing TypeScript errors in test-bot-revamp.ts (selector field removed, report→reportId, generatedAt→createdAt). Build passes.",
+      "files": [
+        "scripts/test-bot-revamp.ts"
       ]
     }
   ],
   "errors_encountered": [
     {
-      "error": "OpenClaw Gateway WebSocket error",
-      "solution": "Bypass gateway connection bằng cách gọi trực tiếp sessionManager + direct AI module cho internal scripts.",
+      "error": "Type error: 'selector' does not exist in CrawlSource",
+      "solution": "Remove 'selector' field — it was dropped from Prisma schema in Bot Revamp",
+      "resolved": true
+    },
+    {
+      "error": "Type error: Property 'report' does not exist on type 'MarketReportResult'",
+      "solution": "Renamed to 'reportId' in MarketReportResult type",
+      "resolved": true
+    },
+    {
+      "error": "Type error: 'generatedAt' does not exist in MarketReportOrderByWithRelationInput",
+      "solution": "MarketReport field is 'createdAt' not 'generatedAt' — check schema before using field names",
       "resolved": true
     }
   ],
   "decisions_made": [
     {
-      "decision": "Sử dụng OpenAI (9Router) làm primary AI provider và Futrix làm fallback",
-      "reason": "Claude/Anthropic qua 9Router thường xuyên bị 403 Forbidden hoặc lag, OpenAI ổn định hơn."
+      "decision": "Hub-and-Spoke admin architecture",
+      "reason": "Giảm cognitive load cho admin, tách biệt rõ domain Members vs Bots, dễ phân quyền sau này"
+    },
+    {
+      "decision": "Tái sử dụng 100% existing components",
+      "reason": "Zero risk, không cần viết logic mới, chỉ tổ chức lại routing"
+    },
+    {
+      "decision": "Xóa folder app/admin/users/ (route cũ)",
+      "reason": "Tránh route conflict và nhầm lẫn - user detail page di dời hoàn toàn sang /admin/members/[id]"
     }
   ]
 }

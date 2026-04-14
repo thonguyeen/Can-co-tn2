@@ -169,7 +169,7 @@ export default function AdminUsersTab() {
               {data.users.map((user, idx) => (
                 <tr
                   key={user.id}
-                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  onClick={() => router.push(`/admin/members/${user.id}`)}
                 >
                   <td style={{ color: 'var(--wm-text-dim)', fontSize: 12 }}>
                     {(data.page - 1) * data.limit + idx + 1}

@@ -1,20 +1,30 @@
 {
   "updated_at": "2026-04-13T11:25:00+07:00",
   "working_on": {
-    "feature": "System Deployment Ready",
-    "current_plan_path": "",
-    "current_phase": "Phase 08 — Deployment",
-    "task": "Integration tests passed 14/14. Ready to push to production.",
-    "status": "ready_for_deploy",
-    "last_run": "2026-04-13T15:21:00+07:00",
-    "files": [],
+    "feature": "Admin Dashboard Split",
+    "current_plan_path": "plans/260414-0811-admin-split",
+    "current_phase": "Phase 01 — Design & Layout",
+    "task": "Thiết kế UI/UX để tách trang Admin cũ thành 2 trang mới: Members & Bots",
+    "status": "designing",
+    "last_run": "2026-04-14T09:00:00+07:00",
+    "files": ["docs/DESIGN_ADMIN_DASHBOARD.md", "plans/260414-0811-admin-split/plan.md"],
     "blockers": [],
-    "notes": "E2E testing confirmed data safety, schema validity, and integration across Crawler, Curator, Analyst, and Chatbot."
+    "notes": "Đã chốt thiết kế tách Admin Hub. Components tái sử dụng lại 100%. Áp dụng phong cách Data-Dense Dashboard."
   },
   "pending_tasks": [
-    {"task": "/deploy", "priority": "high", "notes": "Execute production deployment checklist."}
+    {"task": "/code phase-01", "priority": "high", "notes": "Thực hiện Phase 01: Tạo App Layout cho Admin Hub mới."}
   ],
   "recent_changes": [
+    {
+      "timestamp": "2026-04-14T09:00:00+07:00",
+      "type": "design",
+      "description": "Tạo bản thiết kế tách trang Admin Dashboard ra 2 trang riêng biệt: Members Manager & Bots Manager để tối ưu UI/UX.",
+      "files": [
+        "docs/BRIEF_ADMIN_DASHBOARD.md",
+        "docs/DESIGN_ADMIN_DASHBOARD.md",
+        "plans/260414-0811-admin-split/*"
+      ]
+    },
     {
       "timestamp": "2026-04-13T15:00:00+07:00",
       "type": "testing",

@@ -158,7 +158,7 @@ export default function AdminUserDetailPage() {
           <div className={s.emptyState}>
             <div className={s.emptyIcon}>❌</div>
             <div className={s.emptyText}>Không tìm thấy user</div>
-            <button className={s.cancelBtn} style={{ marginTop: 16 }} onClick={() => router.push('/admin')}>
+            <button className={s.cancelBtn} style={{ marginTop: 16 }} onClick={() => router.push('/admin/members')}>
               ← Quay lại
             </button>
           </div>
@@ -180,7 +180,7 @@ export default function AdminUserDetailPage() {
     <div className="min-h-screen bg-slate-900 text-slate-200 p-4 md:p-8 font-sans selection:bg-teal-500/30">
       <div className="max-w-[1400px] mx-auto">
         {/* Back Link */}
-        <button className={s.backLink} onClick={() => router.push('/admin')}>
+        <button className={s.backLink} onClick={() => router.push('/admin/members')}>
           ← Quay lại danh sách
         </button>
 

@@ -131,7 +131,6 @@ async function runTC01(): Promise<void> {
         url: TEST_SOURCE_URL,
         sourceType: 'rss',
         isActive: true,
-        selector: '',
         category: 'real_estate',
       },
     });
@@ -243,11 +242,11 @@ async function runTC03(): Promise<void> {
     return;
   }
 
-  if (result.success && result.report) {
+  if (result.success && result.reportId) {
     // Verify report was saved to DB
     const savedReport = await prisma.marketReport.findFirst({
-      orderBy: { generatedAt: 'desc' },
-      select: { id: true, stats: true, generatedAt: true },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, stats: true, createdAt: true },
     });
 
     assert(savedReport !== null, 'MarketReport được lưu vào DB');

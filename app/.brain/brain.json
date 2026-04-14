@@ -2,12 +2,12 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-03T20:07:00Z"
+    "last_updated": "2026-04-14T04:14:00Z"
   },
   "project": {
     "name": "Cần & Có - AI Real Estate Super App",
     "type": "AI Real-estate Aggregator Super-App",
-    "status": "Phase 04: Bot System Hardening for Production in progress"
+    "status": "Admin Dashboard Split ✅ Complete. Production build passing. Ready for Deploy."
   },
   "tech_stack": {
     "frontend": {
@@ -74,15 +74,20 @@
     "Trust scoring: verified > kyc > none, affects match ranking",
     "BigInt price fields in DB, converted to Number for JSON responses"
   ],
-  "features": [
     "Super App multi-tab layout (Feed, Map, Khớp Nhanh, Chat, Mini-Apps)",
     "CẦN & CÓ Intent Marketplace with AI matching engine",
     "AI Bot Network (Broker Bots with geographic jurisdictions)",
     "Real-time market analytics (Brain AI Analytics panel)",
     "Content moderation pipeline (keyword + AI)",
-    "Admin Dashboard (HR, Crawl Sources, Bot Operations)",
+    "Admin Dashboard — Hub-and-Spoke Architecture (✅ Complete 2026-04-14):",
+    "  /admin (Hub) — Navigation center with real-time stats cards",
+    "  /admin/members — Members Manager (Users tab + Referral tab)",
+    "  /admin/members/[id] — User detail page",
+    "  /admin/bots — Bots Manager (6 tabs: KPI, Ops, HR, Config, Sources, System)",
     "NextAuth credential-based auth (migrated from Supabase Auth)",
-    "Referral & Gamification System (Leaderboard, Points, Store, Tiers)"
+    "Referral & Gamification System (Leaderboard, Points, Store, Tiers)",
+    "Curator Bot Pipeline (RawNews → CuratorBot → Intents with source_url Golden Rule)",
+    "Bot Revamp: 3-tier AI provider fallback (Anthropic → OpenAI → mock)"
   ],
   "knowledge_items": {
     "patterns": [
@@ -104,7 +109,11 @@
       "Refactor files theo Phase AWF",
       "API responses must maintain snake_case field names for frontend compatibility",
       "Auth-required routes use requireAuth(), public GETs use getAuthUserId() for optional auth",
-      "Atomic counter updates (increment/decrement) instead of read-then-update pattern"
+      "Atomic counter updates (increment/decrement) instead of read-then-update pattern",
+      "Admin routing: Hub-and-Spoke pattern — /admin is entry, specialized pages handle logic",
+      "Admin components in app/admin/components/ are shared — import, do NOT duplicate",
+      "CSS Modules in @/styles/ use path aliases, not relative paths — safe to move files",
+      "Bot page props interface: { bots, onUpdate?, fetchBots? } — keep consistent"
     ]
   }
 }
