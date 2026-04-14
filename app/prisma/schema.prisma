@@ -17,12 +17,14 @@ model User {
   passwordHash  String?
   emailVerified DateTime?
   image         String?
+  role          String    @default("USER") @map("role") // ADMIN | MODERATOR | USER
   accounts      Account[]
   sessions      Session[]
   userChannels  UserChannel[]
   pushLogs      PushLog[]
   profile       Profile?
 }
+
 
 model Account {
   id                String  @id @default(uuid())

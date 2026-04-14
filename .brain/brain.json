@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "schema_version": "1.1.0",
+    "awf_version": "3.3.0"
+  },
+  "project": {
+    "name": "Can-co-tn",
+    "type": "Next.js Web Application",
+    "status": "Active Development"
+  },
+  "tech_stack": {
+    "frontend": {
+      "framework": "Next.js (App Router)",
+      "ui": "React",
+      "styling": "Tailwind CSS",
+      "state": "Zustand, Context API (SessionProvider)"
+    },
+    "backend": {
+      "framework": "Next.js API Routes",
+      "auth": "NextAuth.js",
+      "database_orm": "Prisma"
+    },
+    "database": {
+      "type": "PostgreSQL"
+    }
+  },
+  "database_schema": {
+    "summary": "Platform for matching needs (Cần/Có), managing profiles, bots, referrals and intent extraction.",
+    "tables": [
+      "User",
+      "Profile",
+      "UserStat",
+      "Post",
+      "Bot",
+      "Intent",
+      "News",
+      "RawNews"
+    ],
+    "relationships_explained": "1 User has 1 Profile and 1 UserStat. System supports Role-Based Access (User has role: USER, MODERATOR, ADMIN)."
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/admin/*",
+      "explained": "Secured admin endpoints for member stats and operations. Role-protected."
+    },
+    {
+      "path": "/api/bots/*",
+      "explained": "Bot creation, mutation and listing. Mutating actions require ADMIN role."
+    },
+    {
+      "path": "/api/orchestrator/*",
+      "explained": "Bot orchestrator controls (start, stop, debates). Requires ADMIN role."
+    },
+    {
+      "path": "/api/chat/*",
+      "explained": "Secured Chat API for handling Global Chatbot conversations with rate limiting."
+    }
+  ],
+  "business_rules": [
+    "Users are default assigned 'USER' role.",
+    "Only 'ADMIN' rank can execute destructive Bot actions or view sensitive orchestrator dashboard cards.",
+    "'MODERATOR' rank can view referral/user data but not perform Bot manipulations."
+  ],
+  "features": [
+    "Role-Based Access Control (RBAC)",
+    "Global AI Chatbot (NHA.AI)",
+    "Automated Market Analyst Report",
+    "Referral & Gamification System",
+    "Decoupled Crawling and Curation (Bot pipeline)"
+  ],
+  "knowledge_items": {
+    "patterns": [
+      "Extending NextAuth JWT and Session properties with User role by augmenting interface typings.",
+      "Generic requireRole() helper mapping roles to hierarchy integer levels (ADMIN=2, MODRATOR=1, USER=0)."
+    ],
+    "gotchas": [
+      "Always call useSession() from a component wrapped inside a <SessionProvider> loaded in layout.tsx as a Client Component."
+    ],
+    "conventions": [
+      "Split database layers from API handlers, use middleware for broad route protections, and use targeted role checks in API endpoints for defense-in-depth."
+    ]
+  }
+}

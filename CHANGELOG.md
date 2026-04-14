@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-14]
+
+### Added
+- **Admin RBAC System (Phases 01-04):**
+  - Added `role` column to `User` model (USER, MODERATOR, ADMIN).
+  - Integrated `role` into NextAuth JWT and Session properties.
+  - Implemented client-side `SessionProvider` in root layout for widespread access to user role.
+  - Added helper script `scripts/set-admin-role.ts` to assign exact admin roles safely.
+
+### Changed
+- **Security & Authorization:**
+  - Upgraded Next.js `middleware.ts` to include a 3-tier routing guard blocking `/admin` pages based on roles.
+  - Refactored `requireAdmin` logic into a generic session-based `requireRole()` helper in `lib/admin/guard.ts`.
+  - Upgraded `/api/bots` and `/api/orchestrator` routes to require the `ADMIN` role for mutating configurations and states.
+- **Admin UI:**
+  - `AdminLayout` and `AdminHubPage` now conditionally hide the "Bot Management" menu item and cards for `MODERATOR` users, displaying only what the role permits.
+
 ## [2026-04-13]
 
 ### Added

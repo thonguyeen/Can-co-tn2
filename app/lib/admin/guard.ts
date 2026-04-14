@@ -3,26 +3,75 @@ import { authOptions } from "@/lib/auth"
 import { NextResponse } from "next/server"
 
 /**
- * Kết quả trả về từ requireAdmin().
- * Nếu isAdmin = true, adminEmail sẽ có giá trị để ghi vào audit trail.
+ * Kết quả trả về từ requireAdmin() — legacy, giữ cho backward-compat.
  */
 export type AdminGuardResult =
   | { isAdmin: true; adminEmail: string }
   | { isAdmin: false; response: NextResponse }
 
 /**
- * Helper bảo vệ cổng Admin.
- * 
- * - Đọc danh sách email admin từ env ADMIN_EMAILS (CSV format).
- * - So sánh case-insensitive với session user.
- * - Trả về adminEmail để dùng trong audit trail (PointTransaction.reason).
- * 
- * Tech Lead Condition: Email so sánh bằng toLowerCase() để chống bypass qua Spoof case.
- * 
+ * Kết quả trả về từ requireRole().
+ */
+export type RoleGuardResult =
+  | { ok: true; role: string; userId: string }
+  | { ok: false; response: NextResponse }
+
+// Thứ tự cấp bậc: ADMIN cao hơn MODERATOR cao hơn USER
+const ROLE_HIERARCHY: Record<string, number> = {
+  ADMIN: 2,
+  MODERATOR: 1,
+  USER: 0,
+}
+
+/**
+ * Helper bảo vệ API theo role — đọc role từ Session JWT (Phase 02).
+ *
+ * @param minimumRole - Role tối thiểu được phép truy cập
  * @example
- * const guard = await requireAdmin()
- * if (!guard.isAdmin) return guard.response
- * // guard.adminEmail bây giờ dùng được
+ * const guard = await requireRole("MODERATOR")
+ * if (!guard.ok) return guard.response
+ * // guard.role, guard.userId dùng được
+ */
+export async function requireRole(
+  minimumRole: "ADMIN" | "MODERATOR"
+): Promise<RoleGuardResult> {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "Unauthorized: Cần đăng nhập để truy cập." },
+        { status: 401 }
+      ),
+    }
+  }
+
+  const userRole = (session.user as any).role ?? "USER"
+  const userLevel = ROLE_HIERARCHY[userRole] ?? 0
+  const requiredLevel = ROLE_HIERARCHY[minimumRole] ?? 0
+
+  if (userLevel < requiredLevel) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: `Forbidden: Cần quyền ${minimumRole} để thực hiện thao tác này.` },
+        { status: 403 }
+      ),
+    }
+  }
+
+  return {
+    ok: true,
+    role: userRole,
+    userId: (session.user as any).id ?? "",
+  }
+}
+
+/**
+ * Helper bảo vệ cổng Admin — LEGACY (dùng env ADMIN_EMAILS).
+ * Giữ lại để không break các routes đang dùng.
+ * TODO: Migrate dần sang requireRole("MODERATOR") sau.
  */
 export async function requireAdmin(): Promise<AdminGuardResult> {
   const session = await getServerSession(authOptions)
@@ -58,3 +107,4 @@ export async function requireAdmin(): Promise<AdminGuardResult> {
 
   return { isAdmin: true, adminEmail: userEmail }
 }
+

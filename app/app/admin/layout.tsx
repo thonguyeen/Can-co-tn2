@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 interface NavItem {
   href: string
@@ -8,6 +9,7 @@ interface NavItem {
   icon: React.ReactNode
   description: string
   exact?: boolean
+  adminOnly?: boolean  // Chỉ ADMIN mới thấy
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -41,12 +43,19 @@ const NAV_ITEMS: NavItem[] = [
       </svg>
     ),
     description: 'KPI, Config, Crawler',
+    adminOnly: true,  // 👑 Chỉ ADMIN
   },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { data: session } = useSession()
+  const role = (session?.user as any)?.role ?? 'USER'
+  const isAdmin = role === 'ADMIN'
+
+  // Lọc menu: MODERATOR không thấy mục adminOnly
+  const visibleNavItems = NAV_ITEMS.filter(item => !item.adminOnly || isAdmin)
 
   const isActive = (item: NavItem) => {
     if (item.exact) return pathname === item.href
@@ -113,7 +122,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Nav Items */}
           <nav style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 1 }}>
-            {NAV_ITEMS.map((item) => {
+            {visibleNavItems.map((item) => {
               const active = isActive(item)
               return (
                 <button

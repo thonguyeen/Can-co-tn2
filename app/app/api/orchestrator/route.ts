@@ -7,15 +7,15 @@ import { getOrchestrator } from '@/lib/openclaw/orchestrator';
 import { getBotFactory } from '@/lib/openclaw/bot-factory';
 import { saveBotBatch, getStats, savePost } from '@/lib/openclaw/persistence';
 import { getEnhancedSessionManager } from '@/lib/openclaw/enhanced-sessions';
-import { requireAdmin } from '@/lib/admin/guard';
+import { requireRole } from '@/lib/admin/guard';
 
 // ═══════════════════════════════════════════════════════════════
 // GET - Get orchestrator status and activities
 // ═══════════════════════════════════════════════════════════════
 
 export async function GET(request: NextRequest) {
-  const guard = await requireAdmin();
-  if (!guard.isAdmin) return guard.response;
+  const guard = await requireRole('ADMIN');
+  if (!guard.ok) return guard.response;
 
   const searchParams = request.nextUrl.searchParams;
   const action = searchParams.get('action') || 'status';
@@ -77,8 +77,8 @@ export async function GET(request: NextRequest) {
 // ═══════════════════════════════════════════════════════════════
 
 export async function POST(request: NextRequest) {
-  const guard = await requireAdmin();
-  if (!guard.isAdmin) return guard.response;
+  const guard = await requireRole('ADMIN');
+  if (!guard.ok) return guard.response;
 
   try {
     const body = await request.json();

@@ -56,12 +56,22 @@ export const authOptions: NextAuthOptions = {
     async session({ token, session }) {
       if (token && session.user) {
         (session.user as any).id = token.sub as string;
+        // Truyền role từ JWT ra ngoài Session để Frontend đọc
+        (session.user as any).role = (token as any).role ?? "USER";
       }
       return session;
     },
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
+    async jwt({ token, user, trigger }) {
+      // Chỉ tra DB lấy role lúc user vừa đăng nhập (signIn)
+      // Các lần sau đọc từ token cache — không tốn query DB
+      if (trigger === "signIn" && user) {
         token.sub = user.id;
+        // Lấy role từ DB
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        (token as any).role = dbUser?.role ?? "USER";
       }
       return token;
     }

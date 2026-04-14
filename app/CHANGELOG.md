@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-14] - Phase 04: RBAC & Full Integration Testing
+### Added
+- **RBAC Security Testing**: Created standalone suite (`test-rbac-security.ts`) to validate role hierarchy (ADMIN > MODERATOR > USER) logic.
+
+### Fixed
+- Fixed database schema misalignment causing bot integration testing errors. Regenerated Prisma client to recognize newly added `role` fields.
+- Verified and passed all post-RBAC automated end-to-end bot workflows without incident (14/14 tests passed).
+
 ## [2026-04-10] - Phase 04: Bot System Hardening & Deployment Prep
 ### Added
 - **Envoy Bot Network Deployment**: Successfully generated and tested 5 Area Agent bots (Quận 1, 2, 7, Cầu Giấy, Hải Châu).

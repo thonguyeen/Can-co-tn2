@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 interface HubStats {
   totalUsers: number
@@ -16,16 +17,23 @@ interface HubStats {
 
 export default function AdminHubPage() {
   const router = useRouter()
+  const { data: session } = useSession()
+  const role = (session?.user as any)?.role ?? 'USER'
+  const isAdmin = role === 'ADMIN'
+
   const [stats, setStats] = useState<HubStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [usersRes, botsRes] = await Promise.all([
+        // MODERATOR: chỉ fetch user stats, không gọi /api/bots (sẽ 403)
+        const requests: Promise<Response>[] = [
           fetch('/api/admin/users?page=1&limit=1'),
-          fetch('/api/bots'),
-        ])
+        ]
+        if (isAdmin) requests.push(fetch('/api/bots'))
+
+        const [usersRes, botsRes] = await Promise.all(requests)
 
         const usersData = usersRes.ok ? await usersRes.json() : null
         const botsData = botsRes.ok ? await botsRes.json() : null
@@ -76,6 +84,9 @@ export default function AdminHubPage() {
 
   const [hoveredCard, setHoveredCard] = useState<'members' | 'bots' | null>(null)
 
+  // MODERATOR: không hiện bots card
+  const showBotsCard = isAdmin
+
   return (
     <div style={{
       minHeight: 'calc(100vh - 56px)',
@@ -105,7 +116,7 @@ export default function AdminHubPage() {
         {/* Overview Cards */}
         <div style={{ display: 'flex', gap: 24 }}>
 
-          {/* Card 1: Members */}
+          {/* Card 1: Members — tất cả role đều thấy */}
           <div
             id="admin-hub-members-card"
             style={cardStyle(hoveredCard === 'members')}
@@ -184,7 +195,8 @@ export default function AdminHubPage() {
             </div>
           </div>
 
-          {/* Card 2: Bots */}
+          {/* Card 2: Bots — chỉ ADMIN mới thấy */}
+          {showBotsCard && (
           <div
             id="admin-hub-bots-card"
             style={cardStyle(hoveredCard === 'bots')}
@@ -292,6 +304,7 @@ export default function AdminHubPage() {
               </svg>
             </div>
           </div>
+          )}
         </div>
 
         {/* Footer hint */}

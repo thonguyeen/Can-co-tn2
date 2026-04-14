@@ -24,6 +24,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // ADMIN RBAC — Bảo vệ khu vực /admin theo role
+  // ═══════════════════════════════════════════════════════════════
+  if (pathname.startsWith('/admin')) {
+    // Lớp 1: Chưa đăng nhập → bắt login
+    if (!token) {
+      const loginUrl = new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    const role = (token as any).role ?? "USER"
+
+    // Lớp 2: USER thường hoặc token cũ chưa có role → đá về trang chủ
+    if (role === "USER") {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    // Lớp 3: MODERATOR cố vào Bot Manager → đá về Hub admin
+    if (role === "MODERATOR" && pathname.startsWith('/admin/bots')) {
+      return NextResponse.redirect(new URL('/admin', request.url))
+    }
+
+    // ADMIN → cho qua tất cả
+    return NextResponse.next()
+  }
+
   // Vùng Demo cho phép truy cập Public
   if (pathname.startsWith('/demo')) {
     return NextResponse.next()
@@ -46,6 +72,7 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next()
+
 }
 
 export const config = {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { toSnakeCase } from '@/lib/data/helpers';
+import { requireRole } from '@/lib/admin/guard';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -42,6 +43,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // ─── Bảo vệ cổng: Chỉ ADMIN được tạo Bot mới ───
+  const guard = await requireRole('ADMIN')
+  if (!guard.ok) return guard.response
+
   try {
     const body = await request.json();
     const { name, handle, category, province, district, is_envoy = true } = body;
@@ -90,6 +95,10 @@ const ALLOWED_UPDATE_FIELDS = new Set([
 ]);
 
 export async function PUT(request: NextRequest) {
+  // ─── Bảo vệ cổng: Chỉ ADMIN được sửa cấu hình Bot ───
+  const guard = await requireRole('ADMIN')
+  if (!guard.ok) return guard.response
+
   try {
     const body = await request.json();
     const { handle, ...updateFields } = body;
