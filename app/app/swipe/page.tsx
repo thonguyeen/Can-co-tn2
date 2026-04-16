@@ -1,274 +1,366 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { type MockIntent } from '@/lib/mock/intents';
-import { GENERATED_INTENTS } from '@/lib/mock/intent-generator';
-import { CRAWLED_INTENTS } from '@/lib/mock/crawled-listings';
-import { DEMO_INSIGHTS } from '@/lib/mock/insights';
-import { 
-  Home, Compass, MessageCircle, User, Settings, 
-  X, Heart, Info, ArrowRight, ArrowLeft, Bot, Activity 
-} from 'lucide-react';
+import { Compass, MessageCircle, Settings, X, Heart, Bot, MapIcon, LayoutGrid, Flame, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MutualMatchPopup } from '@/components/swipe/MutualMatchPopup';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-const MOCK_INTENTS = [...GENERATED_INTENTS, ...CRAWLED_INTENTS].sort(
-  (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-);
+interface FeedIntent {
+  id: string;
+  type: string;
+  title: string;
+  rawText: string;
+  price: number | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  address: string | null;
+  district: string | null;
+  ward: string | null;
+  city: string | null;
+  category: string;
+  subcategory: string | null;
+  trustScore: number | null;
+  matchCount: number | null;
+  viewCount: number | null;
+  createdAt: string;
+  userId: string;
+  images: { url: string; displayOrder: number }[];
+}
 
 export default function SwipeFeedPage() {
-  const [intents, setIntents] = useState<MockIntent[]>(MOCK_INTENTS);
+  const [intents, setIntents] = useState<FeedIntent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [matchData, setMatchData] = useState<{
+    conversationId: string;
+    partnerName: string;
+    partnerAvatar: string | null;
+  } | null>(null);
+  const [unreadLikesCount] = useState(3);
+  const pathname = usePathname();
 
-  // Lõi dữ liệu
   useEffect(() => {
-    const fetchRealIntents = async () => {
+    const fetchFeed = async () => {
       try {
-        const res = await fetch('/api/intents?limit=20&status=active');
-        if (!res.ok) return;
+        setIsLoading(true);
+        const res = await fetch('/api/swipe/feed?limit=20');
+        if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
-        if (data.intents && data.intents.length > 0) {
-          setIntents((prev) => {
-            const mockIds = new Set(MOCK_INTENTS.map((i) => i.id));
-            const dbIntents = data.intents.filter((i: MockIntent) => !mockIds.has(i.id));
-            return dbIntents.length ? [...dbIntents, ...MOCK_INTENTS] : prev;
-          });
-        }
-      } catch {
-        // Fallback to mock
+        if (data.intents) setIntents(data.intents);
+      } catch (error) {
+        console.error('Error fetching swipe feed:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchRealIntents();
+    fetchFeed();
   }, []);
 
   const currentIntent = intents[currentIndex];
-  // Dữ liệu Insight ảo mượt mà (Mocked for visual)
-  const trustScore = 85 + Math.floor(Math.random() * 14); 
-  const currentInsight = DEMO_INSIGHTS[currentIndex % DEMO_INSIGHTS.length] || DEMO_INSIGHTS[0];
 
-  const handleSwipe = (dir: 1 | -1) => {
+  const handleSwipe = async (dir: 1 | -1) => {
+    if (!currentIntent) return;
     setDirection(dir);
     if (currentIndex < intents.length - 1) {
       setTimeout(() => setCurrentIndex(prev => prev + 1), 200);
     }
+    const action = dir === 1 ? 'LIKE' : 'SKIP';
+    try {
+      const res = await fetch('/api/swipe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intentId: currentIntent.id, action }),
+      });
+      const data = await res.json();
+      if (data.success && data.isMutualMatch && data.conversationId) {
+        setMatchData({ conversationId: data.conversationId, partnerName: 'Người dùng', partnerAvatar: null });
+      }
+    } catch (error) {
+      console.error('Error sending swipe action:', error);
+    }
   };
 
-  if (!currentIntent) return <div className="h-screen bg-[#0f172a] text-slate-50 flex items-center justify-center">Hết tin!</div>;
+  const bgImage = currentIntent?.images?.[0]?.url ??
+    (currentIntent?.type === 'CO'
+      ? 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800'
+      : 'https://images.unsplash.com/photo-1560518881-bcce19af2418?auto=format&fit=crop&q=80&w=800');
+
+  const displayPrice = () => {
+    if (!currentIntent) return '';
+    if (currentIntent.price) return `${(currentIntent.price / 1_000_000_000).toFixed(1)} Tỷ`;
+    if (currentIntent.priceMin && currentIntent.priceMax)
+      return `${(currentIntent.priceMin / 1_000_000_000).toFixed(1)} - ${(currentIntent.priceMax / 1_000_000_000).toFixed(1)} Tỷ`;
+    return 'Thỏa thuận';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
+        <Flame className="w-10 h-10 text-[#0068FF] animate-pulse" />
+        <p className="text-gray-500 text-sm font-medium">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-screen w-full bg-[#0f172a] text-slate-50 flex overflow-hidden font-sans selection:bg-emerald-500/30">
-      
-      {/* 1. LEFT SIDEBAR (Navigation) */}
-      <div className="w-20 lg:w-64 border-r border-slate-800/50 bg-[#0f172a]/80 backdrop-blur flex flex-col items-center lg:items-start py-8 px-4 z-10 shrink-0 hidden md:flex">
-        <div className="mb-12 lg:px-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center font-bold text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+    <div className="h-screen w-full bg-gray-50 text-gray-900 flex overflow-hidden font-sans">
+
+      {matchData && (
+        <MutualMatchPopup
+          partnerName={matchData.partnerName}
+          partnerAvatar={matchData.partnerAvatar}
+          conversationId={matchData.conversationId}
+          onClose={() => setMatchData(null)}
+        />
+      )}
+
+      {/* LEFT SIDEBAR — Matches homepage exactly */}
+      <div className="hidden md:flex w-24 lg:w-64 flex-col bg-white border-r border-gray-200 shadow-sm z-50">
+        <div className="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-gray-100 shrink-0">
+          <h1 className="text-2xl font-black text-[#0068FF] hidden lg:block tracking-tighter">
+            Cần<span className="text-green-500">&</span>Có
+          </h1>
+          <div className="lg:hidden w-10 h-10 bg-[#0068FF] rounded-xl flex items-center justify-center text-white font-black text-sm">
             C&C
           </div>
-          <span className="text-xl font-bold tracking-tight hidden lg:block text-slate-100">
-            CẦN & CÓ <span className="text-emerald-500 text-sm align-top">BĐS</span>
-          </span>
         </div>
 
-        <nav className="flex flex-col gap-6 w-full lg:px-2">
-          <NavItem icon={<Compass className="w-6 h-6" />} label="Khám Phá" active />
-          <NavItem icon={<Heart className="w-6 h-6" />} label="Quan Tâm" />
-          <NavItem icon={<MessageCircle className="w-6 h-6" />} label="Tin Nhắn" badge={3} />
-          <NavItem icon={<User className="w-6 h-6" />} label="Hồ Sơ" />
+        <nav className="flex-1 py-4 flex flex-col gap-1 px-3">
+          <NavItem icon={<Compass size={22} />} label="Trang chủ" href="/" active={false} />
+          <NavItem icon={<MapIcon size={22} />} label="Bản đồ" href="/?tab=map" active={false} />
+          <NavItem
+            icon={<Flame size={22} className="text-amber-500 fill-amber-400" />}
+            label="Khớp Nhanh"
+            href="/swipe"
+            active={pathname === '/swipe'}
+          />
+          <NavItem
+            icon={<Heart size={22} />}
+            label="Quan Tâm"
+            href="/swipe/likes"
+            active={pathname === '/swipe/likes'}
+            badge={unreadLikesCount}
+          />
+          <NavItem icon={<MessageCircle size={22} />} label="Tin nhắn" href="/?tab=chat" active={false} badge={3} />
+          <NavItem icon={<LayoutGrid size={22} />} label="Tiện ích" href="/?tab=apps" active={false} />
         </nav>
-        
-        <div className="mt-auto lg:px-2 w-full">
-          <NavItem icon={<Settings className="w-6 h-6" />} label="Cài Đặt" />
+
+        <div className="px-3 pb-4 border-t border-gray-100 pt-3">
+          <NavItem icon={<Settings size={22} />} label="Cài đặt" href="/settings" active={false} />
         </div>
       </div>
 
-      {/* 2. CENTER TINDER FEED */}
-      <div className="flex-1 flex flex-col relative h-full items-center justify-center p-4">
-        
-        {/* Mobile Header (Only visible on small screens) */}
-        <div className="md:hidden absolute top-0 w-full p-4 flex justify-between items-center z-20">
-           <div className="text-emerald-500 font-bold text-lg tracking-tight">CẦN & CÓ</div>
-           <MessageCircle className="w-6 h-6 text-slate-300" />
+      {/* CENTER — Swipe Feed */}
+      <div className="flex-1 flex flex-col h-full items-center justify-center relative overflow-hidden">
+
+        {/* Header */}
+        <div className="w-full px-6 pt-5 pb-3 flex items-center justify-between z-10 shrink-0">
+          <div className="flex items-center gap-2">
+            <Flame className="w-6 h-6 text-amber-500 fill-amber-400" />
+            <h1 className="text-xl font-black text-gray-800 tracking-tight">Khớp Nhanh</h1>
+          </div>
+          {intents.length > 0 && (
+            <span className="bg-blue-50 text-[#0068FF] text-xs px-3 py-1 rounded-full font-bold">
+              {intents.length - currentIndex} tin
+            </span>
+          )}
         </div>
 
-        <div className="relative w-full max-w-[420px] aspect-[4/5] sm:aspect-[9/16] perspective-1000">
-          <AnimatePresence mode="popLayout" custom={direction}>
-            <motion.div
-              key={currentIntent.id}
-              initial={{ x: 100 * direction, opacity: 0, rotate: 5 * direction, scale: 0.95 }}
-              animate={{ x: 0, opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ x: -100 * direction, opacity: 0, rotate: -5 * direction, scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="absolute inset-0 w-full h-full rounded-3xl overflow-hidden bg-slate-800 shadow-2xl border border-slate-700/50"
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.8}
-              onDragEnd={(e, { offset, velocity }) => {
-                const swipe = offset.x * velocity.x;
-                if (swipe < -10000) handleSwipe(-1);
-                else if (swipe > 10000) handleSwipe(1);
-              }}
-            >
-              {/* Fake Background Image for Prototype (BDS/Apartment) */}
-              <div 
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ 
-                  backgroundImage: currentIntent.type === 'CO' 
-                    ? `url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800')`
-                    : `url('https://images.unsplash.com/photo-1560518881-bcce19af2418?auto=format&fit=crop&q=80&w=800')` 
-                }}
+        {!currentIntent ? (
+          <motion.div
+            className="flex flex-col items-center justify-center gap-5 px-8 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
+              <Heart className="w-10 h-10 text-gray-300" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-700">Đã duyệt hết tin!</h2>
+            <p className="text-sm text-gray-400 max-w-[260px]">
+              Bạn đã lướt qua tất cả tin đăng. Hãy quay lại sau!
+            </p>
+          </motion.div>
+        ) : (
+          <>
+            {/* Card Stack */}
+            <div className="relative w-full max-w-[380px] aspect-[3/4] perspective-1000 flex-1 flex items-center justify-center px-4">
+              <AnimatePresence mode="popLayout" custom={direction}>
+                <motion.div
+                  key={currentIntent.id}
+                  initial={{ x: 80 * direction, opacity: 0, rotate: 4 * direction, scale: 0.96 }}
+                  animate={{ x: 0, opacity: 1, rotate: 0, scale: 1 }}
+                  exit={{ x: -120 * direction, opacity: 0, rotate: -6 * direction, scale: 0.96 }}
+                  transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+                  className="absolute inset-0 w-full h-full rounded-[28px] overflow-hidden bg-white shadow-2xl border border-gray-100 cursor-grab active:cursor-grabbing"
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.7}
+                  onDragEnd={(e, { offset, velocity }) => {
+                    const swipe = offset.x * velocity.x;
+                    if (swipe < -10000) handleSwipe(-1);
+                    else if (swipe > 10000) handleSwipe(1);
+                  }}
+                >
+                  {/* Property Image */}
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url('${bgImage}')` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80" />
+                  </div>
+
+                  {/* Type Badge - Top Left */}
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-md shadow-sm ${currentIntent.type === 'CAN'
+                      ? 'bg-blue-500/90 text-white border border-blue-400/50'
+                      : 'bg-green-500/90 text-white border border-green-400/50'}`}>
+                      {currentIntent.type === 'CAN' ? 'CẦN TÌM' : 'ĐANG BÁN'}
+                    </span>
+                  </div>
+
+                  {/* Trust Score - Top Right */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      <span className="text-xs font-semibold text-white">{currentIntent.trustScore ?? 80}%</span>
+                    </div>
+                  </div>
+
+                  {/* Info Bottom */}
+                  <div className="absolute bottom-0 w-full p-5 z-10">
+                    <h2 className="text-xl font-bold text-white mb-1 leading-snug drop-shadow-md">
+                      {currentIntent.title || 'Bất động sản'}
+                    </h2>
+                    <div className="text-green-400 text-lg font-black tracking-tight mb-2 drop-shadow-md">
+                      {displayPrice()}
+                    </div>
+                    <p className="text-xs text-white/80 line-clamp-2 mb-3 leading-relaxed">
+                      {currentIntent.rawText}
+                    </p>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {currentIntent.district && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white border border-white/20 backdrop-blur-sm">
+                          {currentIntent.district}
+                        </span>
+                      )}
+                      {currentIntent.subcategory && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/15 text-white border border-white/20 backdrop-blur-sm">
+                          {currentIntent.subcategory}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Action Buttons — matches SwipeMatchTab style */}
+            <div className="flex items-center justify-center gap-5 py-6 shrink-0 z-10">
+              {/* SKIP */}
+              <button
+                onClick={() => handleSwipe(-1)}
+                className="w-16 h-16 rounded-full bg-white border-2 border-red-200 flex items-center justify-center shadow-lg shadow-red-500/10 hover:bg-red-50 hover:border-red-400 hover:scale-110 transition-all duration-200 active:scale-95 cursor-pointer"
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#0f172a]/95" />
-              </div>
+                <X className="w-7 h-7 text-red-500" />
+              </button>
 
-              {/* Trust Badge Top Right */}
-              <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
-                <div className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-emerald-500/30 flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-semibold text-emerald-400 tracking-wide">Trust Score {trustScore}%</span>
-                </div>
-                <div className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-slate-600/50">
-                   <span className="text-[10px] text-slate-300 uppercase font-medium">{currentIntent.type === 'CO' ? 'Chính Chủ' : 'Xác Minh Qua SĐT'}</span>
-                </div>
-              </div>
+              {/* LIKE */}
+              <button
+                onClick={() => handleSwipe(1)}
+                className="w-16 h-16 rounded-full bg-white border-2 border-green-200 flex items-center justify-center shadow-lg shadow-green-500/10 hover:bg-green-50 hover:border-green-400 hover:scale-110 transition-all duration-200 active:scale-95 cursor-pointer"
+              >
+                <Heart className="w-7 h-7 text-green-500" />
+              </button>
+            </div>
+          </>
+        )}
+      </div>
 
-              {/* Status Badge Top Left */}
-              <div className="absolute top-4 left-4 z-10">
-                 <div className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-slate-600/50">
-                  <span className={`text-xs font-bold ${currentIntent.type === 'CAN' ? 'text-red-400' : 'text-emerald-400'}`}>
-                    {currentIntent.type === 'CAN' ? 'CẦN TÌM MUA' : 'ĐANG KÊU BÁN'}
+      {/* RIGHT SIDEBAR — AI Info */}
+      <div className="hidden xl:flex w-80 flex-col bg-white border-l border-gray-200 overflow-y-auto">
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#0068FF]/10 border border-[#0068FF]/20 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-[#0068FF]" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-800 text-sm">CẦN & CÓ Assistant</h3>
+              <p className="text-[10px] text-green-600 font-semibold uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block"></span>
+                Real-time Analysis
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {currentIntent && (
+          <div className="p-4">
+            <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+              <h4 className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3 flex items-center gap-2">
+                <Activity className="w-3 h-3" /> Chi tiết bài đăng
+              </h4>
+              <div className="space-y-2.5 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Mã bài:</span>
+                  <span className="font-mono text-xs font-semibold text-gray-700">{currentIntent.id.substring(0, 8)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Loại:</span>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${currentIntent.type === 'CAN' ? 'bg-blue-50 text-[#0068FF]' : 'bg-green-50 text-green-600'}`}>
+                    {currentIntent.type}
                   </span>
                 </div>
-              </div>
-
-              {/* Info Overlay Bottom */}
-              <div className="absolute bottom-0 w-full p-6 pt-20 flex flex-col justify-end">
-                <h2 className="text-2xl font-bold text-white mb-1 leading-snug drop-shadow-md">
-                  {currentIntent.title}
-                </h2>
-                <div className="text-emerald-400 text-xl font-black tracking-tight mb-3 drop-shadow-md">
-                  {currentIntent.price?.toLocaleString('vi-VN')} VND
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Người tìm:</span>
+                  <span className="font-semibold text-gray-700">{currentIntent.matchCount ?? 0} người</span>
                 </div>
-                <p className="text-sm text-slate-300 line-clamp-3 mb-4 leading-relaxed whitespace-pre-line text-pretty">
-                  {currentIntent.raw_text}
-                </p>
-                
-                {/* Meta tags */}
-                <div className="flex gap-2 flex-wrap mb-2">
-                  <span className="text-[10px] px-2 py-1 rounded-md bg-white/10 text-slate-200 border border-white/5 backdrop-blur-sm">Quận 7, HCM</span>
-                  <span className="text-[10px] px-2 py-1 rounded-md bg-white/10 text-slate-200 border border-white/5 backdrop-blur-sm">65m2</span>
-                  <span className="text-[10px] px-2 py-1 rounded-md bg-white/10 text-slate-200 border border-white/5 backdrop-blur-sm">2 Phòng Ngủ</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Lượt xem:</span>
+                  <span className="font-semibold text-gray-700">{currentIntent.viewCount ?? 34}</span>
                 </div>
               </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+            </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-6 mt-8 z-10">
-          <button 
-            onClick={() => handleSwipe(-1)}
-            className="w-16 h-16 rounded-full bg-slate-800/80 backdrop-blur-md flex items-center justify-center text-red-400 hover:bg-slate-700 hover:text-red-300 hover:scale-110 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.3)] border border-slate-700 group"
-          >
-            <X className="w-8 h-8 group-hover:drop-shadow-[0_0_8px_rgba(248,113,113,0.8)] transition-all" />
-          </button>
-          <button 
-            onClick={() => handleSwipe(1)}
-            className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center text-white hover:bg-emerald-400 hover:scale-110 active:scale-95 transition-all shadow-[0_4px_20px_rgba(16,185,129,0.4)] border border-emerald-400 group"
-          >
-            <Heart className="w-8 h-8 group-hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] fill-current transition-all" />
-          </button>
-        </div>
-        
-        {/* Keyboard hints */}
-        <div className="hidden xl:flex items-center gap-4 mt-8 text-[10px] text-slate-500 font-medium">
-          <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">←</kbd> Bỏ qua</span>
-          <span className="flex items-center gap-1"><kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">→</kbd> Quan tâm</span>
-        </div>
-
+            <div className="mt-4 bg-blue-50 rounded-2xl p-4 border border-blue-100">
+              <h4 className="text-xs text-[#0068FF] uppercase tracking-wide font-bold mb-2 flex items-center gap-1.5">
+                <Bot className="w-3 h-3" /> Gợi ý thị trường
+              </h4>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Bất động sản khu vực {currentIntent.district ?? 'này'} đang có nhu cầu cao. Đây là thời điểm tốt để kết nối!
+              </p>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* 3. RIGHT SIDEBAR (AI Dashboard) */}
-      <div className="w-80 lg:w-96 border-l border-slate-800/50 bg-[#1e293b]/30 backdrop-blur-xl p-6 overflow-y-auto hidden xl:block custom-scrollbar">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex flex-center items-center justify-center">
-            <Bot className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div>
-            <h3 className="font-bold text-slate-100 text-sm">CẦN & CÓ Assistant</h3>
-            <p className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse relative"><span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-50"></span></span>
-              Real-time Analysis
-            </p>
-          </div>
-        </div>
-
-        {/* AI Market Context (Price Tooltip Logic) */}
-        <div className="mb-6 bg-slate-800/40 rounded-2xl p-4 border border-slate-700/50 shadow-inner">
-          <h4 className="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-3 flex items-center gap-2">
-            <Activity className="w-3 h-3" /> Tín Hiệu Định Giá
-          </h4>
-          
-          <div className="flex items-end gap-2 mb-4">
-             <div className="text-2xl font-bold text-emerald-400">Rẻ hơn 12%</div>
-             <div className="text-xs text-slate-400 mb-1">so với thị trường</div>
-          </div>
-
-          {/* Mini Bar Chart */}
-          <div className="space-y-3">
-             <div className="flex items-center gap-3">
-                <div className="w-12 text-[10px] text-slate-400 text-right">Căn này</div>
-                <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
-                   <div className="h-full bg-emerald-400 rounded-full w-[70%]" />
-                </div>
-                <div className="w-16 text-[10px] font-bold text-slate-200">3.5 Tỷ</div>
-             </div>
-             <div className="flex items-center gap-3">
-                <div className="w-12 text-[10px] text-slate-400 text-right">Khu Vực</div>
-                <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
-                   <div className="h-full bg-slate-500 rounded-full w-[85%]" />
-                </div>
-                <div className="w-16 text-[10px] font-bold text-slate-200">4.1 Tỷ</div>
-             </div>
-          </div>
-        </div>
-
-        {/* AI Match Advisor Box */}
-        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 rounded-2xl p-4 border border-slate-700/50 relative overflow-hidden">
-           {/* Decorative glow */}
-           <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full" />
-           
-           <h4 className="text-xs text-emerald-400 uppercase tracking-widest font-bold mb-3 flex items-center gap-2 relative">
-             <Bot className="w-3 h-3" /> {currentInsight.district}
-           </h4>
-           
-           <p className="text-sm text-slate-300 leading-relaxed relative">
-              "{currentInsight.suggestions?.buyer || 'Hệ thống nhận thấy căn góc này cực kỳ hiếm, chủ nhà đang cần bán gấp với giá rất tốt so với mặt bằng chung Quận 7.'}"
-           </p>
-
-           <div className="mt-4 pt-4 border-t border-slate-700/50 flex flex-wrap gap-2 relative">
-              <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">#chinh_chu_gap_ban</span>
-              <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">#can_goc</span>
-           </div>
-        </div>
-      </div>
-
     </div>
   );
 }
 
-function NavItem({ icon, label, active, badge }: { icon: React.ReactNode, label: string, active?: boolean, badge?: number }) {
+function NavItem({ icon, label, href, active, badge }: {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+  active?: boolean;
+  badge?: number;
+}) {
   return (
-    <button className={`flex items-center gap-4 p-3 rounded-xl transition-all w-full group relative ${active ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}>
-      <div className={`relative ${active ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-200'} transition-colors`}>
-        {icon}
-        {badge && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white border-2 border-[#0f172a]">
-            {badge}
-          </span>
-        )}
+    <Link href={href}>
+      <div className={`flex items-center justify-center lg:justify-start gap-4 px-3 py-3 lg:px-4 lg:py-3.5 rounded-xl transition-all cursor-pointer ${active
+        ? 'bg-blue-50 text-[#0068FF] font-bold shadow-sm'
+        : 'text-gray-600 hover:bg-gray-100 font-medium'}`}>
+        <div className="relative shrink-0">
+          {icon}
+          {badge ? (
+            <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+              {badge > 9 ? '9+' : badge}
+            </span>
+          ) : null}
+        </div>
+        <span className="hidden lg:block text-[15px]">{label}</span>
       </div>
-      <span className={`font-semibold hidden lg:block ${active ? 'text-emerald-400' : 'text-slate-300'}`}>{label}</span>
-      {active && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-400 rounded-r-md" />}
-    </button>
+    </Link>
   );
 }

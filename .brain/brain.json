@@ -1,7 +1,8 @@
 {
   "meta": {
     "schema_version": "1.1.0",
-    "awf_version": "3.3.0"
+    "awf_version": "3.3.0",
+    "last_updated": "2026-04-16T16:49:00+07:00"
   },
   "project": {
     "name": "Can-co-tn",
@@ -10,74 +11,136 @@
   },
   "tech_stack": {
     "frontend": {
-      "framework": "Next.js (App Router)",
-      "ui": "React",
-      "styling": "Tailwind CSS",
-      "state": "Zustand, Context API (SessionProvider)"
+      "framework": "Next.js 16.1.3 (App Router, Turbopack)",
+      "ui": "React 19",
+      "styling": "Tailwind CSS v4",
+      "animation": "Framer Motion",
+      "icons": "Lucide React",
+      "date_format": "date-fns (với locale vi)"
     },
     "backend": {
       "framework": "Next.js API Routes",
-      "auth": "NextAuth.js",
-      "database_orm": "Prisma"
+      "auth": "NextAuth.js v4 (JWT)",
+      "database_orm": "Prisma 7.6 với PrismaPg adapter"
     },
     "database": {
-      "type": "PostgreSQL"
+      "type": "PostgreSQL (Docker local: cancotn_local)",
+      "connection_url_format": "postgresql://admin:admin123@localhost:5432/cancotn_local"
     }
   },
   "database_schema": {
-    "summary": "Platform for matching needs (Cần/Có), managing profiles, bots, referrals and intent extraction.",
+    "summary": "Platform matching nhu cầu BĐS (Cần/Có), quản lý profile, bots, referrals và intent. Hệ thống Mutual Match (Tinder-style) hoàn chỉnh.",
     "tables": [
-      "User",
-      "Profile",
-      "UserStat",
-      "Post",
-      "Bot",
-      "Intent",
-      "News",
-      "RawNews"
+      "User", "Profile", "UserStat",
+      "Post", "Bot", "Intent", "IntentImage",
+      "News", "RawNews", "Swipelike",
+      "Conversation", "Message",
+      "Notification", "Match",
+      "SwipeLike"
     ],
-    "relationships_explained": "1 User has 1 Profile and 1 UserStat. System supports Role-Based Access (User has role: USER, MODERATOR, ADMIN)."
+    "key_models": {
+      "SwipeLike": "userId → Profile (relation: user SwipeLike[]), intentId → Intent (relation: swipeLikes SwipeLike[]). Unique constraint: [userId, intentId]. Action: LIKE | SKIP.",
+      "Profile": "id maps 1:1 với User.id (NextAuth JWT sub). Có swipeLikes SwipeLike[] relation (thêm vào 16/04/2026).",
+      "Intent": "isBot=false → xuất hiện trong Swipe feed. isBot=true → chỉ home feed. User's own intents filtered from feed.",
+      "Conversation": "Unique: [intentId, userA, userB]. Chỉ tạo khi có Mutual Match."
+    },
+    "relationships_explained": "1 User có 1 Profile và nhiều SwipeLike. Mutual LIKE từ 2 phía kích hoạt tạo Conversation (Phòng Thỏa Thuận). One-way LIKE chỉ tạo Notification cho chủ bài."
   },
   "api_endpoints": [
     {
       "path": "/api/admin/*",
-      "explained": "Secured admin endpoints for member stats and operations. Role-protected."
+      "explained": "Secured admin endpoints for member stats. Role-protected (ADMIN/MODERATOR)."
     },
     {
-      "path": "/api/bots/*",
-      "explained": "Bot creation, mutation and listing. Mutating actions require ADMIN role."
+      "path": "/api/swipe",
+      "method": "POST",
+      "explained": "Lưu hành động vuốt (LIKE/SKIP). Gọi detectAndHandleMatch() → tạo Conversation nếu Mutual Match. Response: { success, isMutualMatch, conversationId? }"
     },
     {
-      "path": "/api/orchestrator/*",
-      "explained": "Bot orchestrator controls (start, stop, debates). Requires ADMIN role."
+      "path": "/api/swipe/feed",
+      "method": "GET",
+      "explained": "Feed Khớp Nhanh. Lọc: isBot=false, không phải bài của mình, loại bài đã vuốt. Param: limit (default 20)."
     },
     {
-      "path": "/api/chat/*",
-      "explained": "Secured Chat API for handling Global Chatbot conversations with rate limiting."
+      "path": "/api/swipe/matches",
+      "method": "GET",
+      "explained": "Danh sách Phòng Thỏa Thuận đã tạo. Kèm Profile đối tác và tin nhắn cuối."
+    },
+    {
+      "path": "/api/swipe/likes",
+      "method": "GET",
+      "explained": "Lượt LIKE nhận được vào bài của current user. Dùng trong Tab Quan Tâm (/swipe/likes)."
     }
   ],
   "business_rules": [
-    "Users are default assigned 'USER' role.",
-    "Only 'ADMIN' rank can execute destructive Bot actions or view sensitive orchestrator dashboard cards.",
-    "'MODERATOR' rank can view referral/user data but not perform Bot manipulations."
+    "Users có role mặc định: USER. MODERATOR và ADMIN được phân quyền cao hơn.",
+    "Bot Intents (isBot=true) không xuất hiện trong Swipe feed — chỉ Home Feed.",
+    "Conversation chỉ tạo khi CẢ HAI user cùng LIKE bài của nhau (Mutual Match).",
+    "One-way Like: Notification công khai (tên + avatar) gửi cho chủ bài, không mở phòng chat.",
+    "Không thể tự like bài của chính mình.",
+    "SwipeLike dùng upsert: vuốt lại thì update action (không tạo bản ghi mới)."
   ],
   "features": [
-    "Role-Based Access Control (RBAC)",
-    "Global AI Chatbot (NHA.AI)",
-    "Automated Market Analyst Report",
-    "Referral & Gamification System",
-    "Decoupled Crawling and Curation (Bot pipeline)"
+    "Role-Based Access Control (RBAC) — DONE",
+    "Global AI Chatbot (NHA.AI) — DONE",
+    "Automated Market Analyst Report — DONE",
+    "Referral & Gamification System — DONE",
+    "Decoupled Crawling/Curation Bot Pipeline — DONE",
+    "Mutual Match (Khớp Nhanh) — DONE: Phase 01 DB, Phase 02 API, Phase 03 Frontend, Phase 04 Testing"
   ],
+  "ui_design_system": {
+    "theme": "Light mode (homepage)",
+    "background": "bg-gray-50",
+    "sidebar": "bg-white border-r border-gray-200 shadow-sm",
+    "active_nav": "bg-blue-50 text-[#0068FF] font-bold shadow-sm",
+    "inactive_nav": "text-gray-600 hover:bg-gray-100",
+    "primary_color": "#0068FF (blue)",
+    "secondary_color": "green-500 (positive actions)",
+    "card_style": "bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md",
+    "swipe_action_buttons": "White bg, colored border (red for skip, green for like)",
+    "brand_logo": "text-[#0068FF] + text-green-500 for & symbol",
+    "note": "Pages /swipe và /swipe/likes đã được redesign 16/04/2026 để đồng bộ với homepage design language"
+  },
+  "mutual_match_implementation": {
+    "status": "COMPLETE",
+    "files": {
+      "db_schema": "prisma/schema.prisma (models: SwipeLike, Profile.swipeLikes relation)",
+      "match_detector": "lib/swipe/match-detector.ts (detectAndHandleMatch function)",
+      "api_swipe": "app/api/swipe/route.ts (POST handler)",
+      "api_feed": "app/api/swipe/feed/route.ts (GET feed with filters)",
+      "api_matches": "app/api/swipe/matches/route.ts (GET matched conversations)",
+      "api_likes": "app/api/swipe/likes/route.ts (GET received likes)",
+      "popup_component": "components/swipe/MutualMatchPopup.tsx (celebration popup, no deps)",
+      "swipe_page": "app/swipe/page.tsx (standalone swipe feed page, redesigned)",
+      "likes_page": "app/swipe/likes/page.tsx (Quan Tam page, redesigned)",
+      "test_script": "scripts/test-mutual-match.ts (E2E test, 4/4 passed)"
+    },
+    "known_issues_fixed": [
+      "IntentImage field: imageUrl → url (schema mismatch fixed)",
+      "Profile missing SwipeLike[] relation → added (500 error on /api/swipe/likes fixed)",
+      "Test script PrismaClient instantiation → use dynamic import of lib/db.ts"
+    ]
+  },
   "knowledge_items": {
     "patterns": [
       "Extending NextAuth JWT and Session properties with User role by augmenting interface typings.",
-      "Generic requireRole() helper mapping roles to hierarchy integer levels (ADMIN=2, MODRATOR=1, USER=0)."
+      "Generic requireRole() helper mapping roles to hierarchy integer levels (ADMIN=2, MODERATOR=1, USER=0).",
+      "detectAndHandleMatch() dùng prisma.$transaction để chống race condition khi 2 user like cùng lúc.",
+      "SwipeLike.upsert: an toàn để xử lý repeated swipe mà không duplicate records.",
+      "Prisma bidirectional relations: khi thêm relation field 1 phía, phải thêm reverse field ở phía còn lại."
     ],
     "gotchas": [
-      "Always call useSession() from a component wrapped inside a <SessionProvider> loaded in layout.tsx as a Client Component."
+      "Always call useSession() from a component wrapped inside <SessionProvider> in layout.tsx.",
+      "BigInt từ Prisma (price field) cần serialize sang Number() trước khi JSON response.",
+      "Prisma schema change cần `db:push` + restart server để invalidate Turbopack compiled chunks.",
+      "PrismaClient trong test scripts cần PrismaPg adapter (giống lib/db.ts), không dùng new PrismaClient() thẳng.",
+      "PowerShell không hỗ trợ && giữa commands hoặc & để bg process — dùng ; hoặc tách lệnh riêng."
     ],
     "conventions": [
-      "Split database layers from API handlers, use middleware for broad route protections, and use targeted role checks in API endpoints for defense-in-depth."
+      "Split database layers from API handlers, use middleware for broad route protections.",
+      "Swipe pages /swipe/* dùng light design system (bg-gray-50, white sidebar, #0068FF accent) giống homepage.",
+      "NavItem trong standalone pages dùng Link wrapper thay vì button với onClick.",
+      "Test scripts load .env.local bằng dotenv config() đặt ở đầu file trước tất cả imports khác."
     ]
   }
 }

@@ -1,51 +1,93 @@
 {
-  "updated_at": "2026-04-14T20:50:00Z",
+  "updated_at": "2026-04-16T16:49:00+07:00",
   "working_on": {
-    "feature": "Admin Role-Based Access Control (RBAC)",
-    "task": "Completed Full Suite Verification",
-    "status": "completed",
-    "files": [
-      "scripts/test-rbac-security.ts"
+    "feature": "Mutual Match — Tính năng Khớp Nhanh (BĐS Tinder)",
+    "task": "COMPLETED — Phase 04 Testing & Polish + UI Redesign",
+    "status": "done",
+    "files_modified": [
+      "app/app/swipe/page.tsx",
+      "app/app/swipe/likes/page.tsx",
+      "app/app/api/swipe/likes/route.ts",
+      "app/app/api/swipe/feed/route.ts",
+      "app/scripts/test-mutual-match.ts",
+      "app/prisma/schema.prisma",
+      "app/components/swipe/MutualMatchPopup.tsx"
     ],
     "blockers": [],
-    "notes": "RBAC feature has been fully tested and verified against the Bot Revamp pipeline."
+    "notes": "Toàn bộ hệ thống Mutual Match đã hoàn thiện và được test E2E. UI đã được redesign để đồng bộ với homepage (light theme, white sidebar, #0068FF accent)."
   },
   "pending_tasks": [
     {
-      "task": "Cleanup old endpoints",
+      "task": "Triển khai production (deploy lên Vercel + Supabase)",
+      "priority": "medium",
+      "notes": "Cần cập nhật DATABASE_URL sang Supabase connection string"
+    },
+    {
+      "task": "Tích hợp badge count từ API thực tế (hiện đang mock = 3)",
       "priority": "low",
-      "notes": "Eventually refactor older API routes using legacy requireAdmin to use the new requireRole"
+      "notes": "NavItem badge trong /swipe và /swipe/likes pages hiện hardcoded"
+    },
+    {
+      "task": "Partner name trong MutualMatchPopup (hiện là 'Người dùng')",
+      "priority": "low",
+      "notes": "Cần fetch Profile từ conversationId để hiện tên đúng"
     }
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-14",
-      "type": "test",
-      "description": "Created and executed standalone RBAC logic tests (`test-rbac-security.ts`).",
-      "files": [
-        "app/scripts/test-rbac-security.ts"
-      ]
+      "timestamp": "2026-04-16T07:00:00+07:00",
+      "type": "feature",
+      "description": "Phase 03 Frontend: Refactor /swipe page → real API, thêm MutualMatchPopup, tạo /swipe/likes page + API",
+      "files": ["app/app/swipe/page.tsx", "app/app/swipe/likes/page.tsx", "app/app/api/swipe/likes/route.ts"]
     },
     {
-      "timestamp": "2026-04-14",
-      "type": "fix",
-      "description": "Synchronized Prisma schema (db push) to fix outdated DB structures blocking integration tests.",
-      "files": [
-        "app/prisma/schema.prisma"
-      ]
+      "timestamp": "2026-04-16T07:55:00+07:00",
+      "type": "bugfix",
+      "description": "Fix Prisma schema: thêm SwipeLike[] relation vào Profile model → giải quyết 500 error trên /api/swipe/likes",
+      "files": ["app/prisma/schema.prisma"]
+    },
+    {
+      "timestamp": "2026-04-16T07:47:00+07:00",
+      "type": "test",
+      "description": "Phase 04 Testing: E2E script test-mutual-match.ts → 4/4 test groups passed",
+      "files": ["app/scripts/test-mutual-match.ts"]
+    },
+    {
+      "timestamp": "2026-04-16T08:20:00+07:00",
+      "type": "ui",
+      "description": "UI Redesign: Đồng bộ /swipe và /swipe/likes với homepage design (light theme, white sidebar, #0068FF accent, clean white cards)",
+      "files": ["app/app/swipe/page.tsx", "app/app/swipe/likes/page.tsx"]
     }
   ],
   "errors_encountered": [
     {
-      "error": "Prisma Invocation Error (Can't reach db / Missing column)",
-      "solution": "Ran `npx prisma generate` and `npx prisma db push --accept-data-loss` to sync local database schema.",
+      "error": "Unknown field 'user' for include statement on model SwipeLike",
+      "solution": "Thêm 'user Profile @relation(...)' vào SwipeLike model VÀ 'swipeLikes SwipeLike[]' vào Profile model. Chạy db:push + xóa cache .next.",
+      "resolved": true
+    },
+    {
+      "error": "PrismaClientInitializationError trong test script",
+      "solution": "Dùng dynamic import('lib/db') thay vì new PrismaClient() trực tiếp. dotenv config() phải chạy trước import Prisma.",
+      "resolved": true
+    },
+    {
+      "error": "PowerShell syntax: && và & không hợp lệ",
+      "solution": "Dùng dấu ; để nối lệnh: Remove-Item ...; npx prisma generate. Không dùng && hoặc & để background.",
       "resolved": true
     }
   ],
   "decisions_made": [
     {
-      "decision": "Use standalone strict logic tests for RBAC guard",
-      "reason": "Avoids overhead of next-auth session context within script environment, ensures HIERARCHY array evaluates correctly."
+      "decision": "Trang /swipe và /swipe/likes dùng standalone layout (không embed trong SuperAppContainer)",
+      "reason": "Các trang này cần full-screen layout riêng với sidebar riêng, không thể embed như SwipeMatchTab"
+    },
+    {
+      "decision": "UI redesign: bỏ dark navy theme, dùng light theme đồng bộ với homepage",
+      "reason": "Người dùng yêu cầu hài hòa với trang chủ. Homepage dùng bg-gray-50, white sidebar, #0068FF accent"
+    },
+    {
+      "decision": "E2E test script dùng direct DB calls thay vì HTTP request",
+      "reason": "Server không cần phải chạy, test nhanh hơn và deterministic hơn"
     }
   ]
 }

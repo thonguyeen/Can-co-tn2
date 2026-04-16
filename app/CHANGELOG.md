@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2026-04-16] - Mutual Match System (Khớp Nhanh) — COMPLETE
+
+### Added
+- **Mutual Match API** (`/api/swipe`, `/api/swipe/feed`, `/api/swipe/matches`, `/api/swipe/likes`): Full backend for Tinder-style real estate matching with atomic race-condition-safe match detection.
+- **`SwipeLike` DB Model**: New table tracking LIKE/SKIP actions per user per intent with upsert-safe unique constraints.
+- **`MutualMatchPopup` Component** (`components/swipe/MutualMatchPopup.tsx`): CSS-only confetti celebration overlay with no external dependencies.
+- **`/swipe` Standalone Page** (`app/swipe/page.tsx`): Full-screen swipe feed with real-time API data, drag-to-swipe Framer Motion cards, and live popup on match.
+- **`/swipe/likes` Page** (`app/swipe/likes/page.tsx`): Tab Quan Tâm showing users who liked your posts, with timestamps and action buttons.
+- **E2E Test Script** (`scripts/test-mutual-match.ts`): Automated 4/4 test groups covering feed filters, one-way like, feed memory, and mutual match collision.
+
+### Changed
+- **UI Redesign**: `/swipe` and `/swipe/likes` migrated from dark navy (`#0f172a`) + emerald theme to **light theme** (`bg-gray-50`, white sidebar, `#0068FF` accent) — fully consistent with homepage design language.
+- **Prisma Schema**: Added `SwipeLike.user Profile` relation + reverse `Profile.swipeLikes SwipeLike[]` to enable `include: { user: true }` queries.
+
+### Fixed
+- `IntentImage` field reference: `imageUrl` → `url` (matched actual schema).
+- 500 error on `/api/swipe/likes`: Missing bidirectional Prisma relation on `SwipeLike ↔ Profile`.
+- Turbopack cache stale after schema change: Resolved by deleting `.next` + `prisma generate`.
+
 ## [2026-04-14] - Phase 04: RBAC & Full Integration Testing
 ### Added
 - **RBAC Security Testing**: Created standalone suite (`test-rbac-security.ts`) to validate role hierarchy (ADMIN > MODERATOR > USER) logic.

@@ -105,6 +105,7 @@ model Profile {
   notifications Notification[]
   userAchievements UserAchievement[]
   pointTransactions PointTransaction[]
+  swipeLikes    SwipeLike[]
 
   @@map("profiles")
 }
@@ -481,6 +482,7 @@ model Intent {
   conversations   Conversation[]
   agentActivities AgentActivity[]
   boosts          IntentBoost[]
+  swipeLikes      SwipeLike[]    // Mutual Match: danh sách lượt vuốt vào bài này
 
   @@map("intents")
 }
@@ -526,6 +528,30 @@ model IntentEmbedding {
   intent Intent @relation(fields: [intentId], references: [id], onDelete: Cascade)
 
   @@map("intent_embeddings")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Mutual Match: Swipe Likes (Khớp Nhanh — chỉ người thật)
+// ═══════════════════════════════════════════════════════════════
+
+model SwipeLike {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")    // Profile.id của người vuốt
+  intentId  String    @map("intent_id")  // Intent được vuốt
+  action    String                       // "LIKE" | "SKIP"
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relation — cho phép Phase 02 dùng include: { intent: true }
+  intent    Intent    @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  user      Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 1 user chỉ vuốt 1 intent 1 lần (upsert-safe)
+  @@unique([userId, intentId])
+  // Index nhanh cho query "ai đã LIKE intent này?"
+  @@index([intentId, action])
+  // Index nhanh cho query "user này đã vuốt bài nào?"
+  @@index([userId, action])
+  @@map("swipe_likes")
 }
 
 model Match {
