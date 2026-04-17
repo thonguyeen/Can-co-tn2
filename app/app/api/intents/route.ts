@@ -113,13 +113,14 @@ export async function GET(request: NextRequest) {
         GROUP BY i.id, i.trust_score, i.created_at
         ORDER BY 
           CASE WHEN MAX(b.id) IS NOT NULL THEN 1 ELSE 0 END DESC,
+          CASE WHEN i.created_at > NOW() - INTERVAL '24 hours' THEN 1 ELSE 0 END DESC,
           i.trust_score DESC,
           i.created_at DESC
         LIMIT ${limit} OFFSET ${skip}
       `;
 
       const rawIds: { id: string }[] = await prisma.$queryRaw(boostQuery);
-      
+
       if (rawIds.length === 0) {
         return NextResponse.json({ intents: [], total: 0, page, limit });
       }
@@ -279,6 +280,8 @@ export async function GET(request: NextRequest) {
         district: intent.district,
         ward: intent.ward,
         city: intent.city,
+        lat: intent.lat ? Number(intent.lat) : null,
+        lng: intent.lng ? Number(intent.lng) : null,
         trust_score: intent.trustScore,
         verification_level: intent.verificationLevel,
         comment_count: intent.commentCount,
@@ -309,17 +312,17 @@ export async function GET(request: NextRequest) {
         bot_comment: botComment,
         latest_comment: latestComment
           ? {
-              id: latestComment.id,
-              intent_id: latestComment.intent_id,
-              content: latestComment.content,
-              user_id: latestComment.user_id,
-              is_bot: latestComment.is_bot,
-              bot_name: latestComment.bot_name,
-              created_at: latestComment.created_at,
-              user: {
-                name: latestComment.profiles?.display_name || 'Người dùng',
-              },
-            }
+            id: latestComment.id,
+            intent_id: latestComment.intent_id,
+            content: latestComment.content,
+            user_id: latestComment.user_id,
+            is_bot: latestComment.is_bot,
+            bot_name: latestComment.bot_name,
+            created_at: latestComment.created_at,
+            user: {
+              name: latestComment.profiles?.display_name || 'Người dùng',
+            },
+          }
           : null,
       };
     });
@@ -477,9 +480,14 @@ export async function POST(request: NextRequest) {
     });
 
     // Convert BigInt to Number for JSON serialization
+    // IMPORTANT: ...data spread includes camelCase BigInt fields (priceMin, priceMax)
+    // Must override ALL BigInt fields explicitly
     const responseData = {
       ...data,
       price: data.price ? Number(data.price) : null,
+      priceMin: data.priceMin ? Number(data.priceMin) : null,
+      priceMax: data.priceMax ? Number(data.priceMax) : null,
+      // snake_case aliases for client compatibility
       price_min: data.priceMin ? Number(data.priceMin) : null,
       price_max: data.priceMax ? Number(data.priceMax) : null,
     };
@@ -503,7 +511,7 @@ export async function POST(request: NextRequest) {
       ward: data.ward,
       city: data.city,
     } as unknown as Intent;
-    generateIntentEmbedding(intentForEmbed).catch(() => {});
+    generateIntentEmbedding(intentForEmbed).catch(() => { });
 
     return NextResponse.json(responseData, { status: 201 });
   } catch (err) {

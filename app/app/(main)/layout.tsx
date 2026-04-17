@@ -2,10 +2,7 @@ import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Header } from '@/components/layout/Header'
-import { Sidebar } from '@/components/layout/Sidebar'
-import { RightPanel } from '@/components/layout/RightPanel'
-import { MobileNav } from '@/components/layout/MobileNav'
+import { MainLayoutWrapper } from '@/components/layout/MainLayoutWrapper'
 import type { Bot } from '@/lib/types'
 
 export default async function MainLayout({
@@ -41,10 +38,10 @@ export default async function MainLayout({
   const followedBotIds = followedBots.map((b) => b.id)
   let suggestedBots = []
   if (followedBotIds.length > 0) {
-     const excludeStr = followedBotIds.map(id => `'${id}'`).join(',')
-     suggestedBots = await prisma.$queryRawUnsafe<any[]>(`SELECT * FROM bots WHERE id NOT IN (${excludeStr}) LIMIT 3`)
+    const excludeStr = followedBotIds.map(id => `'${id}'`).join(',')
+    suggestedBots = await prisma.$queryRawUnsafe<any[]>(`SELECT * FROM bots WHERE id NOT IN (${excludeStr}) LIMIT 3`)
   } else {
-     suggestedBots = await prisma.$queryRaw<any[]>`SELECT * FROM bots LIMIT 3`
+    suggestedBots = await prisma.$queryRaw<any[]>`SELECT * FROM bots LIMIT 3`
   }
 
   const userData = {
@@ -54,23 +51,18 @@ export default async function MainLayout({
     avatar_url: profile?.avatar_url || user.image || '',
   }
 
+  // Serialize để loại bỏ Prisma Decimal/BigInt objects — Next.js không hỗ trợ
+  // truyền chúng từ Server Component sang Client Component
+  const safeFollowedBots = JSON.parse(JSON.stringify(followedBots))
+  const safeSuggestedBots = JSON.parse(JSON.stringify(suggestedBots))
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header user={userData} />
-
-      <div className="max-w-[1920px] mx-auto px-4 pt-4 pb-20 lg:pb-4">
-        <div className="flex gap-4 justify-center">
-          <Sidebar user={userData} followedBots={followedBots} />
-
-          <main className="w-full max-w-[680px] min-w-0">
-            {children}
-          </main>
-
-          <RightPanel suggestedBots={(suggestedBots as Bot[]) || []} />
-        </div>
-      </div>
-
-      <MobileNav />
-    </div>
+    <MainLayoutWrapper
+      userData={userData}
+      followedBots={safeFollowedBots}
+      suggestedBots={safeSuggestedBots}
+    >
+      {children}
+    </MainLayoutWrapper>
   )
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Bookmark, Settings, Bot as BotIcon, Users, Trophy, Gift } from 'lucide-react'
+import { Home, Bookmark, Settings, Bot as BotIcon, Users, Trophy, Gift, Map } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 import type { Bot } from '@/lib/types'
@@ -63,6 +63,7 @@ export function Sidebar({ user, followedBots = [] }: SidebarProps) {
         <nav className="space-y-1">
           {renderNavLinks([
             { href: '/feed', icon: Home, label: 'Trang chủ' },
+            { href: '/map', icon: Map, label: '🗺️ Bản đồ BĐS' },
             { href: '/saved', icon: Bookmark, label: 'Đã lưu' },
           ])}
         </nav>

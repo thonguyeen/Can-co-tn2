@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigation, MessageCircle, X, ShieldCheck, Zap } from 'lucide-react';
-import { type MockIntent } from '@/lib/mock/intents';
+import type { MapFeatureProperties } from '@/types/map';
 
 interface MapPinDetailPanelProps {
-  pin: MockIntent | null;
+  pin: MapFeatureProperties | null;
   distance: string;
   onClose: () => void;
 }
@@ -30,7 +30,7 @@ export default function MapPinDetailPanel({ pin, distance, onClose }: MapPinDeta
 
         <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-4">
           <span className={`font-black text-2xl ${pin.type === 'CO' ? 'text-emerald-500' : 'text-red-500'}`}>
-            {pin.price?.toLocaleString('vi-VN') || pin.price_min?.toLocaleString('vi-VN') || 'Thỏa thuận'} {pin.price ? 'đ' : ''}
+            {pin.price?.toLocaleString('vi-VN') || 'Thỏa thuận'} {pin.price ? 'đ' : ''}
           </span>
           <span className="flex items-center gap-1 bg-green-50 text-green-600 px-2 py-1 rounded-lg text-xs font-bold">
             <Zap size={14}/> Match 95%
@@ -39,11 +39,11 @@ export default function MapPinDetailPanel({ pin, distance, onClose }: MapPinDeta
 
         <div className="flex items-center justify-between bg-gray-50 p-3 rounded-xl mb-4 border border-gray-100">
           <div className="flex items-center gap-3">
-            <img src={pin.user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${pin.id}`} className="w-10 h-10 rounded-full border-2 border-white shadow-sm" alt="avatar" />
+            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${pin.id}`} className="w-10 h-10 rounded-full border-2 border-white shadow-sm" alt="avatar" />
             <div>
               <div className="font-bold text-sm">
-                {pin.user?.name || 'Người dùng ẩn danh'} 
-                {pin.trust_score >= 4 && <ShieldCheck size={14} className="text-blue-500 inline ml-1"/>}
+                {pin.userName || 'Người dùng ẩn danh'}
+                {pin.trustScore >= 4 && <ShieldCheck size={14} className="text-blue-500 inline ml-1"/>}
               </div>
               <div className="text-xs text-gray-500 mt-0.5">Cách bạn {distance}</div>
             </div>
@@ -51,7 +51,8 @@ export default function MapPinDetailPanel({ pin, distance, onClose }: MapPinDeta
         </div>
 
         <p className="text-sm text-gray-600 mb-5 line-clamp-3">
-            {pin.raw_text}
+          {pin.title}
+          {pin.district && <span className="text-gray-400"> · {pin.district}</span>}
         </p>
 
         <div className="flex gap-2">

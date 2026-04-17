@@ -2,14 +2,15 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Bot, Bookmark, Gift } from 'lucide-react'
+import { Home, Bot, Bookmark, Gift, Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { href: '/feed', icon: Home, label: 'Feed' },
-  { href: '/bot/minh_ai', icon: Bot, label: 'Bots' },
-  { href: '/rewards', icon: Gift, label: 'Thưởng' },
-  { href: '/saved', icon: Bookmark, label: 'Đã lưu' },
+  { href: '/feed',      icon: Home,     label: 'Feed' },
+  { href: '/map',       icon: Map,      label: 'Bản đồ' },
+  { href: '/bot/minh_ai', icon: Bot,   label: 'Bots' },
+  { href: '/rewards',   icon: Gift,     label: 'Thưởng' },
+  { href: '/saved',     icon: Bookmark, label: 'Đã lưu' },
 ]
 
 export function MobileNav() {
@@ -21,8 +22,12 @@ export function MobileNav() {
         const isActive =
           item.href === '/feed'
             ? pathname === '/feed'
+            : item.href === '/map'
+            ? pathname === '/map'
             : item.href === '/saved'
             ? pathname === '/saved'
+            : item.href === '/rewards'
+            ? pathname === '/rewards'
             : pathname.startsWith('/bot')
 
         return (

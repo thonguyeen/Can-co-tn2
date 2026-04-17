@@ -52,7 +52,7 @@ export function useFeedData() {
     try {
       if (!isBackground) setIsLoading(true);
       setApiError(null);
-      const res = await fetch('/api/intents?limit=50&status=active');
+      const res = await fetch('/api/intents?limit=100&status=active');
       if (!res.ok) throw new Error('Failed to fetch API');
       const data = await res.json();
       if (data.intents && Array.isArray(data.intents)) {
@@ -91,8 +91,9 @@ export function useFeedData() {
     setIntents((prev) => [newIntent, ...prev]);
   }, []);
 
-  // Full refresh after POST
+  // Full refresh after POST — small delay ensures DB write is committed
   const handleIntentCreated = useCallback(async () => {
+    await new Promise((r) => setTimeout(r, 300));
     await fetchRealIntents();
   }, [fetchRealIntents]);
 

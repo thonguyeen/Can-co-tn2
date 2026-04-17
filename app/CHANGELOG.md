@@ -1,24 +1,24 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
-## [2026-04-16] - Mutual Match System (Khớp Nhanh) — COMPLETE
+## [2026-04-16] - Mutual Match System (Khá»›p Nhanh) â€” COMPLETE
 
 ### Added
 - **Mutual Match API** (`/api/swipe`, `/api/swipe/feed`, `/api/swipe/matches`, `/api/swipe/likes`): Full backend for Tinder-style real estate matching with atomic race-condition-safe match detection.
 - **`SwipeLike` DB Model**: New table tracking LIKE/SKIP actions per user per intent with upsert-safe unique constraints.
 - **`MutualMatchPopup` Component** (`components/swipe/MutualMatchPopup.tsx`): CSS-only confetti celebration overlay with no external dependencies.
 - **`/swipe` Standalone Page** (`app/swipe/page.tsx`): Full-screen swipe feed with real-time API data, drag-to-swipe Framer Motion cards, and live popup on match.
-- **`/swipe/likes` Page** (`app/swipe/likes/page.tsx`): Tab Quan Tâm showing users who liked your posts, with timestamps and action buttons.
+- **`/swipe/likes` Page** (`app/swipe/likes/page.tsx`): Tab Quan TÃ¢m showing users who liked your posts, with timestamps and action buttons.
 - **E2E Test Script** (`scripts/test-mutual-match.ts`): Automated 4/4 test groups covering feed filters, one-way like, feed memory, and mutual match collision.
 
 ### Changed
-- **UI Redesign**: `/swipe` and `/swipe/likes` migrated from dark navy (`#0f172a`) + emerald theme to **light theme** (`bg-gray-50`, white sidebar, `#0068FF` accent) — fully consistent with homepage design language.
+- **UI Redesign**: `/swipe` and `/swipe/likes` migrated from dark navy (`#0f172a`) + emerald theme to **light theme** (`bg-gray-50`, white sidebar, `#0068FF` accent) â€” fully consistent with homepage design language.
 - **Prisma Schema**: Added `SwipeLike.user Profile` relation + reverse `Profile.swipeLikes SwipeLike[]` to enable `include: { user: true }` queries.
 
 ### Fixed
-- `IntentImage` field reference: `imageUrl` → `url` (matched actual schema).
-- 500 error on `/api/swipe/likes`: Missing bidirectional Prisma relation on `SwipeLike ↔ Profile`.
+- `IntentImage` field reference: `imageUrl` â†’ `url` (matched actual schema).
+- 500 error on `/api/swipe/likes`: Missing bidirectional Prisma relation on `SwipeLike â†” Profile`.
 - Turbopack cache stale after schema change: Resolved by deleting `.next` + `prisma generate`.
 
 ## [2026-04-14] - Phase 04: RBAC & Full Integration Testing
@@ -31,8 +31,8 @@ All notable changes to this project will be documented in this file.
 
 ## [2026-04-10] - Phase 04: Bot System Hardening & Deployment Prep
 ### Added
-- **Envoy Bot Network Deployment**: Successfully generated and tested 5 Area Agent bots (Quận 1, 2, 7, Cầu Giấy, Hải Châu).
-- **Bot-driven Intent Feeding**: Automated rao vặt (CẦN/CÓ) posts from AI bots now visible on Home Feed and Admin Dashboard.
+- **Envoy Bot Network Deployment**: Successfully generated and tested 5 Area Agent bots (Quáº­n 1, 2, 7, Cáº§u Giáº¥y, Háº£i ChÃ¢u).
+- **Bot-driven Intent Feeding**: Automated rao váº·t (Cáº¦N/CÃ“) posts from AI bots now visible on Home Feed and Admin Dashboard.
 - **AI Stabilization**: Configured multi-provider fallback system (OpenAI primary, simpleverse fallback) via `.env.local`.
 
 ### Fixed
@@ -63,3 +63,23 @@ All notable changes to this project will be documented in this file.
 - Replaced Supabase Auth completely with NextAuth.
 - Bcrypt hash system for credentials.
 - Auto-sync to create profiles from emails.
+
+## [2026-04-16] — Mapbox Smart Map Phase 01~03
+
+### Added
+- **Phase 01** (Foundation): MapboxRenderer.tsx với GPS, toggle Bản đồ thực/Quét Radar
+- **Phase 02** (Clustering): GeoJSON Source/Layer GPU render, clustering, click-to-zoom flyTo, data-driven style (CAN=đỏ/CO=xanh)
+- **Phase 03** (Choropleth): Tô màu Quận theo giá TB từ DB, fade khi zoom gần, label 'Quận X ~Y tỷ'
+- pp/types/map.ts — Type MapFeatureProperties decoupled khỏi MockIntent
+- pp/hooks/useMapData.ts — hooks useMapData và useDistrictPrices
+- pp/public/geojson/hcm-districts.geojson — 24 Quận/Huyện TP.HCM
+- pp/app/api/map/geojson/route.ts — GeoJSON FeatureCollection API (public)
+- pp/app/api/map/district-prices/route.ts — Giá TB theo Quận API (public, cache 5m)
+
+### Changed  
+- pp/middleware.ts — bypass auth cho /api/map/* routes
+- MapPinDetailPanel.tsx — dùng MapFeatureProperties thay vì MockIntent
+- MapRadarTab.tsx — type update cho selectedPin state
+
+### Fixed
+- Layer existence check trước queryRenderedFeatures để tránh Mapbox error khi layer chưa load

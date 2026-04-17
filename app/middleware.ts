@@ -16,9 +16,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Khóa CHẶT tất cả các API route còn lại. Trả về 401 nếu gõ lệnh láo
+  // Khóa CHẶT tất cả các API route còn lại, trừ map và public feed
   if (pathname.startsWith('/api/')) {
-    if (!token) {
+    const isPublicApi = 
+      pathname.startsWith('/api/map') || 
+      (pathname === '/api/intents' && request.method === 'GET');
+
+    if (!isPublicApi && !token) {
       return NextResponse.json({ error: "Unauthorized / Cần đăng nhập để dùng API" }, { status: 401 })
     }
     return NextResponse.next()
