@@ -32,15 +32,15 @@ export function Header({ user }: HeaderProps) {
   ]
 
   return (
-    <header className="sticky top-0 z-50 h-14 bg-card border-b border-border shadow-sm">
+    <header className="sticky top-0 z-50 h-14 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="h-full max-w-[1920px] mx-auto px-4 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/feed" className="flex items-center gap-2 shrink-0">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <Bot className="w-6 h-6 text-primary-foreground" />
+          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+            <Bot className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xl font-bold text-primary hidden sm:block">
-            FACEBOT
+          <span className="text-xl font-black text-slate-900 hidden sm:block tracking-tight">
+            CẦN&CÓ
           </span>
         </Link>
 

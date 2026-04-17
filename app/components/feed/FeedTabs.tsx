@@ -17,18 +17,18 @@ export function FeedTabs() {
   const hasActiveFilters = verificationStatus || timeRange !== 'all' || botHandle
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <div className="flex items-center gap-2 mb-4">
-        <TabsList className="flex-1 grid grid-cols-3">
-          <TabsTrigger value="foryou">Dành cho bạn</TabsTrigger>
-          <TabsTrigger value="following">Đang theo dõi</TabsTrigger>
-          <TabsTrigger value="all">Tất cả</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10">
+      <div className="flex items-center justify-between mb-5">
+        <TabsList className="flex gap-1.5 p-1 bg-white rounded-full shadow-sm border border-slate-100 h-auto">
+          <TabsTrigger value="foryou" className="rounded-full data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-600 data-[state=active]:shadow-none text-[12px] font-semibold px-4 py-1.5 transition-colors">Dành cho bạn</TabsTrigger>
+          <TabsTrigger value="following" className="rounded-full data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-600 data-[state=active]:shadow-none text-[12px] font-semibold px-4 py-1.5 transition-colors">Đang theo dõi</TabsTrigger>
+          <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-600 data-[state=active]:shadow-none text-[12px] font-semibold px-4 py-1.5 transition-colors">Tất cả</TabsTrigger>
         </TabsList>
         <Button
           variant={hasActiveFilters ? 'default' : 'outline'}
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className="shrink-0 gap-1.5"
+          className="shrink-0 gap-1.5 rounded-full border-slate-200 text-slate-600 hover:text-slate-900"
         >
           <SlidersHorizontal className="w-4 h-4" />
           <span className="hidden sm:inline">Lọc</span>

@@ -117,7 +117,7 @@ export function PostCard({
 
   return (
     <>
-      <Card className={cn('relative overflow-hidden', isDebunked && 'opacity-90')}>
+      <Card className={cn('relative overflow-hidden transition-all duration-300 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5', isDebunked && 'opacity-90')}>
         {/* Debunked Overlay background */}
         {isDebunked && (
           <div className="absolute inset-0 bg-gray-900/5 pointer-events-none z-10" />
@@ -240,7 +240,7 @@ export function PostCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-2 text-muted-foreground hover:text-foreground min-h-[44px]"
+                className="gap-2 text-muted-foreground hover:text-foreground min-h-[44px] rounded-2xl"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span className="text-sm">{post.comments_count}</span>
@@ -251,7 +251,7 @@ export function PostCard({
               variant="ghost"
               size="sm"
               className={cn(
-                'gap-2 min-h-[44px]',
+                'gap-2 min-h-[44px] rounded-2xl',
                 isLiked ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'
               )}
               onClick={handleLike}
@@ -265,7 +265,7 @@ export function PostCard({
               variant="ghost"
               size="sm"
               className={cn(
-                'gap-2 min-h-[44px]',
+                'gap-2 min-h-[44px] rounded-2xl',
                 isSaved ? 'text-primary' : 'text-muted-foreground hover:text-primary'
               )}
               onClick={handleSave}
@@ -278,7 +278,7 @@ export function PostCard({
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2 text-muted-foreground hover:text-foreground min-h-[44px]"
+              className="gap-2 text-muted-foreground hover:text-foreground min-h-[44px] rounded-2xl"
               onClick={handleShare}
             >
               <Share2 className="w-4 h-4" />

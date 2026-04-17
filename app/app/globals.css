@@ -82,42 +82,42 @@
 :root {
   --radius: 0.5rem;
 
-  /* FACEBOT Dark Green Theme - Default is dark mode like Facebook */
-  --background: #18191A;
-  --foreground: #E4E6EB;
-  --card: #242526;
-  --card-foreground: #E4E6EB;
-  --popover: #242526;
-  --popover-foreground: #E4E6EB;
-  --primary: #1B4D3E;
+  /* Light Theme — Match Home page (CẦN & CÓ) */
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #4F46E5;
   --primary-foreground: #FFFFFF;
-  --secondary: #3A3B3C;
-  --secondary-foreground: #E4E6EB;
-  --muted: #3A3B3C;
-  --muted-foreground: #B0B3B8;
-  --accent: #1B4D3E;
-  --accent-foreground: #FFFFFF;
-  --destructive: #F87171;
-  --border: #3E4042;
-  --input: #3A3B3C;
-  --ring: #2D6A4F;
+  --secondary: #F1F5F9;
+  --secondary-foreground: #334155;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #EEF2FF;
+  --accent-foreground: #4F46E5;
+  --destructive: #EF4444;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #6366F1;
 
   /* Charts */
-  --chart-1: #2D6A4F;
-  --chart-2: #40916C;
-  --chart-3: #52B788;
-  --chart-4: #74C69D;
-  --chart-5: #95D5B2;
+  --chart-1: #6366F1;
+  --chart-2: #8B5CF6;
+  --chart-3: #A78BFA;
+  --chart-4: #C4B5FD;
+  --chart-5: #DDD6FE;
 
   /* Sidebar */
-  --sidebar: #242526;
-  --sidebar-foreground: #E4E6EB;
-  --sidebar-primary: #2D6A4F;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #4F46E5;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1B4D3E;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #3E4042;
-  --sidebar-ring: #2D6A4F;
+  --sidebar-accent: #EEF2FF;
+  --sidebar-accent-foreground: #4F46E5;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #6366F1;
 }
 
 .dark {
@@ -155,6 +155,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
@@ -171,12 +172,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* Sidebar scrollbar - ultra thin, Facebook style */
@@ -201,13 +202,13 @@
 }
 
 .sidebar-scroll:hover::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.1);
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.18);
   border: 2px solid transparent;
   background-clip: padding-box;
 }
@@ -231,7 +232,7 @@
   --wm-text-muted: #6B6D70;
   --wm-text-faint: #555659;
   --wm-accent: #E4E6EB;
-  --wm-overlay-subtle: rgba(255,255,255,0.03);
+  --wm-overlay-subtle: rgba(255, 255, 255, 0.03);
   --wm-input-bg: #3A3B3C;
   --wm-primary: #2D6A4F;
   --wm-primary-light: #1B4D3E;
@@ -260,7 +261,7 @@
   --wm-text-muted: #94A3B8;
   --wm-text-faint: #CBD5E1;
   --wm-accent: #3b82f6;
-  --wm-overlay-subtle: rgba(0,0,0,0.02);
+  --wm-overlay-subtle: rgba(0, 0, 0, 0.02);
   --wm-input-bg: #FFFFFF;
 }
 
@@ -279,6 +280,7 @@
   overflow: hidden;
   transition: border-color 0.15s ease;
 }
+
 .wm-panel:hover {
   border-color: var(--wm-border-strong);
 }
@@ -326,26 +328,31 @@
   color: var(--wm-semantic-critical);
   border: 1px solid color-mix(in srgb, var(--wm-semantic-critical) 25%, transparent);
 }
+
 .wm-badge-high {
   background: color-mix(in srgb, var(--wm-semantic-high) 12%, transparent);
   color: var(--wm-semantic-high);
   border: 1px solid color-mix(in srgb, var(--wm-semantic-high) 20%, transparent);
 }
+
 .wm-badge-elevated {
   background: color-mix(in srgb, var(--wm-semantic-elevated) 12%, transparent);
   color: var(--wm-semantic-elevated);
   border: 1px solid color-mix(in srgb, var(--wm-semantic-elevated) 20%, transparent);
 }
+
 .wm-badge-normal {
   background: color-mix(in srgb, var(--wm-semantic-normal) 10%, transparent);
   color: var(--wm-semantic-normal);
   border: 1px solid color-mix(in srgb, var(--wm-semantic-normal) 18%, transparent);
 }
+
 .wm-badge-info {
   background: color-mix(in srgb, var(--wm-semantic-info) 10%, transparent);
   color: var(--wm-semantic-info);
   border: 1px solid color-mix(in srgb, var(--wm-semantic-info) 18%, transparent);
 }
+
 .wm-badge-primary {
   background: color-mix(in srgb, var(--wm-primary) 10%, transparent);
   color: var(--wm-primary);
@@ -364,11 +371,13 @@
   align-items: center;
   gap: 4px;
 }
+
 .wm-pill-live {
   color: var(--wm-status-live);
   border-color: color-mix(in srgb, var(--wm-status-live) 40%, transparent);
   background: color-mix(in srgb, var(--wm-status-live) 10%, transparent);
 }
+
 .wm-pill-cached {
   color: var(--wm-status-cached);
   border-color: color-mix(in srgb, var(--wm-status-cached) 40%, transparent);
@@ -387,6 +396,7 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
+
 .intent-badge-co {
   background: color-mix(in srgb, var(--wm-semantic-positive) 12%, transparent);
   color: var(--wm-semantic-positive);
@@ -408,6 +418,7 @@
   line-height: 1;
   color: var(--wm-text);
 }
+
 .wm-stat-label {
   font-size: 10px;
   font-weight: 600;
@@ -426,6 +437,7 @@
   border-bottom: 1px solid var(--wm-border-subtle);
   transition: background 0.1s;
 }
+
 .wm-data-row:hover {
   background: var(--wm-surface-hover);
 }
@@ -435,6 +447,7 @@
   width: 100%;
   border-collapse: collapse;
 }
+
 .wm-table th {
   text-align: left;
   color: var(--wm-text-muted);
@@ -445,12 +458,14 @@
   padding: 6px 10px;
   border-bottom: 1px solid var(--wm-border);
 }
+
 .wm-table td {
   padding: 8px 10px;
   border-bottom: 1px solid var(--wm-border-subtle);
   color: var(--wm-text-secondary);
   font-size: 13px;
 }
+
 .wm-table tr:hover {
   background: var(--wm-surface-hover);
 }
@@ -468,7 +483,11 @@
   transition: border-color 0.15s;
   width: 100%;
 }
-.wm-input::placeholder { color: var(--wm-text-faint); }
+
+.wm-input::placeholder {
+  color: var(--wm-text-faint);
+}
+
 .wm-input:focus {
   border-color: var(--wm-primary);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--wm-primary) 15%, transparent);
