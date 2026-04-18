@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import SidebarDesktop from '@/components/layout/SidebarDesktop';
+import TopNavbar from '@/components/layout/TopNavbar';
 import BottomNavMobile from '@/components/layout/BottomNavMobile';
 
 // Tabs
@@ -24,10 +24,10 @@ export default function SuperAppContainer() {
   }, []);
 
   return (
-    <div className="w-full h-screen flex bg-gray-50 overflow-hidden font-sans text-gray-900">
-      
-      {/* Cột trái: Desktop Sidebar */}
-      <SidebarDesktop activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="w-full h-screen flex flex-col bg-slate-50 overflow-hidden font-sans text-gray-900">
+
+      {/* Trên: TopNavbar (Desktop only) */}
+      <TopNavbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Rút ruột Component: Container Tabs chính */}
       <main className="flex-1 relative flex flex-col min-w-0 overflow-hidden pb-[70px] md:pb-0">
@@ -43,7 +43,7 @@ export default function SuperAppContainer() {
 
       {/* 🤖 Global Chatbot FAB — hiện ở mọi tab */}
       <GlobalChatbot activeTab={activeTab} />
-      
+
     </div>
   );
 }

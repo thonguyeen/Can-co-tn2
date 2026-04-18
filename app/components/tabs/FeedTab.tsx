@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Search, Loader2 } from 'lucide-react';
 import { IntentCard } from '@/components/intent/IntentCard';
 import { ComposeIntent } from '@/components/intent/ComposeIntent';
@@ -76,14 +77,15 @@ export default function FeedTab() {
             ) : (
               <div className="flex gap-5 overflow-x-auto snap-x snap-mandatory pb-6 pt-1 px-1 -mx-1 custom-scrollbar-hide hide-scrollbar w-full relative">
                 {vipIntents.map((vipIntent) => (
-                  <div
+                  <Link
+                    href={`/intent/${vipIntent.id}`}
                     key={vipIntent.id}
-                    className={`snap-center shrink-0 w-[260px] h-[360px] md:w-[280px] md:h-[400px] rounded-[28px] overflow-hidden cursor-pointer transition-all duration-400 bg-white flex flex-col relative group ${
-                      activeIntent?.id === vipIntent.id
+                    className={`block snap-center shrink-0 w-[260px] h-[360px] md:w-[280px] md:h-[400px] rounded-[28px] overflow-hidden cursor-pointer transition-all duration-400 bg-white flex flex-col relative group ${activeIntent?.id === vipIntent.id
                         ? 'ring-2 ring-indigo-500 ring-offset-4 shadow-[0_20px_40px_-15px_rgba(79,70,229,0.3)] scale-[1.02]'
                         : 'shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_35px_-15px_rgba(0,0,0,0.15)] hover:-translate-y-1'
-                    }`}
+                      }`}
                     onClick={() => setActiveIntent(vipIntent)}
+                    onMouseEnter={() => setActiveIntent(vipIntent)}
                   >
                     {/* Photo */}
                     <div className="h-3/5 w-full relative overflow-hidden bg-slate-100">
@@ -115,7 +117,7 @@ export default function FeedTab() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -157,11 +159,10 @@ export default function FeedTab() {
                 regularIntents.map((intent) => (
                   <div
                     key={intent.id}
-                    className={`transition-all duration-300 rounded-3xl overflow-hidden ${
-                      activeIntent?.id === intent.id
+                    className={`transition-all duration-300 rounded-3xl overflow-hidden ${activeIntent?.id === intent.id
                         ? 'ring-2 ring-indigo-500 shadow-[0_10px_30px_-15px_rgba(79,70,229,0.2)] bg-white -translate-y-0.5'
                         : 'bg-white shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-0.5'
-                    }`}
+                      }`}
                     onMouseEnter={() => setActiveIntent(intent)}
                     onClick={() => setActiveIntent(intent)}
                   >

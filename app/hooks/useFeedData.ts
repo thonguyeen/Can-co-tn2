@@ -24,7 +24,8 @@ export function useFeedData() {
     .sort((a, b) => b.match_count - a.match_count)
     .slice(0, 5);
 
-  const regularIntents = allFiltered.filter((i) => !vipIntents.includes(i));
+  // Do not remove vipIntents from the regular list, let them appear in chronological order as well
+  const regularIntents = allFiltered;
   const visibleRegular = regularIntents.slice(0, visibleCount);
   const hasMore = visibleCount < regularIntents.length;
 

@@ -1,93 +1,67 @@
 {
-  "updated_at": "2026-04-16T16:49:00+07:00",
+  "updated_at": "2026-04-18T16:18:00+07:00",
   "working_on": {
-    "feature": "Mutual Match — Tính năng Khớp Nhanh (BĐS Tinder)",
-    "task": "COMPLETED — Phase 04 Testing & Polish + UI Redesign",
-    "status": "done",
-    "files_modified": [
-      "app/app/swipe/page.tsx",
-      "app/app/swipe/likes/page.tsx",
-      "app/app/api/swipe/likes/route.ts",
-      "app/app/api/swipe/feed/route.ts",
-      "app/scripts/test-mutual-match.ts",
-      "app/prisma/schema.prisma",
-      "app/components/swipe/MutualMatchPopup.tsx"
-    ],
+    "feature": null,
+    "task": null,
+    "status": "idle",
+    "files": [],
     "blockers": [],
-    "notes": "Toàn bộ hệ thống Mutual Match đã hoàn thiện và được test E2E. UI đã được redesign để đồng bộ với homepage (light theme, white sidebar, #0068FF accent)."
+    "notes": "Session hôm nay hoàn tất: TopNavbar + Intent Detail standardization + IntentCard light theme"
   },
   "pending_tasks": [
     {
-      "task": "Triển khai production (deploy lên Vercel + Supabase)",
+      "task": "Lightbox gallery",
       "priority": "medium",
-      "notes": "Cần cập nhật DATABASE_URL sang Supabase connection string"
+      "notes": "Triển khai yet-another-react-lightbox cho gallery ảnh trong IntentCard"
     },
     {
-      "task": "Tích hợp badge count từ API thực tế (hiện đang mock = 3)",
+      "task": "MatchCard polish",
       "priority": "low",
-      "notes": "NavItem badge trong /swipe và /swipe/likes pages hiện hardcoded"
+      "notes": "Đồng bộ màu sắc MatchCard section trên trang chi tiết với design system mới"
     },
     {
-      "task": "Partner name trong MutualMatchPopup (hiện là 'Người dùng')",
+      "task": "Cloud Storage migration",
+      "priority": "high",
+      "notes": "Migrate public/uploads/ lên S3/R2"
+    },
+    {
+      "task": "Choropleth Ward-level map",
       "priority": "low",
-      "notes": "Cần fetch Profile từ conversationId để hiện tên đúng"
+      "notes": "hcm-wards.geojson chưa render ward-level đầy đủ"
     }
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-16T07:00:00+07:00",
+      "timestamp": "2026-04-18T15:12:00+07:00",
       "type": "feature",
-      "description": "Phase 03 Frontend: Refactor /swipe page → real API, thêm MutualMatchPopup, tạo /swipe/likes page + API",
-      "files": ["app/app/swipe/page.tsx", "app/app/swipe/likes/page.tsx", "app/app/api/swipe/likes/route.ts"]
+      "description": "Tạo TopNavbar.tsx — chuyển menu dọc thành menu ngang (logo + nav + actions)",
+      "files": [
+        "app/components/layout/TopNavbar.tsx",
+        "app/app/page.tsx"
+      ]
     },
     {
-      "timestamp": "2026-04-16T07:55:00+07:00",
-      "type": "bugfix",
-      "description": "Fix Prisma schema: thêm SwipeLike[] relation vào Profile model → giải quyết 500 error trên /api/swipe/likes",
-      "files": ["app/prisma/schema.prisma"]
-    },
-    {
-      "timestamp": "2026-04-16T07:47:00+07:00",
-      "type": "test",
-      "description": "Phase 04 Testing: E2E script test-mutual-match.ts → 4/4 test groups passed",
-      "files": ["app/scripts/test-mutual-match.ts"]
-    },
-    {
-      "timestamp": "2026-04-16T08:20:00+07:00",
+      "timestamp": "2026-04-18T15:30:00+07:00",
       "type": "ui",
-      "description": "UI Redesign: Đồng bộ /swipe và /swipe/likes với homepage design (light theme, white sidebar, #0068FF accent, clean white cards)",
-      "files": ["app/app/swipe/page.tsx", "app/app/swipe/likes/page.tsx"]
+      "description": "Chuẩn hóa /intent/[id] theo design system mới: white cards, sticky bar, indigo CTA, Quick Stats, ẩn comments",
+      "files": [
+        "app/app/intent/[id]/page.tsx"
+      ]
     }
   ],
-  "errors_encountered": [
-    {
-      "error": "Unknown field 'user' for include statement on model SwipeLike",
-      "solution": "Thêm 'user Profile @relation(...)' vào SwipeLike model VÀ 'swipeLikes SwipeLike[]' vào Profile model. Chạy db:push + xóa cache .next.",
-      "resolved": true
-    },
-    {
-      "error": "PrismaClientInitializationError trong test script",
-      "solution": "Dùng dynamic import('lib/db') thay vì new PrismaClient() trực tiếp. dotenv config() phải chạy trước import Prisma.",
-      "resolved": true
-    },
-    {
-      "error": "PowerShell syntax: && và & không hợp lệ",
-      "solution": "Dùng dấu ; để nối lệnh: Remove-Item ...; npx prisma generate. Không dùng && hoặc & để background.",
-      "resolved": true
-    }
-  ],
+  "errors_encountered": [],
   "decisions_made": [
     {
-      "decision": "Trang /swipe và /swipe/likes dùng standalone layout (không embed trong SuperAppContainer)",
-      "reason": "Các trang này cần full-screen layout riêng với sidebar riêng, không thể embed như SwipeMatchTab"
+      "decision": "IntentCard dùng Tailwind light tokens thay vì CSS variables wm-panel",
+      "reason": "CSS vars chỉ hoạt động đúng khi root có dark theme. Light theme cần explicit Tailwind colors. Refactor này là global — ảnh hưởng cả feed lẫn detail pages."
     },
     {
-      "decision": "UI redesign: bỏ dark navy theme, dùng light theme đồng bộ với homepage",
-      "reason": "Người dùng yêu cầu hài hòa với trang chủ. Homepage dùng bg-gray-50, white sidebar, #0068FF accent"
+      "decision": "Dùng top-16 cho sticky bar trong /intent/[id]",
+      "reason": "TopNavbar cao h-16 nên sticky bar phải offset xuống dưới"
     },
     {
-      "decision": "E2E test script dùng direct DB calls thay vì HTTP request",
-      "reason": "Server không cần phải chạy, test nhanh hơn và deterministic hơn"
+      "decision": "Ẩn comments (COMMENTS_DISABLED), giữ code để dễ mở lại",
+      "reason": "Tạm tắt theo yêu cầu, comment out thay vì xóa để rollback dễ"
     }
   ]
 }

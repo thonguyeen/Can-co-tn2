@@ -3,13 +3,12 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MessageSquare, Loader2, Send, Handshake } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Loader2, Handshake, MapPin, Home, DollarSign, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { IntentCard } from '@/components/intent/IntentCard';
 import { MatchCard } from '@/components/intent/MatchCard';
 import { VerifySection } from '@/components/intent/VerifySection';
 import { BottomNav } from '@/components/intent/BottomNav';
-import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
 import type { MockIntent } from '@/lib/mock/intents';
@@ -27,7 +26,6 @@ interface IntentDetail extends MockIntent {
   }>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface MatchData {
   id: string;
   can_intent_id: string;
@@ -50,13 +48,11 @@ export default function RealIntentDetailPage() {
   const { data: session } = useSession();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [commentText, setCommentText] = useState('');
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
 
   useEffect(() => {
     setCurrentUserId(session?.user?.id || null);
-    
+
     async function load() {
       try {
         const [intentRes, matchRes] = await Promise.all([
@@ -79,192 +75,180 @@ export default function RealIntentDetailPage() {
       }
     }
     load();
-  }, [id]);
+  }, [id, session]);
 
-  const handleSubmitComment = async () => {
-    if (!commentText.trim() || isSubmittingComment) return;
-
-    setIsSubmittingComment(true);
-    try {
-      const res = await fetch(`/api/intents/${id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: commentText }),
-      });
-
-      if (res.ok) {
-        // Refresh intent data
-        const refreshRes = await fetch(`/api/intents/${id}`);
-        if (refreshRes.ok) {
-          setIntent(await refreshRes.json());
-        }
-        setCommentText('');
-      }
-    } catch {
-      // Fail silently
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  };
-
+  /* ─── Loading ─── */
   if (isLoading) {
     return (
-      <div className="pb-20 md:pb-4 flex justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-[var(--wm-text-muted)]" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-7 h-7 animate-spin text-indigo-500" />
+          <p className="text-slate-400 text-sm font-medium">Đang tải tin đăng...</p>
+        </div>
       </div>
     );
   }
 
+  /* ─── Not found ─── */
   if (!intent) {
     return (
-      <div className="pb-20 md:pb-4">
-        <div className="wm-panel p-8 text-center">
-          <p className="text-sm text-[var(--wm-text-muted)]">Không tìm thấy dữ liệu</p>
-          <Link href="/can-co" className="text-xs text-[var(--wm-primary)] mt-2 inline-block">
-            ← Quay lại feed
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-10 text-center max-w-sm w-full">
+          <Home className="w-10 h-10 text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-600 font-semibold mb-1">Không tìm thấy tin đăng</p>
+          <p className="text-slate-400 text-sm mb-6">Tin này có thể đã bị xóa hoặc không tồn tại.</p>
+          <Link
+            href="/can-co"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-full hover:bg-indigo-700 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Về trang chủ
           </Link>
         </div>
       </div>
     );
   }
 
+  const isCO = intent.type === 'CO';
+  const trustPercent = Math.round((intent.trust_score || 3) / 5 * 100);
+
   return (
-    <div className="pb-20 md:pb-4 space-y-3">
-      <Link
-        href="/can-co"
-        className="inline-flex items-center gap-1.5 text-xs text-[var(--wm-text-muted)] hover:text-[var(--wm-text)] transition-colors mb-2"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Quay lại feed</span>
-      </Link>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24 md:pb-8">
 
-      <IntentCard intent={intent as MockIntent} compact={false} basePath="/can-co" />
-
-      {/* Chat CTA — only if viewing someone else's intent */}
-      {currentUserId && intent.user_id !== currentUserId && (
-        <button
-          onClick={async () => {
-            if (isChatting) return;
-            setIsChatting(true);
-            try {
-              const res = await fetch('/api/chat/conversations', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ intent_id: id, other_user_id: intent.user_id }),
-              });
-              if (res.ok) {
-                const conv = await res.json();
-                router.push(`/can-co/chat/${conv.id}`);
-              }
-            } catch {} finally { setIsChatting(false); }
-          }}
-          disabled={isChatting}
-          className="w-full wm-panel p-3 flex items-center justify-center gap-2 hover:border-[var(--wm-primary)] transition-colors disabled:opacity-50"
+      {/* ── Sticky Back Bar ── */}
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+        <Link
+          href="/can-co"
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
         >
-          {isChatting ? (
-            <Loader2 className="w-4 h-4 animate-spin text-[var(--wm-primary)]" />
-          ) : (
-            <>
-              <MessageSquare className="w-4 h-4 text-[var(--wm-primary)]" />
-              <span className="text-sm font-semibold text-[var(--wm-primary)]">Nhắn trực tiếp</span>
-            </>
-          )}
-        </button>
-      )}
+          <ArrowLeft className="w-4 h-4 text-slate-600" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-slate-900 truncate">{intent.title || 'Chi tiết tin đăng'}</p>
+          <p className="text-[11px] text-slate-400">{formatDistanceToNow(intent.created_at)}</p>
+        </div>
+        {/* Trust badge */}
+        <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
+          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+          <span className="text-[10px] font-bold text-emerald-700">Trust {trustPercent}%</span>
+        </div>
+      </div>
 
-      {/* Matches Section */}
-      {matches.length > 0 && (
-        <div className="wm-panel">
-          <div className="wm-panel-header">
-            <span className="wm-panel-title flex items-center gap-1.5">
-              <Handshake className="w-3.5 h-3.5" />
-              Kết quả match ({matches.length})
-            </span>
-          </div>
-          <div className="p-3 space-y-2">
-            {matches.map((m) => {
-              const otherIntent = intent.type === 'CAN' ? m.co_intent : m.can_intent;
-              if (!otherIntent) return null;
-              return (
-                <MatchCard
-                  key={m.id}
-                  similarity={m.similarity || 0}
-                  explanation={m.explanation || ''}
-                  matchedIntent={otherIntent}
-                  basePath="/can-co"
-                />
-              );
-            })}
+      {/* ── Main Content ── */}
+      <div className="max-w-2xl mx-auto px-4 md:px-6 pt-6 space-y-4">
+
+        {/* ── INTENT CARD (full mode) ── */}
+        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+          <div className="wm-light">
+            <IntentCard intent={intent as MockIntent} compact={false} basePath="/can-co" />
           </div>
         </div>
-      )}
 
-      {/* Verification (owner of CÓ intent only) */}
-      {currentUserId && intent.user_id === currentUserId && intent.type === 'CO' && (
-        <VerifySection intentId={id} currentLevel={intent.verification_level || 'none'} />
-      )}
+        {/* ── Chat CTA — only if viewing someone else's intent ── */}
+        {currentUserId && intent.user_id !== currentUserId && (
+          <button
+            onClick={async () => {
+              if (isChatting) return;
+              setIsChatting(true);
+              try {
+                const res = await fetch('/api/chat/conversations', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ intent_id: id, other_user_id: intent.user_id }),
+                });
+                if (res.ok) {
+                  const conv = await res.json();
+                  router.push(`/can-co/chat/${conv.id}`);
+                }
+              } catch { } finally { setIsChatting(false); }
+            }}
+            disabled={isChatting}
+            className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-3xl font-bold text-sm text-white cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)' }}
+          >
+            {isChatting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <MessageSquare className="w-4 h-4" />
+                <span>Nhắn tin trực tiếp với người đăng</span>
+              </>
+            )}
+          </button>
+        )}
 
-      {/* Comments */}
-      <div className="wm-panel">
-        <div className="wm-panel-header">
-          <span className="wm-panel-title">Bình luận ({intent.comment_count || 0})</span>
+        {/* ── Quick Stats Bar ── */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: MapPin, label: 'Khu vực', value: (intent.parsed_data as Record<string, unknown>)?.district as string || 'TP.HCM', color: 'text-rose-500', bg: 'bg-rose-50' },
+            { icon: Home, label: 'Loại BĐS', value: isCO ? 'Đang bán' : 'Cần tìm', color: isCO ? 'text-indigo-600' : 'text-red-500', bg: isCO ? 'bg-indigo-50' : 'bg-red-50' },
+            { icon: DollarSign, label: 'Số khớp', value: `${intent.match_count || 0} khớp`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          ].map(({ icon: Icon, label, value, color, bg }) => (
+            <div key={label} className={`${bg} rounded-2xl p-3 text-center`}>
+              <Icon className={`w-4 h-4 ${color} mx-auto mb-1`} />
+              <p className="text-[10px] text-slate-500 font-medium">{label}</p>
+              <p className={`text-xs font-bold ${color}`}>{value}</p>
+            </div>
+          ))}
         </div>
 
-        {intent.comments && intent.comments.length > 0 ? (
-          <div className="divide-y divide-[var(--wm-border-subtle)]">
-            {intent.comments.map((comment) => (
-              <div key={comment.id} className={cn('p-3', comment.is_bot && 'bg-[var(--wm-overlay-subtle)]')}>
-                <div className="flex items-start gap-2">
-                  <div className={cn(
-                    'w-7 h-7 flex items-center justify-center text-white text-[10px] font-semibold shrink-0',
-                    comment.is_bot ? 'bg-[var(--wm-primary)]' : 'bg-zinc-600',
-                  )}>
-                    {comment.is_bot ? '🤖' : (comment.user?.name?.[0] || '?')}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="text-xs font-semibold text-[var(--wm-text)]">
-                        {comment.is_bot ? comment.bot_name : comment.user?.name || 'Người dùng'}
-                      </span>
-                      {comment.is_bot && (
-                        <span className="wm-badge wm-badge-primary text-[7px]">AI</span>
-                      )}
-                      <span className="text-[10px] text-[var(--wm-text-faint)]">
-                        {formatDistanceToNow(comment.created_at)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-[var(--wm-text-secondary)] leading-relaxed">{comment.content}</p>
-                  </div>
-                </div>
+        {/* ── Matches Section ── */}
+        {matches.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+              <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center">
+                <Handshake className="w-4 h-4 text-indigo-600" />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-4 text-center">
-            <p className="text-xs text-[var(--wm-text-muted)]">Chưa có bình luận nào</p>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Kết quả khớp</p>
+                <p className="text-[11px] text-slate-400">{matches.length} tin phù hợp với nhu cầu của bạn</p>
+              </div>
+              <span className="ml-auto bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                {matches.length}
+              </span>
+            </div>
+            <div className="p-4 space-y-3">
+              {matches.map((m) => {
+                const otherIntent = intent.type === 'CAN' ? m.co_intent : m.can_intent;
+                if (!otherIntent) return null;
+                return (
+                  <MatchCard
+                    key={m.id}
+                    similarity={m.similarity || 0}
+                    explanation={m.explanation || ''}
+                    matchedIntent={otherIntent}
+                    basePath="/can-co"
+                  />
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Comment Input */}
-        <div className="p-3 border-t border-[var(--wm-border)]">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment()}
-              placeholder="Viết bình luận..."
-              className="wm-input text-sm"
-            />
-            <button
-              onClick={handleSubmitComment}
-              disabled={!commentText.trim() || isSubmittingComment}
-              className="px-3 py-2 bg-[var(--wm-primary)] text-white text-xs font-semibold shrink-0 hover:opacity-90 transition-opacity disabled:opacity-40"
-            >
-              {isSubmittingComment ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            </button>
+        {/* ── Verification (owner of CÓ intent only) ── */}
+        {currentUserId && intent.user_id === currentUserId && intent.type === 'CO' && (
+          <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+              <div className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Xác minh tin đăng</p>
+                <p className="text-[11px] text-slate-400">Tăng độ tin cậy cho bài viết của bạn</p>
+              </div>
+            </div>
+            <div className="p-4">
+              <VerifySection intentId={id} currentLevel={intent.verification_level || 'none'} />
+            </div>
           </div>
+        )}
+
+        {/* COMMENTS_DISABLED — remove wrapper to re-enable
+        <div className="bg-white rounded-3xl ...">
+          ... comment section ...
         </div>
+        */}
+
       </div>
 
       <BottomNav />

@@ -1,146 +1,140 @@
 {
   "meta": {
     "schema_version": "1.1.0",
-    "awf_version": "3.3.0",
-    "last_updated": "2026-04-16T16:49:00+07:00"
+    "awf_version": "4.0.2",
+    "last_updated": "2026-04-18T16:18:00+07:00"
   },
   "project": {
-    "name": "Can-co-tn",
-    "type": "Next.js Web Application",
-    "status": "Active Development"
+    "name": "Cần & Có",
+    "type": "Social Real Estate Platform",
+    "status": "active",
+    "repo_root": "d:/SW/Can-co-tn",
+    "app_root": "d:/SW/Can-co-tn/app",
+    "dev_url": "http://localhost:4000"
   },
   "tech_stack": {
-    "frontend": {
-      "framework": "Next.js 16.1.3 (App Router, Turbopack)",
-      "ui": "React 19",
-      "styling": "Tailwind CSS v4",
-      "animation": "Framer Motion",
-      "icons": "Lucide React",
-      "date_format": "date-fns (với locale vi)"
+    "framework": "Next.js 14 (App Router)",
+    "language": "TypeScript",
+    "styling": "TailwindCSS",
+    "database": "PostgreSQL + Prisma ORM",
+    "auth": "NextAuth.js",
+    "maps": "Mapbox GL + react-map-gl",
+    "realtime": "Pusher / WebSocket",
+    "ai": "Anthropic / OpenAI (3-tier fallback)",
+    "icons": "Lucide React",
+    "image_storage": "local public/uploads/ (migration S3/R2 pending)"
+  },
+  "architecture": {
+    "routes": {
+      "/": "SuperApp shell (tab-based): Home feed, Map, SwipeMatch, Chat, Apps",
+      "/can-co": "Legacy bảng tin — preserved for different UX purpose",
+      "/intent/[id]": "SuperApp intent detail page",
+      "/can-co/intent/[id]": "Legacy intent detail page (also redesigned)",
+      "/admin": "Admin dashboard with RBAC"
     },
-    "backend": {
-      "framework": "Next.js API Routes",
-      "auth": "NextAuth.js v4 (JWT)",
-      "database_orm": "Prisma 7.6 với PrismaPg adapter"
-    },
-    "database": {
-      "type": "PostgreSQL (Docker local: cancotn_local)",
-      "connection_url_format": "postgresql://admin:admin123@localhost:5432/cancotn_local"
+    "layout": {
+      "desktop": "TopNavbar (h-16 horizontal) + main content full-width",
+      "mobile": "BottomNavMobile only",
+      "decision": "Migrated from SidebarDesktop (vertical) to TopNavbar (horizontal) on 2026-04-18"
     }
   },
-  "database_schema": {
-    "summary": "Platform matching nhu cầu BĐS (Cần/Có), quản lý profile, bots, referrals và intent. Hệ thống Mutual Match (Tinder-style) hoàn chỉnh.",
-    "tables": [
-      "User", "Profile", "UserStat",
-      "Post", "Bot", "Intent", "IntentImage",
-      "News", "RawNews", "Swipelike",
-      "Conversation", "Message",
-      "Notification", "Match",
-      "SwipeLike"
+  "design_system": {
+    "palette": {
+      "primary_indigo": "#4f46e5 / #6366f1",
+      "teal": "#0F766E",
+      "blue": "#0369A1",
+      "trust_emerald": "#10b981"
+    },
+    "typography": [
+      "Cinzel",
+      "Josefin Sans"
     ],
-    "key_models": {
-      "SwipeLike": "userId → Profile (relation: user SwipeLike[]), intentId → Intent (relation: swipeLikes SwipeLike[]). Unique constraint: [userId, intentId]. Action: LIKE | SKIP.",
-      "Profile": "id maps 1:1 với User.id (NextAuth JWT sub). Có swipeLikes SwipeLike[] relation (thêm vào 16/04/2026).",
-      "Intent": "isBot=false → xuất hiện trong Swipe feed. isBot=true → chỉ home feed. User's own intents filtered from feed.",
-      "Conversation": "Unique: [intentId, userA, userB]. Chỉ tạo khi có Mutual Match."
+    "card_style": "bg-white rounded-2xl border border-slate-100 shadow-sm (hover: shadow-md border-slate-200)",
+    "cta_style": "indigo gradient rounded-3xl font-bold text-white",
+    "badge_trust": "emerald bg + ShieldCheck icon",
+    "sticky_bar": "top-16 (offset for TopNavbar h-16), bg-white/80 backdrop-blur",
+    "text_tokens": {
+      "heading": "text-slate-900",
+      "body": "text-slate-600",
+      "muted": "text-slate-400",
+      "accent": "text-indigo-600",
+      "bot_badge": "bg-teal-100 text-teal-700 border-teal-200"
     },
-    "relationships_explained": "1 User có 1 Profile và nhiều SwipeLike. Mutual LIKE từ 2 phía kích hoạt tạo Conversation (Phòng Thỏa Thuận). One-way LIKE chỉ tạo Notification cho chủ bài."
+    "DEPRECATED": "All var(--wm-*) CSS variables replaced with explicit Tailwind tokens as of 2026-04-18"
   },
-  "api_endpoints": [
-    {
-      "path": "/api/admin/*",
-      "explained": "Secured admin endpoints for member stats. Role-protected (ADMIN/MODERATOR)."
-    },
-    {
-      "path": "/api/swipe",
-      "method": "POST",
-      "explained": "Lưu hành động vuốt (LIKE/SKIP). Gọi detectAndHandleMatch() → tạo Conversation nếu Mutual Match. Response: { success, isMutualMatch, conversationId? }"
-    },
-    {
-      "path": "/api/swipe/feed",
-      "method": "GET",
-      "explained": "Feed Khớp Nhanh. Lọc: isBot=false, không phải bài của mình, loại bài đã vuốt. Param: limit (default 20)."
-    },
-    {
-      "path": "/api/swipe/matches",
-      "method": "GET",
-      "explained": "Danh sách Phòng Thỏa Thuận đã tạo. Kèm Profile đối tác và tin nhắn cuối."
-    },
-    {
-      "path": "/api/swipe/likes",
-      "method": "GET",
-      "explained": "Lượt LIKE nhận được vào bài của current user. Dùng trong Tab Quan Tâm (/swipe/likes)."
-    }
-  ],
-  "business_rules": [
-    "Users có role mặc định: USER. MODERATOR và ADMIN được phân quyền cao hơn.",
-    "Bot Intents (isBot=true) không xuất hiện trong Swipe feed — chỉ Home Feed.",
-    "Conversation chỉ tạo khi CẢ HAI user cùng LIKE bài của nhau (Mutual Match).",
-    "One-way Like: Notification công khai (tên + avatar) gửi cho chủ bài, không mở phòng chat.",
-    "Không thể tự like bài của chính mình.",
-    "SwipeLike dùng upsert: vuốt lại thì update action (không tạo bản ghi mới)."
-  ],
   "features": [
-    "Role-Based Access Control (RBAC) — DONE",
-    "Global AI Chatbot (NHA.AI) — DONE",
-    "Automated Market Analyst Report — DONE",
-    "Referral & Gamification System — DONE",
-    "Decoupled Crawling/Curation Bot Pipeline — DONE",
-    "Mutual Match (Khớp Nhanh) — DONE: Phase 01 DB, Phase 02 API, Phase 03 Frontend, Phase 04 Testing"
-  ],
-  "ui_design_system": {
-    "theme": "Light mode (homepage)",
-    "background": "bg-gray-50",
-    "sidebar": "bg-white border-r border-gray-200 shadow-sm",
-    "active_nav": "bg-blue-50 text-[#0068FF] font-bold shadow-sm",
-    "inactive_nav": "text-gray-600 hover:bg-gray-100",
-    "primary_color": "#0068FF (blue)",
-    "secondary_color": "green-500 (positive actions)",
-    "card_style": "bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md",
-    "swipe_action_buttons": "White bg, colored border (red for skip, green for like)",
-    "brand_logo": "text-[#0068FF] + text-green-500 for & symbol",
-    "note": "Pages /swipe và /swipe/likes đã được redesign 16/04/2026 để đồng bộ với homepage design language"
-  },
-  "mutual_match_implementation": {
-    "status": "COMPLETE",
-    "files": {
-      "db_schema": "prisma/schema.prisma (models: SwipeLike, Profile.swipeLikes relation)",
-      "match_detector": "lib/swipe/match-detector.ts (detectAndHandleMatch function)",
-      "api_swipe": "app/api/swipe/route.ts (POST handler)",
-      "api_feed": "app/api/swipe/feed/route.ts (GET feed with filters)",
-      "api_matches": "app/api/swipe/matches/route.ts (GET matched conversations)",
-      "api_likes": "app/api/swipe/likes/route.ts (GET received likes)",
-      "popup_component": "components/swipe/MutualMatchPopup.tsx (celebration popup, no deps)",
-      "swipe_page": "app/swipe/page.tsx (standalone swipe feed page, redesigned)",
-      "likes_page": "app/swipe/likes/page.tsx (Quan Tam page, redesigned)",
-      "test_script": "scripts/test-mutual-match.ts (E2E test, 4/4 passed)"
+    {
+      "name": "IntentCard (Hero-First Layout)",
+      "status": "implemented",
+      "files": [
+        "app/components/intent/IntentCard.tsx"
+      ],
+      "notes": "HeroImage + ThumbnailStrip + ExpandableText. Comments disabled."
     },
-    "known_issues_fixed": [
-      "IntentImage field: imageUrl → url (schema mismatch fixed)",
-      "Profile missing SwipeLike[] relation → added (500 error on /api/swipe/likes fixed)",
-      "Test script PrismaClient instantiation → use dynamic import of lib/db.ts"
-    ]
-  },
-  "knowledge_items": {
-    "patterns": [
-      "Extending NextAuth JWT and Session properties with User role by augmenting interface typings.",
-      "Generic requireRole() helper mapping roles to hierarchy integer levels (ADMIN=2, MODERATOR=1, USER=0).",
-      "detectAndHandleMatch() dùng prisma.$transaction để chống race condition khi 2 user like cùng lúc.",
-      "SwipeLike.upsert: an toàn để xử lý repeated swipe mà không duplicate records.",
-      "Prisma bidirectional relations: khi thêm relation field 1 phía, phải thêm reverse field ở phía còn lại."
-    ],
-    "gotchas": [
-      "Always call useSession() from a component wrapped inside <SessionProvider> in layout.tsx.",
-      "BigInt từ Prisma (price field) cần serialize sang Number() trước khi JSON response.",
-      "Prisma schema change cần `db:push` + restart server để invalidate Turbopack compiled chunks.",
-      "PrismaClient trong test scripts cần PrismaPg adapter (giống lib/db.ts), không dùng new PrismaClient() thẳng.",
-      "PowerShell không hỗ trợ && giữa commands hoặc & để bg process — dùng ; hoặc tách lệnh riêng."
-    ],
-    "conventions": [
-      "Split database layers from API handlers, use middleware for broad route protections.",
-      "Swipe pages /swipe/* dùng light design system (bg-gray-50, white sidebar, #0068FF accent) giống homepage.",
-      "NavItem trong standalone pages dùng Link wrapper thay vì button với onClick.",
-      "Test scripts load .env.local bằng dotenv config() đặt ở đầu file trước tất cả imports khác."
-    ]
-  }
+    {
+      "name": "TopNavbar",
+      "status": "implemented",
+      "files": [
+        "app/components/layout/TopNavbar.tsx",
+        "app/app/page.tsx"
+      ],
+      "notes": "Logo-left, 5 nav items center, Bell+Avatar right. Replaces SidebarDesktop."
+    },
+    {
+      "name": "Intent Detail /intent/[id]",
+      "status": "redesigned",
+      "files": [
+        "app/app/intent/[id]/page.tsx"
+      ],
+      "notes": "White cards, sticky back bar (top-16), indigo CTA, Quick Stats 3-col, comments hidden."
+    },
+    {
+      "name": "Intent Detail /can-co/intent/[id]",
+      "status": "redesigned",
+      "files": [
+        "app/app/(main)/can-co/intent/[id]/page.tsx"
+      ],
+      "notes": "Same design system as above. Redesigned in previous session."
+    },
+    {
+      "name": "FeedTab VIP navigation",
+      "status": "implemented",
+      "files": [
+        "app/components/tabs/FeedTab.tsx"
+      ],
+      "notes": "VIP intents wrapped in Link, all intents now appear in feed."
+    },
+    {
+      "name": "Mutual Match (Swipe)",
+      "status": "implemented",
+      "files": [
+        "app/components/tabs/SwipeMatchTab.tsx"
+      ],
+      "notes": "Like/dislike swipe + Quan Tâm tab for inbound likes."
+    },
+    {
+      "name": "Choropleth Map",
+      "status": "partial",
+      "files": [
+        "app/components/map/MapRadarTab.tsx"
+      ],
+      "notes": "District-level working. Ward-level (hcm-wards.geojson) incomplete."
+    },
+    {
+      "name": "Admin Dashboard RBAC",
+      "status": "implemented",
+      "notes": "requireRole() middleware, Admin/Moderator/User levels."
+    },
+    {
+      "name": "Bot Pipeline (Curator)",
+      "status": "implemented",
+      "notes": "RawNews → LLM Curator → Intent records. No-Hallucination rule."
+    }
+  ],
+  "known_issues": [
+    "public/uploads/ chưa migrate lên cloud storage",
+    "hcm-wards.geojson ward-level choropleth chưa hoàn thiện",
+    "IntentComments component côn nằm trong file /intent/[id] nhưng disabled — nên extract riêng",
+    "SidebarDesktop.tsx còn tồn tại sau khi đã thay bằng TopNavbar — có thể xóa"
+  ]
 }
