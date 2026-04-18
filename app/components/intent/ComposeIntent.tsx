@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { ImagePlus, X, Loader2, Sparkles, ShieldAlert } from 'lucide-react';
+import { ImagePlus, X, Loader2, Sparkles, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { convertToWebP, formatBytes, type ConvertResult } from '@/lib/image-utils';
 import type { MockIntent } from '@/lib/mock/intents';
 
 interface ComposeIntentProps {
@@ -75,13 +76,13 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
   const [text, setText] = useState(editIntent?.raw_text || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
   const [showTags, setShowTags] = useState(false);
   const [tags, setTags] = useState<{ icon: string; label: string }[]>([]);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [violation, setViolation] = useState<{ message: string; count: number; max: number; banned: boolean } | null>(null);
   const [mismatch, setMismatch] = useState<{ suggested: 'CAN' | 'CO'; strict?: boolean } | null>(null);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [convertResults, setConvertResults] = useState<ConvertResult[]>([]);
   const parseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const currentTagsRef = useRef<{ icon: string; label: string; type?: string }[]>([]);
@@ -219,22 +220,37 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
     resetForm();
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const validFiles = files.filter(
-      (f) => f.size <= 5 * 1024 * 1024 && /\.(jpe?g|png|webp)$/i.test(f.name),
-    ).slice(0, 10 - selectedImages.length);
+    const remaining = 5 - convertResults.length;
+    const toProcess = files.slice(0, remaining);
 
-    setSelectedImages((prev) => [...prev, ...validFiles]);
-    const newPreviews = validFiles.map((f) => URL.createObjectURL(f));
-    setImagePreviews((prev) => [...prev, ...newPreviews]);
+    if (files.length > remaining) {
+      setToast({ type: 'error', message: `Tối đa 5 ảnh mỗi bài` });
+    }
+
+    if (toProcess.length === 0) return;
     if (fileInputRef.current) fileInputRef.current.value = '';
+
+    setIsConverting(true);
+    const newResults: ConvertResult[] = [];
+    for (const file of toProcess) {
+      // Validate MIME type
+      if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) continue;
+      try {
+        const result = await convertToWebP(file);
+        newResults.push(result);
+      } catch (err) {
+        setToast({ type: 'error', message: err instanceof Error ? err.message : 'Không thể xử lý ảnh' });
+      }
+    }
+    setIsConverting(false);
+    setConvertResults((prev) => [...prev, ...newResults]);
   };
 
   const removeImage = (index: number) => {
-    URL.revokeObjectURL(imagePreviews[index]);
-    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    URL.revokeObjectURL(convertResults[index].preview);
+    setConvertResults((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmitReal = async () => {
@@ -289,15 +305,17 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
       const intent = await res.json();
 
       // 2. Upload images if any (CÓ only)
-      if (selectedImages.length > 0 && type === 'CO' && intent.id) {
+      if (convertResults.length > 0 && type === 'CO' && intent.id) {
         const formData = new FormData();
-        selectedImages.forEach((f) => formData.append('images', f));
+        convertResults.forEach((r, i) => {
+          formData.append('images', r.blob, `image_${i}.webp`);
+        });
 
         await fetch(`/api/intents/${intent.id}/images`, {
           method: 'POST',
           body: formData,
-        }).catch(() => {
-          // Images failed but intent created — acceptable
+        }).catch((err) => {
+          console.error('[ComposeIntent] Image upload failed:', err);
         });
       }
 
@@ -338,9 +356,8 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
     setShowTags(false);
     setIsExpanded(false);
     setIsSubmitting(false);
-    imagePreviews.forEach((url) => URL.revokeObjectURL(url));
-    setSelectedImages([]);
-    setImagePreviews([]);
+    convertResults.forEach((r) => URL.revokeObjectURL(r.preview));
+    setConvertResults([]);
   };
 
   // Collapsed state (skip when in edit mode)
@@ -380,7 +397,7 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
           {/* Type Toggle - Segmented Control Style */}
           <div className="flex p-1 bg-slate-100 rounded-2xl">
             <button
-              onClick={() => { setType('CAN'); setMismatch(null); setSelectedImages([]); imagePreviews.forEach(u => URL.revokeObjectURL(u)); setImagePreviews([]); }}
+              onClick={() => { setType('CAN'); setMismatch(null); convertResults.forEach(r => URL.revokeObjectURL(r.preview)); setConvertResults([]); }}
               className={cn(
                 'flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-200',
                 type === 'CAN'
@@ -459,7 +476,7 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
 
           {/* Image Upload (CÓ only) */}
           {type === 'CO' && (
-            <div>
+            <div className="space-y-2.5">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -468,29 +485,68 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
                 onChange={handleImageSelect}
                 className="hidden"
               />
-              {imagePreviews.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {imagePreviews.map((url, i) => (
-                    <div key={i} className="relative w-16 h-16 border border-[var(--wm-border)]">
+
+              {/* Converting indicator */}
+              {isConverting && (
+                <div className="flex items-center gap-2 text-xs font-medium text-indigo-600 px-1">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Đang nén ảnh sang WebP...</span>
+                </div>
+              )}
+
+              {/* Preview Grid */}
+              {convertResults.length > 0 && (
+                <div className="grid grid-cols-5 gap-2">
+                  {convertResults.map((r, i) => (
+                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 group">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <img src={r.preview} alt="" className="w-full h-full object-cover" />
+                      {/* Saving badge */}
+                      {r.saving > 0 && (
+                        <span className="absolute bottom-0.5 left-0.5 text-[9px] font-bold bg-emerald-500/90 text-white px-1 py-0.5 rounded-md">
+                          −{r.saving}%
+                        </span>
+                      )}
+                      {/* Remove button */}
                       <button
                         onClick={() => removeImage(i)}
-                        className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white flex items-center justify-center text-[10px] rounded-full"
+                        className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-slate-900/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
                       >
-                        ×
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
-              {selectedImages.length < 10 && (
+
+              {/* Total saving footer */}
+              {convertResults.length > 0 && convertResults.some(r => r.saving > 0) && (() => {
+                const totalOrig = convertResults.reduce((a, r) => a + r.originalSize, 0);
+                const totalConv = convertResults.reduce((a, r) => a + r.convertedSize, 0);
+                const totalSaving = Math.round((1 - totalConv / totalOrig) * 100);
+                return (
+                  <div className="flex items-center gap-1.5 px-1 text-[11px] text-slate-500">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>
+                      {convertResults.length} ảnh ·
+                      <span className="line-through text-slate-400">{formatBytes(totalOrig)}</span>
+                      {' → '}
+                      <span className="text-emerald-600 font-semibold">{formatBytes(totalConv)}</span>
+                      {' '}
+                      <span className="text-emerald-500 font-bold">(−{totalSaving}%)</span>
+                    </span>
+                  </div>
+                );
+              })()}
+
+              {/* Add more button */}
+              {convertResults.length < 5 && !isConverting && (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-3 border border-dashed border-[var(--wm-border)] flex items-center justify-center gap-2 text-xs text-[var(--wm-text-muted)] hover:bg-[var(--wm-surface-hover)] hover:border-[var(--wm-border-strong)] transition-colors"
+                  className="w-full py-3 border border-dashed border-slate-200 rounded-2xl flex items-center justify-center gap-2 text-xs font-medium text-slate-400 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-600 transition-all"
                 >
                   <ImagePlus className="w-4 h-4" />
-                  <span>Thêm ảnh ({selectedImages.length}/10)</span>
+                  <span>Thêm ảnh ({convertResults.length}/5)</span>
                 </button>
               )}
             </div>

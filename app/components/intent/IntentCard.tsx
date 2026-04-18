@@ -50,20 +50,20 @@ function ImageGrid({ images }: { images: { id: string; url: string }[] }) {
 
   if (show.length === 1) {
     return (
-      <div className="relative aspect-video overflow-hidden border border-[var(--wm-border)]">
+      <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
         <Image src={show[0].url} alt="" fill className="object-cover" unoptimized />
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 gap-[2px] overflow-hidden border border-[var(--wm-border)]">
+    <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
       {show.map((img, i) => (
-        <div key={img.id} className="relative aspect-video">
+        <div key={img.id} className="relative aspect-[4/3]">
           <Image src={img.url} alt="" fill className="object-cover" unoptimized />
           {i === 3 && remaining > 0 && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white text-lg font-semibold">+{remaining}</span>
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+              <span className="text-white text-lg font-bold drop-shadow-lg">+{remaining}</span>
             </div>
           )}
         </div>
@@ -114,7 +114,7 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
       <div className="p-3 pb-0">
         <div className="flex items-start gap-3">
           {intent.is_bot ? (
-            <div 
+            <div
               className="w-10 h-10 flex items-center justify-center text-white text-lg shrink-0 shadow-[0_0_10px_rgba(20,184,166,0.3)] border border-teal-500/50"
               style={{ backgroundColor: (intent.user as any)?.bot_color || '#0e7490' }}
             >
@@ -318,7 +318,7 @@ function ActionBar({ intentId, interested, onToggleInterest }: { intentId: strin
       </div>
       <div
         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-[var(--wm-text-dim)] hover:bg-[var(--wm-surface-hover)] transition-colors cursor-pointer"
-        // Không block event để click có thể bubble lên thẻ Link bọc ngoài
+      // Không block event để click có thể bubble lên thẻ Link bọc ngoài
       >
         <MessageCircle className="w-4 h-4" />
         <span>Bình luận</span>
