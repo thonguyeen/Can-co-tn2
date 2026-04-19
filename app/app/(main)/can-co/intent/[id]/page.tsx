@@ -112,33 +112,44 @@ export default function RealIntentDetailPage() {
   const isCO = intent.type === 'CO';
   const trustPercent = Math.round((intent.trust_score || 3) / 5 * 100);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24 md:pb-8">
+  const heroImage = intent.images?.[0]?.url ?? null;
 
-      {/* ── Sticky Back Bar ── */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+  return (
+    <div className="min-h-screen bg-slate-50 pb-24 md:pb-8">
+
+      {/* ── Hero Zone (Floating buttons + image/placeholder) ── */}
+      <div className="relative w-full max-w-2xl mx-auto">
+
+        {/* Background image or gradient placeholder */}
+        {heroImage ? (
+          <div
+            className="w-full h-[280px] md:h-[340px] bg-cover bg-center"
+            style={{ backgroundImage: `url(${heroImage})` }}
+          />
+        ) : (
+          <div className="w-full h-[180px] bg-gradient-to-br from-slate-100 via-slate-200 to-slate-100" />
+        )}
+
+        {/* Floating Back button — top left */}
         <Link
           href="/can-co"
-          className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+          className="absolute top-4 left-4 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-md hover:bg-white transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4 text-slate-600" />
+          <ArrowLeft className="w-5 h-5 text-slate-700" />
         </Link>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-900 truncate">{intent.title || 'Chi tiết tin đăng'}</p>
-          <p className="text-[11px] text-slate-400">{formatDistanceToNow(intent.created_at)}</p>
-        </div>
-        {/* Trust badge */}
-        <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
-          <ShieldCheck className="w-3 h-3 text-emerald-600" />
-          <span className="text-[10px] font-bold text-emerald-700">Trust {trustPercent}%</span>
+
+        {/* Floating Trust badge — top right */}
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 px-3 py-1.5 bg-white/80 backdrop-blur-md text-emerald-700 rounded-full shadow-md font-bold text-xs">
+          <ShieldCheck className="w-4 h-4" />
+          <span>Trust {trustPercent}%</span>
         </div>
       </div>
 
-      {/* ── Main Content ── */}
-      <div className="max-w-2xl mx-auto px-4 md:px-6 pt-6 space-y-4">
+      {/* ── Main Content — overlaps hero image ── */}
+      <div className="relative z-10 -mt-6 max-w-2xl mx-auto space-y-4">
 
         {/* ── INTENT CARD (full mode) ── */}
-        <div className="bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-t-3xl shadow-[0_-6px_20px_rgba(0,0,0,0.06)] border-x border-slate-100 overflow-hidden">
           <div className="wm-light">
             <IntentCard intent={intent as MockIntent} compact={false} basePath="/can-co" />
           </div>

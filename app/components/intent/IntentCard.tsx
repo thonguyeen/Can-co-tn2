@@ -9,6 +9,8 @@ import { formatPrice, formatPriceRange, getIntentTypeInfo, parsedDataToTags, get
 import { useSaved } from '@/lib/saved-context';
 import { BotComment } from '@/components/intent/BotComment';
 import type { MockIntent } from '@/lib/mock/intents';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
 
 interface IntentCardProps {
   intent: MockIntent;
@@ -48,11 +50,13 @@ function HeroImage({
   intentType,
   createdAt,
   trustScore,
+  onOpen,
 }: {
   images: { id: string; url: string }[];
   intentType: string;
   createdAt: string;
   trustScore: number | null | undefined;
+  onOpen: (index: number) => void;
 }) {
   if (images.length === 0) return null;
 
@@ -60,14 +64,19 @@ function HeroImage({
   const isCO = intentType === 'CO';
 
   return (
-    <div className="relative w-full aspect-[16/10] overflow-hidden rounded-t-2xl">
+    <div
+      className="relative w-full aspect-[16/10] overflow-hidden rounded-t-2xl cursor-pointer group"
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpen(0); }}
+    >
       <Image
         src={images[0].url}
         alt="Ảnh bất động sản"
         fill
-        className="object-cover"
+        className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
         unoptimized
       />
+      {/* Hover hint overlay */}
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 pointer-events-none" />
       {/* Gradient overlay for badge readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/25 pointer-events-none" />
 
@@ -106,7 +115,7 @@ function HeroImage({
 }
 
 /** Thumbnail strip — row of small images below the hero */
-function ThumbnailStrip({ images }: { images: { id: string; url: string }[] }) {
+function ThumbnailStrip({ images, onOpen }: { images: { id: string; url: string }[]; onOpen: (index: number) => void }) {
   if (images.length <= 1) return null;
 
   const thumbs = images.slice(0, 4);
@@ -114,13 +123,20 @@ function ThumbnailStrip({ images }: { images: { id: string; url: string }[] }) {
 
   return (
     <div className="flex gap-1.5 px-3 pt-2">
-      {thumbs.map((img) => (
-        <div key={img.id} className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 shrink-0">
+      {thumbs.map((img, i) => (
+        <div
+          key={img.id}
+          className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 shrink-0 cursor-pointer hover:border-indigo-300 hover:opacity-90 transition-all"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpen(i + 1); }}
+        >
           <Image src={img.url} alt="" fill className="object-cover" unoptimized />
         </div>
       ))}
       {extra > 0 && (
-        <div className="w-14 h-14 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+        <div
+          className="w-14 h-14 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 cursor-pointer hover:bg-slate-200 hover:border-indigo-300 transition-all"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpen(images.length - 1); }}
+        >
           <span className="text-xs font-bold text-slate-500">+{extra}</span>
         </div>
       )}
@@ -183,6 +199,8 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
   const verInfo = getVerificationInfo(intent.user.verification_level);
   const isCrawled = !!(intent.parsed_data as Record<string, unknown>)?.source;
   const [localInterested, setLocalInterested] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const interestCount = (intent.reactions?.interested || 0) + (localInterested ? 1 : 0);
   const tags = parsedDataToTags(intent.parsed_data, {
     price: intent.price,
@@ -193,6 +211,13 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
   const priceDisplay = intent.price
     ? formatPrice(intent.price)
     : formatPriceRange(intent.price_min, intent.price_max);
+
+  const slides = intent.images.map((img) => ({ src: img.url }));
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   const handleToggleInterest = async () => {
     const nextState = !localInterested;
@@ -226,11 +251,12 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
           intentType={intent.type}
           createdAt={intent.created_at}
           trustScore={intent.trust_score}
+          onOpen={openLightbox}
         />
       )}
 
       {/* ── Thumbnail strip ── */}
-      {hasImages && <ThumbnailStrip images={intent.images} />}
+      {hasImages && <ThumbnailStrip images={intent.images} onOpen={openLightbox} />}
 
       {/* ── Header: User + Type Badge ── */}
       <div className={cn('p-3 pb-0', hasImages && 'pt-2.5')}>
@@ -395,6 +421,16 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
 
       {/* Action Bar */}
       <ActionBar intentId={intent.id} interested={localInterested} onToggleInterest={handleToggleInterest} />
+
+      {/* ── Lightbox (fullscreen gallery) ── */}
+      {hasImages && (
+        <Lightbox
+          open={lightboxOpen}
+          close={() => setLightboxOpen(false)}
+          index={lightboxIndex}
+          slides={slides}
+        />
+      )}
     </div>
   );
 

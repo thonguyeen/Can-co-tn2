@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Map as MapIcon, SlidersHorizontal, X, ArrowLeft } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useFeedData } from '@/hooks/useFeedData';
-import MapboxRenderer from '@/components/map/MapboxRenderer';
+import LeafletRenderer from '@/components/map/LeafletRenderer';
 import MapPopupCard, { type LikeResult } from '@/components/map/MapPopupCard';
 import MapFilterPanel from '@/components/map/MapFilterPanel';
 import MapLegend from '@/components/map/MapLegend';
@@ -150,7 +150,7 @@ export default function MapPage() {
         {/* Map area — takes remaining flex space */}
         <div className="flex-1 relative overflow-hidden min-w-0">
           <MapErrorBoundary>
-            <MapboxRenderer
+            <LeafletRenderer
               viewMode="map"
               userLocation={userLocation}
               intents={intents}

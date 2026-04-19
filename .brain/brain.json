@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-18T16:18:00+07:00"
+    "last_updated": "2026-04-19T17:37:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -28,8 +28,9 @@
     "routes": {
       "/": "SuperApp shell (tab-based): Home feed, Map, SwipeMatch, Chat, Apps",
       "/can-co": "Legacy bảng tin — preserved for different UX purpose",
-      "/intent/[id]": "SuperApp intent detail page",
-      "/can-co/intent/[id]": "Legacy intent detail page (also redesigned)",
+      "/intent/[id]": "Re-exports v1-split/page.tsx (V1-Split Mẫu D là route chính thức từ 2026-04-19)",
+      "/intent/[id]/v1-split": "V1-Split source of truth — Dark Navy + Violet, sticky left (slider+map), scrollable right",
+      "/can-co/intent/[id]": "Legacy intent detail page",
       "/admin": "Admin dashboard with RBAC"
     },
     "layout": {
@@ -81,12 +82,24 @@
       "notes": "Logo-left, 5 nav items center, Bell+Avatar right. Replaces SidebarDesktop."
     },
     {
-      "name": "Intent Detail /intent/[id]",
-      "status": "redesigned",
+      "name": "Intent Detail /intent/[id] (Original)",
+      "status": "active",
       "files": [
         "app/app/intent/[id]/page.tsx"
       ],
-      "notes": "White cards, sticky back bar (top-16), indigo CTA, Quick Stats 3-col, comments hidden."
+      "notes": "Original centered layout max-w-2xl. Kept as baseline."
+    },
+    {
+      "name": "Intent Detail V1 Split (Official)",
+      "status": "implemented",
+      "files": [
+        "app/app/intent/[id]/page.tsx",
+        "app/app/intent/[id]/v1-split/page.tsx",
+        "app/components/intent/ImageSlider.tsx",
+        "app/hooks/useIntentDetail.ts",
+        "app/lib/mock/intents.ts"
+      ],
+      "notes": "Mẫu D Dark Navy + Violet. Left panel sticky: top50% ImageSlider (dots+thumbnails), bottom50% Mapbox. Right panel scrollable: tags, title, violet price, 2x2 specs grid, poster info, mô tả chi tiết, tiện ích chips (buildAmenityChips from parsed_data), tin liên quan (real API by district+category). Sticky CTA bar (Gọi điện + Chat). /intent/[id] re-exports from v1-split/page.tsx."
     },
     {
       "name": "Intent Detail /can-co/intent/[id]",
@@ -95,6 +108,16 @@
         "app/app/(main)/can-co/intent/[id]/page.tsx"
       ],
       "notes": "Same design system as above. Redesigned in previous session."
+    },
+    {
+      "name": "Homepage Sidebar + Grid Layout",
+      "status": "implemented",
+      "files": [
+        "app/components/tabs/FeedTab.tsx",
+        "app/components/feed/FeedFilterSidebar.tsx",
+        "app/hooks/useFeedData.ts"
+      ],
+      "notes": "3-col desktop layout: FeedFilterSidebar (left, sticky, type/district/price filters), 2-col grid feed (center), FeedObserverPanel (right, xl+). Filter logic client-side. Mobile: 1-col unchanged."
     },
     {
       "name": "FeedTab VIP navigation",
@@ -134,7 +157,8 @@
   "known_issues": [
     "public/uploads/ chưa migrate lên cloud storage",
     "hcm-wards.geojson ward-level choropleth chưa hoàn thiện",
-    "IntentComments component côn nằm trong file /intent/[id] nhưng disabled — nên extract riêng",
-    "SidebarDesktop.tsx còn tồn tại sau khi đã thay bằng TopNavbar — có thể xóa"
+    "IntentComments component còn nằm trong file /intent/[id] nhưng disabled",
+    "Tiện ích chips hiển thị từ parsed_data.keywords (raw text). Các tin có cấu trúc parsedData (bedrooms, bathrooms, area) sẽ hiển thị chips đẹp hơn",
+    "Tin liên quan card image hiển thị ảnh từ DB — tin nào không có ảnh sẽ fallback violet gradient"
   ]
 }

@@ -1,67 +1,96 @@
 {
-  "updated_at": "2026-04-18T16:18:00+07:00",
+  "updated_at": "2026-04-19T17:37:00+07:00",
   "working_on": {
     "feature": null,
     "task": null,
     "status": "idle",
     "files": [],
     "blockers": [],
-    "notes": "Session hôm nay hoàn tất: TopNavbar + Intent Detail standardization + IntentCard light theme"
+    "notes": "Session hôm nay: V1-Split Mẫu D trở thành route chính thức /intent/[id]. Polished: ImageSlider, Tiện ích chips, Tin liên quan API thật."
   },
   "pending_tasks": [
-    {
-      "task": "Lightbox gallery",
-      "priority": "medium",
-      "notes": "Triển khai yet-another-react-lightbox cho gallery ảnh trong IntentCard"
-    },
-    {
-      "task": "MatchCard polish",
-      "priority": "low",
-      "notes": "Đồng bộ màu sắc MatchCard section trên trang chi tiết với design system mới"
-    },
     {
       "task": "Cloud Storage migration",
       "priority": "high",
       "notes": "Migrate public/uploads/ lên S3/R2"
     },
     {
+      "task": "Tin liên quan — click navigation",
+      "priority": "medium",
+      "notes": "Related intent cards đã clickable (router.push) — cần verify UX flow liền mạch"
+    },
+    {
       "task": "Choropleth Ward-level map",
       "priority": "low",
       "notes": "hcm-wards.geojson chưa render ward-level đầy đủ"
+    },
+    {
+      "task": "Tiện ích chips — enrich parsed_data",
+      "priority": "low",
+      "notes": "Hiện chips chủ yếu hiển thị từ keywords[]. Cần bot curator output bedrooms/bathrooms/area/floor rõ hơn vào parsed_data"
     }
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-18T15:12:00+07:00",
+      "timestamp": "2026-04-19T16:35:00+07:00",
       "type": "feature",
-      "description": "Tạo TopNavbar.tsx — chuyển menu dọc thành menu ngang (logo + nav + actions)",
+      "description": "ImageSlider component mới — prev/next arrows, dot indicators, counter pill, thumbnail strip, violet gradient fallback khi không có ảnh",
       "files": [
-        "app/components/layout/TopNavbar.tsx",
-        "app/app/page.tsx"
+        "app/components/intent/ImageSlider.tsx"
       ]
     },
     {
-      "timestamp": "2026-04-18T15:30:00+07:00",
-      "type": "ui",
-      "description": "Chuẩn hóa /intent/[id] theo design system mới: white cards, sticky bar, indigo CTA, Quick Stats, ẩn comments",
+      "timestamp": "2026-04-19T16:36:00+07:00",
+      "type": "feature",
+      "description": "Thêm allImages vào useIntentDetail hook return",
+      "files": [
+        "app/hooks/useIntentDetail.ts"
+      ]
+    },
+    {
+      "timestamp": "2026-04-19T16:40:00+07:00",
+      "type": "redesign",
+      "description": "V1-Split complete rewrite: Dark Navy + Violet Mẫu D. Left sticky panel: ImageSlider (top 50%) + Mapbox map (bottom 50%). Right scrollable: tags, H1, violet price, 2x2 specs grid, poster/trust info, mô tả, tiện ích chips, tin liên quan, sticky CTA bar.",
+      "files": [
+        "app/app/intent/[id]/v1-split/page.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-19T16:42:00+07:00",
+      "type": "routing",
+      "description": "/intent/[id]/page.tsx → re-export từ v1-split/page.tsx. V1-Split là route chính thức.",
       "files": [
         "app/app/intent/[id]/page.tsx"
       ]
+    },
+    {
+      "timestamp": "2026-04-19T17:20:00+07:00",
+      "type": "polish",
+      "description": "Thêm buildAmenityChips() (parse 10+ fields từ parsed_data) + useRelatedIntents() (real API by district+category, exclude self, limit 4, loading skeleton + empty state). Fix React hooks rules violation (di chuyển hook lên trước early returns).",
+      "files": [
+        "app/app/intent/[id]/v1-split/page.tsx"
+      ]
     }
   ],
-  "errors_encountered": [],
+  "errors_encountered": [
+    {
+      "error": "React has detected a change in the order of Hooks — useRelatedIntents called after early if(loading) return",
+      "solution": "Di chuyển useRelatedIntents() lên trước if(loading) block. Hook nhận intent?.district và intent?.category (có thể undefined during loading) và skip fetch khi cả hai falsy.",
+      "resolved": true
+    }
+  ],
   "decisions_made": [
     {
-      "decision": "IntentCard dùng Tailwind light tokens thay vì CSS variables wm-panel",
-      "reason": "CSS vars chỉ hoạt động đúng khi root có dark theme. Light theme cần explicit Tailwind colors. Refactor này là global — ảnh hưởng cả feed lẫn detail pages."
+      "decision": "V1-Split là route chính thức /intent/[id] bằng cách re-export",
+      "reason": "Không duplicate code. Single source of truth ở v1-split/page.tsx. Dễ rollback nếu cần."
     },
     {
-      "decision": "Dùng top-16 cho sticky bar trong /intent/[id]",
-      "reason": "TopNavbar cao h-16 nên sticky bar phải offset xuống dưới"
+      "decision": "Tiện ích chips dùng buildAmenityChips() helper thay vì hardcode 4 fields",
+      "reason": "Linh hoạt hơn, tự động thu thập từ tất cả fields trong parsed_data (bedrooms, bathrooms, area, floor, floors, alley_type, furniture, parking, balcony, wifi, air_conditioner, keywords[])."
     },
     {
-      "decision": "Ẩn comments (COMMENTS_DISABLED), giữ code để dễ mở lại",
-      "reason": "Tạm tắt theo yêu cầu, comment out thay vì xóa để rollback dễ"
+      "decision": "Tin liên quan fetch API thật theo district + category",
+      "reason": "Tránh hard-coded mock data. Kết quả dynamic, loại bỏ current intent, hiển thị ảnh thật nếu có."
     }
   ]
 }

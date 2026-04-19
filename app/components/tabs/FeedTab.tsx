@@ -5,14 +5,24 @@ import { Search, Loader2 } from 'lucide-react';
 import { IntentCard } from '@/components/intent/IntentCard';
 import { ComposeIntent } from '@/components/intent/ComposeIntent';
 import FeedObserverPanel from '@/components/feed/FeedObserverPanel';
+import { FeedFilterSidebar } from '@/components/feed/FeedFilterSidebar';
 import { useFeedData } from '@/hooks/useFeedData';
 
 export default function FeedTab() {
   const {
     vipIntents,
     regularIntents,
+    intents,
     filter,
     setFilter,
+    district,
+    setDistrict,
+    priceMin,
+    setPriceMin,
+    priceMax,
+    setPriceMax,
+    canCount,
+    coCount,
     isLoading,
     isLoadingMore,
     apiError,
@@ -27,10 +37,28 @@ export default function FeedTab() {
   const trustScore = activeIntent ? 85 + (activeIntent.id.length % 15) : 95;
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden gap-0">
+
+      {/* ═══════════ LEFT: FILTER SIDEBAR (Desktop lg+) ═══════════ */}
+      <div className="hidden lg:block shrink-0 overflow-y-auto py-6 pl-4 xl:pl-6 pr-4">
+        <FeedFilterSidebar
+          filter={filter}
+          setFilter={setFilter}
+          district={district}
+          setDistrict={setDistrict}
+          priceMin={priceMin}
+          setPriceMin={setPriceMin}
+          priceMax={priceMax}
+          setPriceMax={setPriceMax}
+          totalCount={intents.length}
+          canCount={canCount}
+          coCount={coCount}
+        />
+      </div>
+
       {/* ═══════════ MAIN FEED CONTENT ═══════════ */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar px-4 md:px-8 py-6 pb-24 md:pb-8">
-        <div className="max-w-3xl mx-auto">
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 pb-24 md:pb-8">
+        <div className="max-w-4xl mx-auto">
 
           {/* ── SEARCH BAR ── */}
           <div className="mb-6 relative z-30">
@@ -81,8 +109,8 @@ export default function FeedTab() {
                     href={`/intent/${vipIntent.id}`}
                     key={vipIntent.id}
                     className={`block snap-center shrink-0 w-[260px] h-[360px] md:w-[280px] md:h-[400px] rounded-[28px] overflow-hidden cursor-pointer transition-all duration-400 bg-white flex flex-col relative group ${activeIntent?.id === vipIntent.id
-                        ? 'ring-2 ring-indigo-500 ring-offset-4 shadow-[0_20px_40px_-15px_rgba(79,70,229,0.3)] scale-[1.02]'
-                        : 'shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_35px_-15px_rgba(0,0,0,0.15)] hover:-translate-y-1'
+                      ? 'ring-2 ring-indigo-500 ring-offset-4 shadow-[0_20px_40px_-15px_rgba(79,70,229,0.3)] scale-[1.02]'
+                      : 'shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_35px_-15px_rgba(0,0,0,0.15)] hover:-translate-y-1'
                       }`}
                     onClick={() => setActiveIntent(vipIntent)}
                     onMouseEnter={() => setActiveIntent(vipIntent)}
@@ -127,14 +155,15 @@ export default function FeedTab() {
           <div>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-900">Danh Sách Tin Đăng</h2>
-              <div className="flex gap-1.5 p-1 bg-white rounded-full shadow-sm border border-slate-100">
+              {/* Filter pills — chỉ hiện trên mobile/tablet (sidebar đã có trên lg+) */}
+              <div className="flex lg:hidden gap-1.5 p-1 bg-white rounded-full shadow-sm border border-slate-100">
                 <button onClick={() => setFilter('all')} className={`text-[11px] font-semibold px-4 py-1.5 rounded-full transition-colors ${filter === 'all' ? 'bg-indigo-50 text-indigo-600' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}>Tất cả</button>
-                <button onClick={() => setFilter('CAN')} className={`text-[11px] font-semibold px-4 py-1.5 rounded-full transition-colors ${filter === 'CAN' ? 'bg-red-50 text-red-600' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}>Cần Tìm</button>
-                <button onClick={() => setFilter('CO')} className={`text-[11px] font-semibold px-4 py-1.5 rounded-full transition-colors ${filter === 'CO' ? 'bg-indigo-50 text-indigo-600' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}>Đang Bán</button>
+                <button onClick={() => setFilter('CAN')} className={`text-[11px] font-semibold px-4 py-1.5 rounded-full transition-colors ${filter === 'CAN' ? 'bg-red-50 text-red-600' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}>CẦN</button>
+                <button onClick={() => setFilter('CO')} className={`text-[11px] font-semibold px-4 py-1.5 rounded-full transition-colors ${filter === 'CO' ? 'bg-indigo-50 text-indigo-600' : 'bg-transparent text-slate-500 hover:text-slate-800'}`}>CÓ</button>
               </div>
             </div>
 
-            <div className="space-y-4 wm-light">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 wm-light">
               {isLoading && regularIntents.length === 0 ? (
                 [1, 2, 3].map((i) => (
                   <div key={i} className="animate-pulse flex p-4 bg-white rounded-3xl border border-slate-100 shadow-sm gap-4">
@@ -160,8 +189,8 @@ export default function FeedTab() {
                   <div
                     key={intent.id}
                     className={`transition-all duration-300 rounded-3xl overflow-hidden ${activeIntent?.id === intent.id
-                        ? 'ring-2 ring-indigo-500 shadow-[0_10px_30px_-15px_rgba(79,70,229,0.2)] bg-white -translate-y-0.5'
-                        : 'bg-white shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-0.5'
+                      ? 'ring-2 ring-indigo-500 shadow-[0_10px_30px_-15px_rgba(79,70,229,0.2)] bg-white -translate-y-0.5'
+                      : 'bg-white shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-0.5'
                       }`}
                     onMouseEnter={() => setActiveIntent(intent)}
                     onClick={() => setActiveIntent(intent)}

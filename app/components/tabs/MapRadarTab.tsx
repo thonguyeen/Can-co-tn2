@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Map as MapIcon, Radar, Search, SlidersHorizontal } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { useFeedData } from '@/hooks/useFeedData';
-import MapboxRenderer from '../map/MapboxRenderer';
+import LeafletRenderer from '../map/LeafletRenderer';
 import MapPopupCard, { type LikeResult } from '../map/MapPopupCard';
 import { MutualMatchPopup } from '../swipe/MutualMatchPopup';
 import type { MapFeatureProperties } from '@/types/map';

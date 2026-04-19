@@ -8,6 +8,9 @@ const PAGE_SIZE = 8;
 
 export function useFeedData() {
   const [filter, setFilter] = useState<FilterType>('all');
+  const [district, setDistrict] = useState<string>('');
+  const [priceMin, setPriceMin] = useState<number | null>(null);
+  const [priceMax, setPriceMax] = useState<number | null>(null);
   const [intents, setIntents] = useState<MockIntent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -16,8 +19,24 @@ export function useFeedData() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Filtered + sorted data
-  const allFiltered = filter === 'all' ? intents : intents.filter((i) => i.type === filter);
+  // Multi-filter: type → district → price
+  let allFiltered = filter === 'all' ? intents : intents.filter((i) => i.type === filter);
+  if (district) {
+    allFiltered = allFiltered.filter(
+      (i) => (i.parsed_data as Record<string, unknown>)?.district === district,
+    );
+  }
+  if (priceMin !== null) {
+    allFiltered = allFiltered.filter(
+      (i) => (i.price ?? i.price_min ?? 0) >= priceMin,
+    );
+  }
+  if (priceMax !== null) {
+    allFiltered = allFiltered.filter(
+      (i) => (i.price ?? i.price_min ?? Infinity) <= priceMax,
+    );
+  }
+
 
   const vipIntents = [...allFiltered]
     .filter((i) => i.match_count > 0 || i.trust_score >= 4)
@@ -104,9 +123,18 @@ export function useFeedData() {
     vipIntents,
     regularIntents: visibleRegular,
     allFiltered,
-    // State
+    // Stats for sidebar
+    canCount: intents.filter((i) => i.type === 'CAN').length,
+    coCount: intents.filter((i) => i.type === 'CO').length,
+    // Filter state
     filter,
     setFilter,
+    district,
+    setDistrict,
+    priceMin,
+    setPriceMin,
+    priceMax,
+    setPriceMax,
     isLoading,
     isLoadingMore,
     apiError,
