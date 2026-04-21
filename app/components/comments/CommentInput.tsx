@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useAuthGate } from '@/components/auth/AuthGateProvider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Send, X } from 'lucide-react'
@@ -29,7 +29,7 @@ export function CommentInput({
   onCancelReply,
   onCommentAdded,
 }: CommentInputProps) {
-  const router = useRouter()
+  const { requireAuth } = useAuthGate()
   const [content, setContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -52,7 +52,7 @@ export function CommentInput({
 
   const handleSubmit = async () => {
     if (!user) {
-      router.push('/login')
+      requireAuth(() => { })
       return
     }
 
@@ -93,7 +93,7 @@ export function CommentInput({
   if (!user) {
     return (
       <div className="flex items-center justify-center py-4 px-4 bg-muted/50 rounded-lg">
-        <Button variant="link" onClick={() => router.push('/login')}>
+        <Button variant="link" onClick={() => requireAuth(() => { })}>
           Đăng nhập để bình luận
         </Button>
       </div>

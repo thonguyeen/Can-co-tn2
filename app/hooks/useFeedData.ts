@@ -7,6 +7,7 @@ type FilterType = 'all' | 'CAN' | 'CO';
 const PAGE_SIZE = 8;
 
 export function useFeedData() {
+  const [city, setCity] = useState<string>('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [district, setDistrict] = useState<string>('');
   const [priceMin, setPriceMin] = useState<number | null>(null);
@@ -72,7 +73,8 @@ export function useFeedData() {
     try {
       if (!isBackground) setIsLoading(true);
       setApiError(null);
-      const res = await fetch('/api/intents?limit=100&status=active');
+      const cityParam = city ? `&city=${encodeURIComponent(city)}` : '';
+      const res = await fetch(`/api/intents?limit=100&status=active${cityParam}`);
       if (!res.ok) throw new Error('Failed to fetch API');
       const data = await res.json();
       if (data.intents && Array.isArray(data.intents)) {
@@ -86,7 +88,7 @@ export function useFeedData() {
     } finally {
       if (!isBackground) setIsLoading(false);
     }
-  }, []);
+  }, [city]);
 
   // Initial fetch + auto-refresh polling (15s)
   useEffect(() => {
@@ -98,6 +100,11 @@ export function useFeedData() {
 
     return () => clearInterval(interval);
   }, [fetchRealIntents]);
+
+  // Reset district when city changes
+  useEffect(() => {
+    setDistrict('');
+  }, [city]);
 
   // Auto-select first VIP as activeIntent
   useEffect(() => {
@@ -126,6 +133,9 @@ export function useFeedData() {
     // Stats for sidebar
     canCount: intents.filter((i) => i.type === 'CAN').length,
     coCount: intents.filter((i) => i.type === 'CO').length,
+    // City state
+    city,
+    setCity,
     // Filter state
     filter,
     setFilter,
@@ -135,6 +145,8 @@ export function useFeedData() {
     setPriceMin,
     priceMax,
     setPriceMax,
+    // Computed
+    activeFilterCount: (filter !== 'all' ? 1 : 0) + (district ? 1 : 0) + (priceMin !== null ? 1 : 0) + (priceMax !== null ? 1 : 0),
     isLoading,
     isLoadingMore,
     apiError,

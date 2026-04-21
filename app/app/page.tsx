@@ -15,7 +15,7 @@ import MiniAppsTab from '@/components/tabs/MiniAppsTab';
 import GlobalChatbot from '@/components/chat/GlobalChatbot';
 
 export default function SuperAppContainer() {
-  const [activeTab, setActiveTab] = useState('swipe');
+  const [activeTab, setActiveTab] = useState('home');
   const [matchedIntentId, setMatchedIntentId] = useState<string | null>(null);
 
   const handleNavigateToChat = useCallback((intentId: string) => {

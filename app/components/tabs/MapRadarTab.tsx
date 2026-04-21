@@ -105,7 +105,7 @@ export default function MapRadarTab() {
 
       {/* ── NỀN BẢN ĐỒ ── */}
       <div className="flex-1 relative">
-        <MapboxRenderer
+        <LeafletRenderer
           viewMode={viewMode}
           userLocation={userLocation}
           intents={intents}

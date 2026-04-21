@@ -1,6 +1,8 @@
 'use client';
 
-import { Home, MessageCircle, MapIcon, Flame, LayoutGrid, Bell, User } from 'lucide-react';
+import { Home, MessageCircle, MapIcon, Flame, LayoutGrid, Bell } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ProfileDropdown } from '@/components/profile/ProfileDropdown';
 
 interface TopNavbarProps {
     activeTab: string;
@@ -16,6 +18,8 @@ const NAV_ITEMS = [
 ];
 
 export default function TopNavbar({ activeTab, setActiveTab }: TopNavbarProps) {
+    const router = useRouter();
+
     return (
         <header className="hidden md:flex h-16 items-center justify-between px-5 lg:px-8 bg-white border-b border-slate-100 shadow-sm z-50 shrink-0">
 
@@ -36,8 +40,8 @@ export default function TopNavbar({ activeTab, setActiveTab }: TopNavbarProps) {
                             key={id}
                             onClick={() => setActiveTab(id)}
                             className={`relative flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${isActive
-                                    ? 'bg-indigo-50 text-indigo-700 font-bold'
-                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                                ? 'bg-indigo-50 text-indigo-700 font-bold'
+                                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
                                 }`}
                         >
                             <div className="relative shrink-0">
@@ -72,9 +76,8 @@ export default function TopNavbar({ activeTab, setActiveTab }: TopNavbarProps) {
                 <button className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors cursor-pointer text-slate-500 hover:text-slate-900">
                     <Bell size={18} />
                 </button>
-                <button className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors cursor-pointer shadow-sm">
-                    <User size={16} />
-                </button>
+                {/* Avatar / Dropdown — replaces hardcoded User icon */}
+                <ProfileDropdown onOpenProfile={() => router.push('/profile')} />
             </div>
 
         </header>

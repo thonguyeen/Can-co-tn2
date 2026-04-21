@@ -2,11 +2,13 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-19T17:37:00+07:00"
+    "last_updated": "2026-04-21T12:04:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
-    "type": "Social Real Estate Platform",
+    "slug": "can-co-tn",
+    "type": "Web App (Next.js)",
+    "description": "Mạng xã hội BĐS — ghép nối người mua/bán nhà đất tại Việt Nam theo hướng click-to-gate + social feed",
     "status": "active",
     "repo_root": "d:/SW/Can-co-tn",
     "app_root": "d:/SW/Can-co-tn/app",
@@ -15,150 +17,99 @@
   "tech_stack": {
     "framework": "Next.js 14 (App Router)",
     "language": "TypeScript",
-    "styling": "TailwindCSS",
-    "database": "PostgreSQL + Prisma ORM",
+    "styling": "Tailwind CSS",
     "auth": "NextAuth.js",
-    "maps": "Mapbox GL + react-map-gl",
-    "realtime": "Pusher / WebSocket",
-    "ai": "Anthropic / OpenAI (3-tier fallback)",
-    "icons": "Lucide React",
-    "image_storage": "local public/uploads/ (migration S3/R2 pending)"
-  },
-  "architecture": {
-    "routes": {
-      "/": "SuperApp shell (tab-based): Home feed, Map, SwipeMatch, Chat, Apps",
-      "/can-co": "Legacy bảng tin — preserved for different UX purpose",
-      "/intent/[id]": "Re-exports v1-split/page.tsx (V1-Split Mẫu D là route chính thức từ 2026-04-19)",
-      "/intent/[id]/v1-split": "V1-Split source of truth — Dark Navy + Violet, sticky left (slider+map), scrollable right",
-      "/can-co/intent/[id]": "Legacy intent detail page",
-      "/admin": "Admin dashboard with RBAC"
-    },
-    "layout": {
-      "desktop": "TopNavbar (h-16 horizontal) + main content full-width",
-      "mobile": "BottomNavMobile only",
-      "decision": "Migrated from SidebarDesktop (vertical) to TopNavbar (horizontal) on 2026-04-18"
-    }
-  },
-  "design_system": {
-    "palette": {
-      "primary_indigo": "#4f46e5 / #6366f1",
-      "teal": "#0F766E",
-      "blue": "#0369A1",
-      "trust_emerald": "#10b981"
-    },
-    "typography": [
-      "Cinzel",
-      "Josefin Sans"
+    "database": "PostgreSQL (Prisma ORM)",
+    "ai_providers": [
+      "Anthropic Claude",
+      "OpenAI",
+      "Google Gemini (fallback)"
     ],
-    "card_style": "bg-white rounded-2xl border border-slate-100 shadow-sm (hover: shadow-md border-slate-200)",
-    "cta_style": "indigo gradient rounded-3xl font-bold text-white",
-    "badge_trust": "emerald bg + ShieldCheck icon",
-    "sticky_bar": "top-16 (offset for TopNavbar h-16), bg-white/80 backdrop-blur",
-    "text_tokens": {
-      "heading": "text-slate-900",
-      "body": "text-slate-600",
-      "muted": "text-slate-400",
-      "accent": "text-indigo-600",
-      "bot_badge": "bg-teal-100 text-teal-700 border-teal-200"
-    },
-    "DEPRECATED": "All var(--wm-*) CSS variables replaced with explicit Tailwind tokens as of 2026-04-18"
+    "maps": "Leaflet + React Leaflet",
+    "image_gallery": "yet-another-react-lightbox"
   },
   "features": [
     {
-      "name": "IntentCard (Hero-First Layout)",
-      "status": "implemented",
-      "files": [
-        "app/components/intent/IntentCard.tsx"
-      ],
-      "notes": "HeroImage + ThumbnailStrip + ExpandableText. Comments disabled."
-    },
-    {
-      "name": "TopNavbar",
-      "status": "implemented",
-      "files": [
-        "app/components/layout/TopNavbar.tsx",
-        "app/app/page.tsx"
-      ],
-      "notes": "Logo-left, 5 nav items center, Bell+Avatar right. Replaces SidebarDesktop."
-    },
-    {
-      "name": "Intent Detail /intent/[id] (Original)",
-      "status": "active",
-      "files": [
-        "app/app/intent/[id]/page.tsx"
-      ],
-      "notes": "Original centered layout max-w-2xl. Kept as baseline."
-    },
-    {
-      "name": "Intent Detail V1 Split (Official)",
-      "status": "implemented",
-      "files": [
-        "app/app/intent/[id]/page.tsx",
-        "app/app/intent/[id]/v1-split/page.tsx",
-        "app/components/intent/ImageSlider.tsx",
-        "app/hooks/useIntentDetail.ts",
-        "app/lib/mock/intents.ts"
-      ],
-      "notes": "Mẫu D Dark Navy + Violet. Left panel sticky: top50% ImageSlider (dots+thumbnails), bottom50% Mapbox. Right panel scrollable: tags, title, violet price, 2x2 specs grid, poster info, mô tả chi tiết, tiện ích chips (buildAmenityChips from parsed_data), tin liên quan (real API by district+category). Sticky CTA bar (Gọi điện + Chat). /intent/[id] re-exports from v1-split/page.tsx."
-    },
-    {
-      "name": "Intent Detail /can-co/intent/[id]",
-      "status": "redesigned",
-      "files": [
-        "app/app/(main)/can-co/intent/[id]/page.tsx"
-      ],
-      "notes": "Same design system as above. Redesigned in previous session."
-    },
-    {
-      "name": "Homepage Sidebar + Grid Layout",
-      "status": "implemented",
-      "files": [
-        "app/components/tabs/FeedTab.tsx",
-        "app/components/feed/FeedFilterSidebar.tsx",
-        "app/hooks/useFeedData.ts"
-      ],
-      "notes": "3-col desktop layout: FeedFilterSidebar (left, sticky, type/district/price filters), 2-col grid feed (center), FeedObserverPanel (right, xl+). Filter logic client-side. Mobile: 1-col unchanged."
-    },
-    {
-      "name": "FeedTab VIP navigation",
-      "status": "implemented",
-      "files": [
-        "app/components/tabs/FeedTab.tsx"
-      ],
-      "notes": "VIP intents wrapped in Link, all intents now appear in feed."
+      "name": "Guest Browse Mode (Click-to-Gate)",
+      "status": "complete",
+      "plan": "plans/260420-0748-guest-browse-mode"
     },
     {
       "name": "Mutual Match (Swipe)",
-      "status": "implemented",
-      "files": [
-        "app/components/tabs/SwipeMatchTab.tsx"
-      ],
-      "notes": "Like/dislike swipe + Quan Tâm tab for inbound likes."
-    },
-    {
-      "name": "Choropleth Map",
-      "status": "partial",
-      "files": [
-        "app/components/map/MapRadarTab.tsx"
-      ],
-      "notes": "District-level working. Ward-level (hcm-wards.geojson) incomplete."
+      "status": "complete",
+      "plan": "N/A"
     },
     {
       "name": "Admin Dashboard RBAC",
-      "status": "implemented",
-      "notes": "requireRole() middleware, Admin/Moderator/User levels."
+      "status": "complete",
+      "plan": "N/A"
     },
     {
-      "name": "Bot Pipeline (Curator)",
-      "status": "implemented",
-      "notes": "RawNews → LLM Curator → Intent records. No-Hallucination rule."
+      "name": "Bot Curator Pipeline",
+      "status": "complete",
+      "plan": "N/A"
+    },
+    {
+      "name": "Choropleth Ward Map",
+      "status": "complete",
+      "plan": "N/A"
+    },
+    {
+      "name": "Feed Redesign Option C (Social+BĐS Hybrid)",
+      "status": "complete",
+      "plan": "plans/200420-0954-feed-redesign-opt-c"
+    },
+    {
+      "name": "City Filter Redesign — Option D (Homigo Style)",
+      "status": "code-complete",
+      "plan": "plans/210421-1105-city-filter-optD",
+      "notes": "Phase 01+02 done. Phase 03 smoke test pending user verification."
     }
   ],
-  "known_issues": [
-    "public/uploads/ chưa migrate lên cloud storage",
-    "hcm-wards.geojson ward-level choropleth chưa hoàn thiện",
-    "IntentComments component còn nằm trong file /intent/[id] nhưng disabled",
-    "Tiện ích chips hiển thị từ parsed_data.keywords (raw text). Các tin có cấu trúc parsedData (bedrooms, bathrooms, area) sẽ hiển thị chips đẹp hơn",
-    "Tin liên quan card image hiển thị ảnh từ DB — tin nào không có ảnh sẽ fallback violet gradient"
-  ]
+  "key_components": {
+    "feed": "app/components/tabs/FeedTab.tsx",
+    "city_chip_bar": "app/components/feed/CityChipBar.tsx (NEW - 4 city chips + Tất cả)",
+    "feed_filter_drawer": "app/components/feed/FeedFilterDrawer.tsx (NEW - slide-over panel, filter by type/district/price)",
+    "feed_filter_sidebar": "app/components/feed/FeedFilterSidebar.tsx (CITY_DISTRICTS multi-city map)",
+    "social_card": "app/components/intent/SocialPostCard.tsx (Option C design)",
+    "legacy_card": "app/components/intent/IntentCard.tsx (still used on detail page)",
+    "auth_gate": "app/components/auth/AuthGateProvider.tsx",
+    "auth_gate_modal": "app/components/auth/AuthGateModal.tsx",
+    "global_chatbot": "app/components/chat/GlobalChatbot.tsx",
+    "swipe_match": "app/components/tabs/SwipeMatchTab.tsx",
+    "compose": "app/components/intent/ComposeIntent.tsx",
+    "feed_observer": "app/components/feed/FeedObserverPanel.tsx",
+    "use_feed_data": "app/hooks/useFeedData.ts (city+district+price+type state, API fetch with city param)"
+  },
+  "auth_gate_pattern": {
+    "hook": "useAuthGate() from AuthGateProvider",
+    "method": "requireAuth(fn) — shows modal for guests, calls fn for logged-in users",
+    "gated_actions": [
+      "Quan tâm (Interest)",
+      "Lưu (Save)",
+      "Swipe Like/Nope/Super",
+      "Chatbot open",
+      "Đàm phán (Negotiate)"
+    ]
+  },
+  "knowledge_items": {
+    "patterns": [
+      "Click-to-Gate: guest users see all content but are prompted to login on interaction",
+      "SocialPostCard: hero image full-width → PostHeader → PostBody w/ AI highlights → BotPreview → ReactionSummary → ActionBar 3-btn",
+      "AI highlight: PRICE_RE highlights prices in indigo bold, PLACE_RE underlines locations",
+      "FeedTab merges vipIntents (isVip=true) + regularIntents into allFeedIntents single-col list"
+    ],
+    "gotchas": [
+      "VN admin reform 2025: No more districts, only Tỉnh/TP → Phường/Xã",
+      "Default tab in app/page.tsx must be 'home' (not 'swipe') for guest UX",
+      "SocialPostCard uses Image from next/image for hero (requires unoptimized for external URLs)"
+    ],
+    "conventions": [
+      "Plan folders: plans/YYMMDD-HHMM-feature-name/",
+      "Phase files: phase-01-name.md, phase-02-name.md, ...",
+      "Components: named exports, TSX, Tailwind classes inline",
+      "City filter uses server-side city param; district/price filter is client-side on fetched data",
+      "CITY_DISTRICTS map in FeedFilterSidebar.tsx, exported getDistrictsForCity(city) helper"
+    ]
+  }
 }

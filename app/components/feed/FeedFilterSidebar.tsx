@@ -18,13 +18,34 @@ interface FeedFilterSidebarProps {
     coCount: number;
 }
 
-const HCM_DISTRICTS = [
-    'Quận 1', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 6', 'Quận 7',
-    'Quận 8', 'Quận 10', 'Quận 11', 'Quận 12',
-    'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận', 'Tân Bình', 'Tân Phú',
-    'Bình Tân', 'Thủ Đức', 'Nhà Bè', 'Hóc Môn', 'Củ Chi',
-    'Bình Chánh', 'Cần Giờ',
-];
+export const CITY_DISTRICTS: Record<string, string[]> = {
+    'Hồ Chí Minh': [
+        'Quận 1', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 6', 'Quận 7',
+        'Quận 8', 'Quận 10', 'Quận 11', 'Quận 12',
+        'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận', 'Tân Bình', 'Tân Phú',
+        'Bình Tân', 'Thủ Đức', 'Nhà Bè', 'Hóc Môn', 'Củ Chi',
+        'Bình Chánh', 'Cần Giờ',
+    ],
+    'Đà Nẵng': [
+        'Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn',
+        'Liên Chiểu', 'Cẩm Lệ', 'Hòa Vang',
+    ],
+    'Khánh Hòa': [
+        'Nha Trang', 'Cam Ranh', 'Cam Lâm', 'Vạn Ninh',
+        'Ninh Hòa', 'Khánh Vĩnh', 'Khánh Sơn', 'Trường Sa',
+    ],
+    'Hà Nội': [
+        'Ba Đình', 'Hoàn Kiếm', 'Hai Bà Trưng', 'Đống Đa',
+        'Tây Hồ', 'Cầu Giấy', 'Thanh Xuân', 'Hoàng Mai',
+        'Long Biên', 'Nam Từ Liêm', 'Bắc Từ Liêm', 'Hà Đông',
+    ],
+};
+
+/** Get flat district list for a given city, or all districts if empty */
+export function getDistrictsForCity(city: string): string[] {
+    if (!city) return Object.values(CITY_DISTRICTS).flat();
+    return CITY_DISTRICTS[city] ?? [];
+}
 
 export function FeedFilterSidebar({
     filter,
@@ -82,8 +103,8 @@ export function FeedFilterSidebar({
                                 key={key}
                                 onClick={() => setFilter(key)}
                                 className={`w-full text-left text-xs font-semibold px-3 py-2 rounded-xl transition-all cursor-pointer ${filter === key
-                                        ? activeClass
-                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                                    ? activeClass
+                                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                                     }`}
                             >
                                 {label}
@@ -101,7 +122,7 @@ export function FeedFilterSidebar({
                         className="w-full text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all cursor-pointer"
                     >
                         <option value="">Tất cả khu vực</option>
-                        {HCM_DISTRICTS.map((d) => (
+                        {getDistrictsForCity('').map((d) => (
                             <option key={d} value={d}>{d}</option>
                         ))}
                     </select>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Bot, User, Search, LogOut } from 'lucide-react'
+import { Home, Bot, Search, LogOut, ArrowLeft } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -17,9 +17,11 @@ interface HeaderProps {
     display_name?: string | null
     avatar_url?: string | null
   } | null
+  /** Hiển thị nút ← Quay lại thay cho nav items (dùng ở trang chi tiết) */
+  showBackButton?: boolean
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, showBackButton = false }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const handleLogout = async () => {
@@ -55,26 +57,38 @@ export function Header({ user }: HeaderProps) {
           </div>
         </div>
 
-        {/* Nav Icons */}
+        {/* Nav Icons hoặc Back Button */}
         <nav className="flex items-center gap-1">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href.split('/').slice(0, 2).join('/'))
-            return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    'w-12 h-10 rounded-lg',
-                    isActive && 'bg-accent text-primary'
-                  )}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="sr-only">{item.label}</span>
-                </Button>
-              </Link>
-            )
-          })}
+          {showBackButton ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="gap-1.5 text-slate-600 hover:text-indigo-600 font-semibold"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Quay lại</span>
+            </Button>
+          ) : (
+            navItems.map((item) => {
+              const isActive = pathname.startsWith(item.href.split('/').slice(0, 2).join('/'))
+              return (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      'w-12 h-10 rounded-lg',
+                      isActive && 'bg-accent text-primary'
+                    )}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="sr-only">{item.label}</span>
+                  </Button>
+                </Link>
+              )
+            })
+          )}
 
           {user ? (
             <div className="flex items-center gap-2 ml-2">

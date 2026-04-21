@@ -7,6 +7,7 @@ import SwipeCard from '@/components/swipe/SwipeCard';
 import MatchOverlay from '@/components/swipe/MatchOverlay';
 import { useFeedData } from '@/hooks/useFeedData';
 import { type MockIntent } from '@/lib/mock/intents';
+import { useAuthGate } from '@/components/auth/AuthGateProvider';
 
 interface SwipeMatchTabProps {
   onNavigateToChat: (intentId: string) => void;
@@ -14,6 +15,7 @@ interface SwipeMatchTabProps {
 
 export default function SwipeMatchTab({ onNavigateToChat }: SwipeMatchTabProps) {
   const { intents, isLoading, apiError } = useFeedData();
+  const { requireAuth } = useAuthGate();
   const [swipedIds, setSwipedIds] = useState<Set<string>>(new Set());
   const [matchedIntent, setMatchedIntent] = useState<MockIntent | null>(null);
   const [exitingCard, setExitingCard] = useState<{ id: string; direction: 'left' | 'right' } | null>(null);
@@ -57,12 +59,12 @@ export default function SwipeMatchTab({ onNavigateToChat }: SwipeMatchTabProps) 
   }, [visibleCards]);
 
   const handleButtonSwipe = useCallback((direction: 'left' | 'right') => {
-    handleSwipe(direction);
-  }, [handleSwipe]);
+    requireAuth(() => handleSwipe(direction));
+  }, [handleSwipe, requireAuth]);
 
   const handleSuperLike = useCallback(() => {
-    handleSwipe('right');
-  }, [handleSwipe]);
+    requireAuth(() => handleSwipe('right'));
+  }, [handleSwipe, requireAuth]);
 
   const handleReset = useCallback(() => {
     setSwipedIds(new Set());

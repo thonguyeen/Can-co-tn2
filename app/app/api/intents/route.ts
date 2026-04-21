@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type');
     const category = searchParams.get('category');
     const district = searchParams.get('district');
+    const city = searchParams.get('city');
     const status = searchParams.get('status') || 'active';
     const id = searchParams.get('id'); // Support fetching by ID
     const page = parseInt(searchParams.get('page') || '1');
@@ -109,6 +110,7 @@ export async function GET(request: NextRequest) {
         WHERE i.status = ${status}
           ${type ? Prisma.sql`AND i.type = ${type}` : Prisma.empty}
           ${category ? Prisma.sql`AND i.category = ${category}` : Prisma.empty}
+          ${city ? Prisma.sql`AND i.city = ${city}` : Prisma.empty}
           ${district ? Prisma.sql`AND i.district = ${district}` : Prisma.empty}
         GROUP BY i.id, i.trust_score, i.created_at
         ORDER BY 
@@ -139,6 +141,7 @@ export async function GET(request: NextRequest) {
       const countWhere: any = { status };
       if (type) countWhere.type = type;
       if (category) countWhere.category = category;
+      if (city) countWhere.city = city;
       if (district) countWhere.district = district;
       count = await prisma.intent.count({ where: countWhere });
     }

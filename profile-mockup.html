@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup User Profile (Option B)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; }
+        /* Panel Animation */
+        .drawer { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .drawer.open { transform: translateX(0); }
+        .backdrop { opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; }
+        .backdrop.open { opacity: 1; pointer-events: auto; }
+    </style>
+</head>
+<body class="h-screen w-full overflow-hidden flex flex-col">
+
+    <!-- TOP NAVBAR -->
+    <header class="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-6 shadow-sm">
+        <div class="text-xl font-black text-blue-600 tracking-tighter">
+            Cần<span class="text-green-500">&</span>Có
+        </div>
+        
+        <!-- Navbar Right Side -->
+        <div class="flex items-center gap-4 relative">
+            <button class="text-slate-500 hover:text-slate-900 transition-colors">
+                <i class="fa-regular fa-bell text-xl"></i>
+            </button>
+            
+            <!-- User Avatar Button -->
+            <button id="avatar-btn" class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-transparent hover:border-indigo-500 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                <img src="https://i.pravatar.cc/150?img=33" alt="Avatar" class="w-full h-full object-cover">
+            </button>
+
+            <!-- DROPDOWN MENU -->
+            <div id="dropdown-menu" class="hidden absolute top-12 right-0 mt-2 w-56 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-20 py-2">
+                <div class="px-4 py-3 border-b border-slate-50 bg-slate-50/50">
+                    <p class="text-sm font-bold text-slate-800">Nguyễn Văn A</p>
+                    <p class="text-xs text-slate-500 truncate">nguyenvana@gmail.com</p>
+                </div>
+                <div class="p-1">
+                    <button id="open-profile-btn" class="w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">
+                        <i class="fa-regular fa-user"></i> Hồ sơ của tôi
+                    </button>
+                    <button class="w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">
+                        <i class="fa-regular fa-file-lines"></i> Tin đăng của tôi
+                    </button>
+                    <button class="w-full flex items-center gap-3 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors">
+                        <i class="fa-regular fa-heart"></i> Đã lưu
+                    </button>
+                </div>
+                <div class="p-1 border-t border-slate-100">
+                    <button class="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT PLACEHOLDER -->
+    <main class="flex-1 p-8">
+        <h1 class="text-2xl font-bold text-slate-800 mb-4">Trang chủ tĩnh</h1>
+        <p class="text-slate-500">Mô phỏng Giao diện: Hãy bấm vào Avatar góc bên phải ở trên để xem Dropdown và Slide Panel (Option B).</p>
+    </main>
+
+    <!-- PROFILE SLIDE PANEL (DRAWER) -->
+    <!-- Backdrop overlay -->
+    <div id="backdrop" class="backdrop fixed inset-0 bg-slate-900/40 z-40 backdrop-blur-sm"></div>
+    
+    <!-- Drawer Container -->
+    <div id="drawer" class="drawer fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <h2 class="text-lg font-bold text-slate-800">Hồ sơ của tôi</h2>
+            <button id="close-profile-btn" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Drawer Content -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
+            <!-- Avatar Section -->
+            <div class="flex flex-col items-center">
+                <div class="relative group cursor-pointer">
+                    <img src="https://i.pravatar.cc/150?img=33" alt="Avatar lớn" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md">
+                    <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i class="fa-solid fa-camera text-white text-xl"></i>
+                    </div>
+                </div>
+                <h3 class="mt-3 text-xl font-bold text-slate-800">Nguyễn Văn A</h3>
+                <p class="text-sm font-medium text-slate-500 bg-slate-200/50 px-3 py-1 rounded-full mt-1">
+                    <i class="fa-solid fa-star text-amber-400 mr-1"></i> Thành viên VIP
+                </p>
+            </div>
+
+            <!-- Stats/Coins -->
+            <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex items-center justify-around">
+                <div class="text-center">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Số dư xu</p>
+                    <p class="text-lg font-black text-amber-500">1,250</p>
+                </div>
+                <div class="w-px h-8 bg-slate-100"></div>
+                <div class="text-center">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Tin đã đăng</p>
+                    <p class="text-lg font-black text-indigo-600">5</p>
+                </div>
+            </div>
+
+            <!-- Form Details -->
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Họ và tên</label>
+                    <input type="text" value="Nguyễn Văn A" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Số điện thoại</label>
+                    <input type="tel" value="0901234567" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email</label>
+                    <input type="email" value="nguyenvana@gmail.com" disabled class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 font-medium cursor-not-allowed">
+                    <p class="text-[10px] text-slate-400 mt-1 ml-1">Email không thể thay đổi sau khi đăng ký.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="p-4 border-t border-slate-100 bg-white">
+            <button class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/30">
+                Lưu cập nhật
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const avatarBtn = document.getElementById('avatar-btn');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const openProfileBtn = document.getElementById('open-profile-btn');
+        const closeProfileBtn = document.getElementById('close-profile-btn');
+        const drawer = document.getElementById('drawer');
+        const backdrop = document.getElementById('backdrop');
+
+        // Toggle dropdown
+        avatarBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            if (!dropdownMenu.classList.contains('hidden')) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+
+        // Prevent closing when clicking inside dropdown
+        dropdownMenu.addEventListener('click', (e) => e.stopPropagation());
+
+        // Open Drawer
+        openProfileBtn.addEventListener('click', () => {
+            dropdownMenu.classList.add('hidden');
+            drawer.classList.add('open');
+            backdrop.classList.add('open');
+        });
+
+        // Close Drawer function
+        const closeDrawer = () => {
+            drawer.classList.remove('open');
+            backdrop.classList.remove('open');
+        };
+
+        closeProfileBtn.addEventListener('click', closeDrawer);
+        backdrop.addEventListener('click', closeDrawer);
+    </script>
+</body>
+</html>

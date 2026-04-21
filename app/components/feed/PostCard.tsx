@@ -12,7 +12,7 @@ import { VerificationBadge, VerificationBadgeInline } from './VerificationBadge'
 import { VerificationHistory } from './VerificationHistory'
 import { DebunkedOverlay } from './DebunkedOverlay'
 import { cn } from '@/lib/utils'
-import { useSession } from 'next-auth/react'
+import { useAuthGate } from '@/components/auth/AuthGateProvider'
 import type { PostWithBot, Source } from '@/lib/types'
 
 interface PostCardProps {
@@ -29,7 +29,7 @@ export function PostCard({
   initialIsSaved = false,
 }: PostCardProps) {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { requireAuth } = useAuthGate()
   const isDebunked = post.verification_status === 'debunked'
 
   const [isLiked, setIsLiked] = useState(initialIsLiked)
@@ -40,62 +40,58 @@ export function PostCard({
   const [showHistory, setShowHistory] = useState(false)
 
   const handleLike = async () => {
-    // Check if user is logged in
-    if (!session?.user) {
-      router.push('/login')
-      return
-    }
+    requireAuth(async () => {
+      // Auth gate passed — user is logged in
 
-    setIsLikeLoading(true)
+      setIsLikeLoading(true)
 
-    // Optimistic update
-    const wasLiked = isLiked
-    setIsLiked(!wasLiked)
-    setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1))
+      // Optimistic update
+      const wasLiked = isLiked
+      setIsLiked(!wasLiked)
+      setLikesCount((prev) => (wasLiked ? prev - 1 : prev + 1))
 
-    try {
-      const method = wasLiked ? 'DELETE' : 'POST'
-      const res = await fetch(`/api/posts/${post.id}/like`, { method })
-      if (!res.ok) {
+      try {
+        const method = wasLiked ? 'DELETE' : 'POST'
+        const res = await fetch(`/api/posts/${post.id}/like`, { method })
+        if (!res.ok) {
+          // Revert on error
+          setIsLiked(wasLiked)
+          setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1))
+        }
+      } catch {
         // Revert on error
         setIsLiked(wasLiked)
         setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1))
+      } finally {
+        setIsLikeLoading(false)
       }
-    } catch {
-      // Revert on error
-      setIsLiked(wasLiked)
-      setLikesCount((prev) => (wasLiked ? prev + 1 : prev - 1))
-    } finally {
-      setIsLikeLoading(false)
-    }
+    })
   }
 
   const handleSave = async () => {
-    // Check if user is logged in
-    if (!session?.user) {
-      router.push('/login')
-      return
-    }
+    requireAuth(async () => {
+      // Auth gate passed — user is logged in
 
-    setIsSaveLoading(true)
+      setIsSaveLoading(true)
 
-    // Optimistic update
-    const wasSaved = isSaved
-    setIsSaved(!wasSaved)
+      // Optimistic update
+      const wasSaved = isSaved
+      setIsSaved(!wasSaved)
 
-    try {
-      const method = wasSaved ? 'DELETE' : 'POST'
-      const res = await fetch(`/api/posts/${post.id}/save`, { method })
-      if (!res.ok) {
+      try {
+        const method = wasSaved ? 'DELETE' : 'POST'
+        const res = await fetch(`/api/posts/${post.id}/save`, { method })
+        if (!res.ok) {
+          // Revert on error
+          setIsSaved(wasSaved)
+        }
+      } catch {
         // Revert on error
         setIsSaved(wasSaved)
+      } finally {
+        setIsSaveLoading(false)
       }
-    } catch {
-      // Revert on error
-      setIsSaved(wasSaved)
-    } finally {
-      setIsSaveLoading(false)
-    }
+    })
   }
 
   const handleShare = async () => {

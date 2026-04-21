@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Profile Option C (Mobile)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .tab-active {
+            border-bottom-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: bold;
+        }
+
+        .tab-inactive {
+            border-bottom-color: transparent;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div
+        class="w-full max-w-[400px] h-[850px] border-[10px] border-slate-800 rounded-[3rem] bg-white shadow-2xl relative flex flex-col overflow-hidden">
+        <!-- iPhone Notch/Island mock -->
+        <div class="absolute top-0 inset-x-0 h-6 bg-slate-800 rounded-b-xl w-40 mx-auto z-50"></div>
+
+        <!-- Header / Back Button Area -->
+        <header
+            class="absolute top-8 inset-x-0 px-4 z-40 flex justify-between items-center text-white mix-blend-difference">
+            <button class="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <button class="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md">
+                <i class="fa-solid fa-cog"></i>
+            </button>
+        </header>
+
+        <!-- MAIN SCROLLABLE CONTENT (App fills screen above bottom nav) -->
+        <div class="flex-1 overflow-y-auto no-scrollbar pb-24 relative bg-slate-50">
+
+            <!-- Cover Photo -->
+            <div class="h-44 bg-gradient-to-r from-indigo-500 to-purple-600 relative">
+                <!-- Abstract pattern/image could go here -->
+            </div>
+
+            <!-- Profile Info Area (overlapping cover) -->
+            <div class="px-5 relative pb-6 bg-white border-b border-slate-100">
+                <div class="flex justify-between items-end -mt-12 mb-4">
+                    <!-- Avatar border cut out using wrapper -->
+                    <div class="p-1 bg-white rounded-full relative z-10 w-24 h-24">
+                        <img src="https://i.pravatar.cc/150?img=32" alt="Avatar"
+                            class="w-full h-full rounded-full object-cover">
+                        <!-- Verification Check Badge -->
+                        <div
+                            class="absolute bottom-1 right-1 w-6 h-6 bg-blue-500 text-white border-2 border-white rounded-full flex items-center justify-center text-[10px]">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                    </div>
+
+                    <button
+                        class="mb-2 px-4 py-2 border border-slate-200 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-50 transition-colors">
+                        Sửa hồ sơ
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <h2 class="text-2xl font-black text-slate-800">Trần Thị B</h2>
+                    <p class="text-sm text-slate-500 mt-1">@tranb_realestate</p>
+                </div>
+
+                <div class="text-sm text-slate-600 leading-relaxed mb-4">
+                    Chuyên gia tư vấn Bất động sản khu vực TP Thủ Đức. Đã hoàn thành 50+ giao dịch trong 2 năm qua.
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <div class="bg-amber-50 rounded-2xl p-3 border border-amber-100 flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">Xu tích lũy</p>
+                            <p class="text-lg font-black text-amber-500 mt-0.5">2,500</p>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 rounded-2xl p-3 border border-indigo-100">
+                        <p class="text-[10px] uppercase font-bold text-indigo-600 tracking-wider">Huy hiệu</p>
+                        <p class="text-xs font-bold text-indigo-700 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-medal"></i> Chuyên gia uy tín
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Tabs (Horizontal Scroll) -->
+            <div class="sticky top-0 z-30 bg-white border-b border-slate-200">
+                <div class="flex overflow-x-auto no-scrollbar">
+                    <button class="px-5 py-3.5 border-b-2 tab-active shrink-0 text-sm">Tin đang bán (12)</button>
+                    <button class="px-5 py-3.5 border-b-2 tab-inactive shrink-0 text-sm">Đã lưu (45)</button>
+                    <button class="px-5 py-3.5 border-b-2 tab-inactive shrink-0 text-sm">Tin đã chốt (8)</button>
+                    <button class="px-5 py-3.5 border-b-2 tab-inactive shrink-0 text-sm">Bình luận</button>
+                </div>
+            </div>
+
+            <!-- Tab Content (Posts List) -->
+            <div class="p-4 space-y-4">
+                <!-- Post Item Mock 1 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
+                    <div class="w-24 h-24 bg-slate-200 rounded-xl overflow-hidden shrink-0 relative">
+                        <!-- Image skeleton placeholder with tiny icon -->
+                        <div class="absolute inset-0 flex items-center justify-center opacity-30">
+                            <i class="fa-solid fa-image text-3xl text-slate-400"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">CẦN
+                                BÁN</span>
+                            <span class="text-slate-400"><i class="fa-solid fa-ellipsis"></i></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-800 mt-1 leading-snug line-clamp-2">Căn hộ Vinhome Grand
+                            Park 2PN, view hồ, nội thất cao cấp</h3>
+                        <p class="text-indigo-600 font-bold text-sm mt-1">2.4 Tỷ</p>
+                        <p class="text-[10px] text-slate-500 mt-2"><i class="fa-regular fa-clock mr-1"></i> Hôm nay •
+                            120 lượt xem</p>
+                    </div>
+                </div>
+
+                <!-- Post Item Mock 2 -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
+                    <div class="w-24 h-24 bg-slate-200 rounded-xl overflow-hidden shrink-0 relative">
+                        <div class="absolute inset-0 flex items-center justify-center opacity-30">
+                            <i class="fa-solid fa-image text-3xl text-slate-400"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">CHO
+                                THUÊ</span>
+                            <span class="text-slate-400"><i class="fa-solid fa-ellipsis"></i></span>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-800 mt-1 leading-snug line-clamp-2">Nhà nguyên căn 3
+                            tầng, ngay chợ Thủ Đức, tiện kinh doanh</h3>
+                        <p class="text-indigo-600 font-bold text-sm mt-1">15 Triệu/tháng</p>
+                        <p class="text-[10px] text-slate-500 mt-2"><i class="fa-regular fa-clock mr-1"></i> Hôm qua • 45
+                            lượt xem</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Mobile Bottom Navbar (App Shell defaults) -->
+        <nav
+            class="absolute bottom-0 inset-x-0 h-20 bg-white border-t border-slate-100 flex items-center justify-around px-2 z-30 pb-4">
+            <button class="flex flex-col items-center gap-1 text-slate-400">
+                <i class="fa-solid fa-house text-xl"></i>
+                <span class="text-[10px] font-medium">Trang chủ</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-slate-400">
+                <i class="fa-brands fa-hotjar text-xl"></i>
+                <span class="text-[10px] font-medium">Khớp</span>
+            </button>
+            <div
+                class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xl shadow-lg -mt-6">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+            <button class="flex flex-col items-center gap-1 text-slate-400 relative">
+                <i class="fa-solid fa-message text-xl"></i>
+                <span class="text-[10px] font-medium">Chat</span>
+            </button>
+            <!-- PROFILE TAB BUTTON - ACTIVE -->
+            <button class="flex flex-col items-center gap-1 text-indigo-600 font-bold">
+                <div class="w-6 h-6 rounded-full overflow-hidden border-2 border-indigo-600">
+                    <img src="https://i.pravatar.cc/150?img=32" alt="Avatar">
+                </div>
+                <span class="text-[10px]">Cá nhân</span>
+            </button>
+        </nav>
+    </div>
+
+</body>
+
+</html>

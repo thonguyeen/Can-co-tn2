@@ -1,5 +1,5 @@
 # Phase 03: ORS Integration (Isochrone + POIs)
-Status: ⬜ Pending
+Status: ✅ Complete
 Dependencies: Phase 01
 
 ## Objective

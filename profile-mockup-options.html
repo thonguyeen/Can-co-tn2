@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So sánh Mockup Profile - Cần & Có</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .tab-active {
+            border-bottom-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: bold;
+        }
+
+        .tab-inactive {
+            border-bottom-color: transparent;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Mobile Bottom Sheet Animation */
+        .bottom-sheet {
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .bottom-sheet.open {
+            transform: translateY(0);
+        }
+
+        .backdrop {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Hide scrollbar for mobile frame */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-full flex flex-col items-center py-8">
+
+    <div class="mb-6 text-center max-w-2xl px-4">
+        <h1 class="text-2xl font-black text-slate-800 mb-2">So sánh các ý tưởng User Profile</h1>
+        <p class="text-slate-500">Kéo xuống xem chi tiết Option C (Trang đầy đủ) và Option D (Mobile Bottom Sheet).</p>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="w-full max-w-6xl flex flex-col lg:flex-row gap-8 px-4 h-[calc(100vh-120px)]">
+
+        <!-- LẼ TRÁI: OPTION C - TRANG PROFILE ĐẦY ĐỦ (DESKTOP) -->
+        <div class="flex-1 bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden flex flex-col h-full">
+            <div class="bg-slate-800 text-white text-center py-2 text-xs font-bold uppercase tracking-wider">
+                Option C: Trang Profile Đầy Đủ (Desktop)
+            </div>
+
+            <!-- Navbar Mock -->
+            <header class="h-16 border-b border-slate-100 flex items-center justify-between px-6 shrink-0">
+                <div class="text-xl font-black text-blue-600">Cần<span class="text-green-500">&</span>Có</div>
+                <div class="flex gap-4"><span class="text-slate-400"><i class="fa-solid fa-bars"></i></span></div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto bg-slate-50 p-6 object-contain">
+                <div class="max-w-3xl mx-auto space-y-6">
+                    <!-- Profile Header Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex items-center gap-6">
+                        <img src="https://i.pravatar.cc/150?img=32" alt="Avatar"
+                            class="w-28 h-28 rounded-full border-4 border-indigo-50 shadow-md">
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-slate-800">Trần Thị B</h2>
+                            <p class="text-slate-500 mt-1">tranb@gmail.com • 0987654321</p>
+                            <div class="flex gap-4 mt-4">
+                                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold"><i
+                                        class="fa-solid fa-coins mr-1"></i> 2,500 xu</span>
+                                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold"><i
+                                        class="fa-solid fa-medal mr-1"></i> Thành viên Tích Cực</span>
+                            </div>
+                        </div>
+                        <button
+                            class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">
+                            <i class="fa-solid fa-pen mr-2"></i> Chỉnh sửa
+                        </button>
+                    </div>
+
+                    <!-- Profile Tabs Mock -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="flex border-b border-slate-100 px-4">
+                            <button class="px-6 py-4 border-b-2 tab-active">Tin đăng của tôi (12)</button>
+                            <button class="px-6 py-4 border-b-2 tab-inactive hover:text-slate-800">Đã lưu (45)</button>
+                            <button class="px-6 py-4 border-b-2 tab-inactive hover:text-slate-800">Lịch sử giao
+                                dịch</button>
+                            <button class="px-6 py-4 border-b-2 tab-inactive hover:text-slate-800">Thành tích</button>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 gap-4 opacity-50">
+                                <div
+                                    class="h-32 bg-slate-100 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400 font-bold">
+                                    Listings Mocks</div>
+                                <div
+                                    class="h-32 bg-slate-100 rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400 font-bold">
+                                    Listings Mocks</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LẼ PHẢI: OPTION D - MOBILE BOTTOM SHEET -->
+        <div
+            class="w-full lg:w-[400px] shrink-0 border-[10px] border-slate-800 rounded-[3rem] bg-white shadow-2xl relative flex flex-col h-full max-h-[850px] overflow-hidden">
+            <div class="absolute top-0 inset-x-0 h-6 bg-slate-800 rounded-b-xl w-40 mx-auto z-50"></div> <!-- Notch -->
+
+            <div
+                class="bg-indigo-600 text-white text-center py-2 mt-6 text-[10px] font-bold uppercase tracking-wider z-40 relative">
+                Option D: Mobile View (Bottom Navbar)
+            </div>
+
+            <!-- Mobile App Content -->
+            <div class="flex-1 bg-slate-50 overflow-y-auto no-scrollbar pb-20 p-4">
+                <h2 class="font-bold text-xl mb-4 ml-1">Trang chủ feed</h2>
+                <div class="space-y-4 opacity-60">
+                    <div class="h-40 bg-white rounded-2xl shadow-sm border border-slate-100"></div>
+                    <div class="h-40 bg-white rounded-2xl shadow-sm border border-slate-100"></div>
+                    <div class="h-40 bg-white rounded-2xl shadow-sm border border-slate-100"></div>
+                </div>
+            </div>
+
+            <!-- Mobile Bottom Navbar -->
+            <nav
+                class="absolute bottom-0 inset-x-0 h-20 bg-white border-t border-slate-100 flex items-center justify-around px-2 z-30 pb-4">
+                <button class="flex flex-col items-center gap-1 text-slate-400">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="text-[10px] font-medium">Trang chủ</span>
+                </button>
+                <button class="flex flex-col items-center gap-1 text-slate-400">
+                    <i class="fa-brands fa-hotjar text-xl"></i>
+                    <span class="text-[10px] font-medium">Khớp</span>
+                </button>
+                <div
+                    class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xl shadow-lg -mt-6">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+                <button class="flex flex-col items-center gap-1 text-slate-400 relative">
+                    <i class="fa-solid fa-message text-xl"></i>
+                    <span class="text-[10px] font-medium">Chat</span>
+                    <span class="absolute top-0 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <!-- PROFILE TAB BUTTON -->
+                <button id="mobile-profile-btn" class="flex flex-col items-center gap-1 text-indigo-600 font-bold">
+                    <div class="w-6 h-6 rounded-full overflow-hidden border-2 border-indigo-600">
+                        <img src="https://i.pravatar.cc/150?img=12" alt="Avatar">
+                    </div>
+                    <span class="text-[10px]">Cá nhân</span>
+                </button>
+            </nav>
+
+            <!-- MOBILE BOTTOM SHEET OVERLAY -->
+            <div id="mobile-backdrop" class="backdrop absolute inset-0 bg-slate-900/40 z-40"></div>
+
+            <!-- Mobile Bottom Sheet Content -->
+            <div id="mobile-sheet"
+                class="bottom-sheet absolute bottom-0 inset-x-0 h-[85%] bg-white z-50 flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+                <!-- Pull indicator -->
+                <div class="h-6 flex items-center justify-center cursor-pointer" id="close-sheet-btn">
+                    <div class="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-5 pb-8 space-y-6">
+                    <!-- User Header -->
+                    <div class="flex items-center gap-4">
+                        <img src="https://i.pravatar.cc/150?img=12"
+                            class="w-16 h-16 rounded-full border-2 border-slate-100">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Lê Văn C</h3>
+                            <button class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">Xem trang
+                                cá nhân</button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div
+                            class="bg-gradient-to-br from-amber-50 to-orange-50 p-3 rounded-2xl border border-amber-100">
+                            <p class="text-xs text-amber-700 font-semibold">Ví xu</p>
+                            <p class="text-lg font-black text-amber-600">500 <i
+                                    class="fa-solid fa-coins text-sm ml-1"></i></p>
+                        </div>
+                        <div
+                            class="bg-gradient-to-br from-indigo-50 to-blue-50 p-3 rounded-2xl border border-indigo-100">
+                            <p class="text-xs text-indigo-700 font-semibold">Điểm uy tín</p>
+                            <p class="text-lg font-black text-indigo-600">4.8 <i
+                                    class="fa-solid fa-star text-sm ml-1"></i></p>
+                        </div>
+                    </div>
+
+                    <!-- Menu List -->
+                    <div class="space-y-1">
+                        <p class="text-xs font-bold text-slate-400 px-2 uppercase mb-2 mt-4">Quản lý nội dung</p>
+                        <button
+                            class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <span
+                                    class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i
+                                        class="fa-solid fa-clipboard-list"></i></span>
+                                Tin đăng của tôi
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                        <button
+                            class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <span
+                                    class="w-8 h-8 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center"><i
+                                        class="fa-solid fa-heart"></i></span>
+                                Tin đã lưu
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-1">
+                        <p class="text-xs font-bold text-slate-400 px-2 uppercase mb-2 mt-4">Cài đặt & Hỗ trợ</p>
+                        <button
+                            class="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <span
+                                    class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center"><i
+                                        class="fa-solid fa-cog"></i></span>
+                                Cài đặt tài khoản
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-slate-300 text-sm"></i>
+                        </button>
+                        <button
+                            class="w-full flex items-center justify-between p-3 rounded-xl hover:red-50 transition-colors mt-2">
+                            <div class="flex items-center gap-3 text-red-600 font-bold">
+                                <span
+                                    class="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center"><i
+                                        class="fa-solid fa-power-off"></i></span>
+                                Đăng xuất
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mobileBtn = document.getElementById('mobile-profile-btn');
+        const sheet = document.getElementById('mobile-sheet');
+        const backdrop = document.getElementById('mobile-backdrop');
+        const closeBtn = document.getElementById('close-sheet-btn');
+
+        // Open bottom sheet
+        mobileBtn.addEventListener('click', () => {
+            sheet.classList.add('open');
+            backdrop.classList.add('open');
+        });
+
+        // Close bottom sheet
+        const closeSheet = () => {
+            sheet.classList.remove('open');
+            backdrop.classList.remove('open');
+        };
+
+        closeBtn.addEventListener('click', closeSheet);
+        backdrop.addEventListener('click', closeSheet);
+
+        // Optional: Swipe down to close pseudo-logic
+        let startY = 0;
+        closeBtn.addEventListener('touchstart', e => startY = e.touches[0].clientY);
+        closeBtn.addEventListener('touchmove', e => {
+            if (e.touches[0].clientY - startY > 30) closeSheet();
+        });
+    </script>
+</body>
+
+</html>

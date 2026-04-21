@@ -41,10 +41,10 @@ export function ImageSlider({ images, className = '' }: ImageSliderProps) {
                 {total > 1 && (
                     <button
                         onClick={prev}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/35 transition cursor-pointer shadow-lg"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center hover:bg-black/80 transition cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20"
                         aria-label="Ảnh trước"
                     >
-                        <ChevronLeft className="w-5 h-5 text-white" />
+                        <ChevronLeft className="w-5 h-5 text-white drop-shadow" />
                     </button>
                 )}
 
@@ -52,10 +52,10 @@ export function ImageSlider({ images, className = '' }: ImageSliderProps) {
                 {total > 1 && (
                     <button
                         onClick={next}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/35 transition cursor-pointer shadow-lg"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center hover:bg-black/80 transition cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.5)] border border-white/20"
                         aria-label="Ảnh tiếp"
                     >
-                        <ChevronRight className="w-5 h-5 text-white" />
+                        <ChevronRight className="w-5 h-5 text-white drop-shadow" />
                     </button>
                 )}
 
@@ -87,8 +87,8 @@ export function ImageSlider({ images, className = '' }: ImageSliderProps) {
                             key={img.id}
                             onClick={() => setCurrent(i)}
                             className={`relative flex-1 h-14 rounded overflow-hidden cursor-pointer transition-all ${i === current
-                                    ? 'ring-2 ring-violet-500 opacity-100'
-                                    : 'opacity-50 hover:opacity-75'
+                                ? 'ring-2 ring-violet-500 opacity-100'
+                                : 'opacity-50 hover:opacity-75'
                                 }`}
                         >
                             <img src={img.url} alt="" className="w-full h-full object-cover" />

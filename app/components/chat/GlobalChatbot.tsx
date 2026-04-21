@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import ChatPanel from '@/components/chat/ChatPanel';
 import { useChat } from '@/hooks/useChat';
+import { useAuthGate } from '@/components/auth/AuthGateProvider';
 
 interface GlobalChatbotProps {
   activeTab?: string;
@@ -12,14 +13,17 @@ interface GlobalChatbotProps {
 
 export default function GlobalChatbot({ activeTab }: GlobalChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { requireAuth } = useAuthGate();
   const { messages, isTyping, isLoadingHistory, scrollRef, sendMessage, scrollToBottom, unreadCount, clearUnread } = useChat({
     activeCategory: activeTab || 'real_estate',
   });
 
   const handleOpen = useCallback(() => {
-    setIsOpen(true);
-    scrollToBottom();
-  }, [scrollToBottom]);
+    requireAuth(() => {
+      setIsOpen(true);
+      scrollToBottom();
+    });
+  }, [requireAuth, scrollToBottom]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);

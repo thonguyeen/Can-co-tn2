@@ -7,6 +7,7 @@ import { MessageCircle, Handshake, Eye, ThumbsUp, Bookmark } from 'lucide-react'
 import { cn, formatDistanceToNow } from '@/lib/utils';
 import { formatPrice, formatPriceRange, getIntentTypeInfo, parsedDataToTags, getVerificationInfo } from '@/lib/intent-utils';
 import { useSaved } from '@/lib/saved-context';
+import { useAuthGate } from '@/components/auth/AuthGateProvider';
 import { BotComment } from '@/components/intent/BotComment';
 import type { MockIntent } from '@/lib/mock/intents';
 import Lightbox from 'yet-another-react-lightbox';
@@ -219,21 +220,25 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
     setLightboxOpen(true);
   };
 
-  const handleToggleInterest = async () => {
-    const nextState = !localInterested;
-    setLocalInterested(nextState);
-    if (!intent.id.startsWith('i-')) {
-      // It's a real Postgres UUID!
-      try {
-        await fetch('/api/intents/interest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: intent.id, increment: nextState })
-        });
-      } catch (e) {
-        console.error('Failed to toggle interest', e);
+  const { requireAuth } = useAuthGate();
+
+  const handleToggleInterest = () => {
+    requireAuth(async () => {
+      const nextState = !localInterested;
+      setLocalInterested(nextState);
+      if (!intent.id.startsWith('i-')) {
+        // It's a real Postgres UUID!
+        try {
+          await fetch('/api/intents/interest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: intent.id, increment: nextState })
+          });
+        } catch (e) {
+          console.error('Failed to toggle interest', e);
+        }
       }
-    }
+    });
   };
 
   const hasImages = intent.images.length > 0 && !intent.is_bot;
@@ -420,7 +425,7 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
       */}
 
       {/* Action Bar */}
-      <ActionBar intentId={intent.id} interested={localInterested} onToggleInterest={handleToggleInterest} />
+      <ActionBar intentId={intent.id} interested={localInterested} onToggleInterest={handleToggleInterest} requireAuth={requireAuth} />
 
       {/* ── Lightbox (fullscreen gallery) ── */}
       {hasImages && (
@@ -445,7 +450,7 @@ export function IntentCard({ intent, compact = true, basePath = '/demo/can-co' }
   return cardContent;
 }
 
-function ActionBar({ intentId, interested, onToggleInterest }: { intentId: string; interested: boolean; onToggleInterest: () => void }) {
+function ActionBar({ intentId, interested, onToggleInterest, requireAuth }: { intentId: string; interested: boolean; onToggleInterest: () => void; requireAuth: (fn: () => void) => void }) {
   const { isSaved, toggleSave } = useSaved();
   const saved = isSaved(intentId);
 
@@ -478,7 +483,7 @@ function ActionBar({ intentId, interested, onToggleInterest }: { intentId: strin
         tabIndex={0}
         onClick={(e) => {
           e.preventDefault(); e.stopPropagation();
-          toggleSave(intentId);
+          requireAuth(() => toggleSave(intentId));
         }}
         className={cn(
           'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs transition-colors cursor-pointer',

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useAuthGate } from '@/components/auth/AuthGateProvider';
 import {
   X,
   Heart,
@@ -72,8 +71,7 @@ export default function MapPopupCard({
   onClose,
   onLikeSuccess,
 }: MapPopupCardProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
+  const { requireAuth, isGuest } = useAuthGate();
 
   const [likeState, setLikeState] = useState<'idle' | 'loading' | 'liked'>('idle');
   const [showHearts, setShowHearts] = useState(false);
@@ -83,58 +81,56 @@ export default function MapPopupCard({
   const isCan = pin.type === 'CAN';
 
   // ── Handle Like ──
-  const handleLike = useCallback(async () => {
-    // Chưa đăng nhập → redirect
-    if (!session?.user) {
-      router.push('/login?callbackUrl=/can-co');
-      return;
-    }
+  const handleLike = useCallback(() => {
+    requireAuth(async () => {
+      // Auth gate passed — user is logged in
+      if (likeState !== 'idle') return;
+      setLikeState('loading');
 
-    if (likeState !== 'idle') return;
-    setLikeState('loading');
-
-    try {
-      const res = await fetch('/api/swipe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ intentId: pin.id, action: 'LIKE' }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        // Bài của chính mình → show friendly message
-        if (res.status === 400) {
-          setLikeState('idle');
-          return;
-        }
-        throw new Error(err.error || 'Lỗi không xác định');
-      }
-
-      const data: { success: boolean; isMutualMatch: boolean; conversationId?: string } =
-        await res.json();
-
-      // ✅ Thành công → hiệu ứng tim bay
-      setLikeState('liked');
-      setShowHearts(true);
-      setTimeout(() => setShowHearts(false), 1200);
-
-      // Callback lên parent để show MutualMatchPopup nếu cần
-      if (data.success) {
-        onLikeSuccess({
-          isMutualMatch: data.isMutualMatch,
-          conversationId: data.conversationId,
+      try {
+        const res = await fetch('/api/swipe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ intentId: pin.id, action: 'LIKE' }),
         });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          // Bài của chính mình → show friendly message
+          if (res.status === 400) {
+            setLikeState('idle');
+            return;
+          }
+          throw new Error(err.error || 'Lỗi không xác định');
+        }
+
+        const data: { success: boolean; isMutualMatch: boolean; conversationId?: string } =
+          await res.json();
+
+        // ✅ Thành công → hiệu ứng tim bay
+        setLikeState('liked');
+        setShowHearts(true);
+        setTimeout(() => setShowHearts(false), 1200);
+
+        // Callback lên parent để show MutualMatchPopup nếu cần
+        if (data.success) {
+          onLikeSuccess({
+            isMutualMatch: data.isMutualMatch,
+            conversationId: data.conversationId,
+          });
+        }
+      } catch (err) {
+        console.error('[MapPopupCard] Like error:', err);
+        setLikeState('idle');
       }
-    } catch (err) {
-      console.error('[MapPopupCard] Like error:', err);
-      setLikeState('idle');
-    }
-  }, [session, router, pin.id, likeState, onLikeSuccess]);
+    })
+  }, [requireAuth, pin.id, likeState, onLikeSuccess]);
 
   return (
     <>
       {/* ── Keyframe style inject ── */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes heartFloat {
           0%   { transform: translateX(var(--tx, 0px)) translateY(0)   scale(1);   opacity: 1; }
           100% { transform: translateX(var(--tx, 0px)) translateY(-80px) scale(0.5); opacity: 0; }
@@ -304,10 +300,10 @@ export default function MapPopupCard({
           </div>
 
           {/* Hint chưa đăng nhập */}
-          {!session?.user && (
+          {isGuest && (
             <p className="text-center text-xs text-gray-400 mt-2">
               <button
-                onClick={() => router.push('/login?callbackUrl=/can-co')}
+                onClick={() => requireAuth(() => { })}
                 className="text-[#0068FF] hover:underline font-medium"
               >
                 Đăng nhập

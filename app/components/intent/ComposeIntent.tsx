@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useAuthGate } from '@/components/auth/AuthGateProvider';
 import { ImagePlus, X, Loader2, Sparkles, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { convertToWebP, formatBytes, type ConvertResult } from '@/lib/image-utils';
@@ -71,6 +72,7 @@ function extractDemoTags(text: string): { icon: string; label: string }[] {
 
 export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIntent, onEditComplete, onCancelEdit }: ComposeIntentProps) {
   const isEditMode = !!editIntent;
+  const { requireAuth } = useAuthGate();
   const [isExpanded, setIsExpanded] = useState(isEditMode);
   const [type, setType] = useState<'CAN' | 'CO'>(editIntent?.type || 'CAN');
   const [text, setText] = useState(editIntent?.raw_text || '');
@@ -324,7 +326,8 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
       resetForm();
     } catch (err) {
       if (err instanceof Error && err.message === 'LOGIN_REQUIRED') {
-        window.location.href = '/login?redirect=/demo';
+        // Handled at middleware — API returns 401, show auth modal instead
+        console.warn('[ComposeIntent] Login required');
         return;
       }
       setToast({ type: 'error', message: err instanceof Error ? err.message : 'Không thể đăng, vui lòng thử lại' });
@@ -365,7 +368,7 @@ export function ComposeIntent({ mode = 'demo', onSubmit, onIntentCreated, editIn
     return (
       <>
         <button
-          onClick={() => setIsExpanded(true)}
+          onClick={() => mode === 'real' ? requireAuth(() => setIsExpanded(true)) : setIsExpanded(true)}
           className="w-full bg-white rounded-3xl border border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-4 text-left hover:shadow-md hover:border-slate-300 transition-all duration-300"
         >
           <div className="flex items-center gap-4">
