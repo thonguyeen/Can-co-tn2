@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-21T12:04:00+07:00"
+    "last_updated": "2026-04-21T14:50:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -63,7 +63,13 @@
       "name": "City Filter Redesign — Option D (Homigo Style)",
       "status": "code-complete",
       "plan": "plans/210421-1105-city-filter-optD",
-      "notes": "Phase 01+02 done. Phase 03 smoke test pending user verification."
+      "notes": "Phase 01+02 done. Phase 03 smoke test pending user verification on localhost:4000."
+    },
+    {
+      "name": "Hybrid User Profile (Option C+D)",
+      "status": "complete",
+      "plan": "N/A",
+      "notes": "ProfileDropdown (desktop) + MobileProfileSheet (mobile bottom sheet) + /profile full page + /api/me endpoint. All 3 phases done."
     }
   ],
   "key_components": {
@@ -79,8 +85,40 @@
     "swipe_match": "app/components/tabs/SwipeMatchTab.tsx",
     "compose": "app/components/intent/ComposeIntent.tsx",
     "feed_observer": "app/components/feed/FeedObserverPanel.tsx",
-    "use_feed_data": "app/hooks/useFeedData.ts (city+district+price+type state, API fetch with city param)"
+    "use_feed_data": "app/hooks/useFeedData.ts (city+district+price+type state, API fetch with city param)",
+    "profile_dropdown": "app/components/profile/ProfileDropdown.tsx (desktop - click Avatar TopNavbar)",
+    "mobile_profile_sheet": "app/components/profile/MobileProfileSheet.tsx (mobile bottom sheet - tap tab Cá nhân)",
+    "profile_tabs": "app/components/profile/ProfileTabs.tsx (tabs: Tin đăng | Đã lưu | Thành tích)",
+    "profile_header": "app/components/profile/ProfileHeader.tsx (Client Component - inline edit form, isEditing state, PATCH /api/me)",
+    "profile_page": "app/(main)/profile/page.tsx (Server Component - fetches data, passes to ProfileHeader)"
   },
+  "api_endpoints": [
+    {
+      "path": "/api/intents",
+      "method": "GET",
+      "explained": "Lấy danh sách tin đăng. Nhận city param để lọc server-side. district/price filter ở client."
+    },
+    {
+      "path": "/api/me",
+      "method": "GET",
+      "explained": "Lấy thông tin profile của user đang login: { user, profile, stats }. 401 nếu guest."
+    },
+    {
+      "path": "/api/me",
+      "method": "PATCH",
+      "explained": "Cập nhật displayName, phone, avatarUrl của user hiện tại."
+    },
+    {
+      "path": "/api/users/[id]/stats",
+      "method": "GET",
+      "explained": "Điểm xu, level, streak, rank của user."
+    },
+    {
+      "path": "/api/users/[id]/achievements",
+      "method": "GET",
+      "explained": "Danh sách huy hiệu đã đạt của user."
+    }
+  ],
   "auth_gate_pattern": {
     "hook": "useAuthGate() from AuthGateProvider",
     "method": "requireAuth(fn) — shows modal for guests, calls fn for logged-in users",
@@ -97,19 +135,24 @@
       "Click-to-Gate: guest users see all content but are prompted to login on interaction",
       "SocialPostCard: hero image full-width → PostHeader → PostBody w/ AI highlights → BotPreview → ReactionSummary → ActionBar 3-btn",
       "AI highlight: PRICE_RE highlights prices in indigo bold, PLACE_RE underlines locations",
-      "FeedTab merges vipIntents (isVip=true) + regularIntents into allFeedIntents single-col list"
+      "FeedTab merges vipIntents (isVip=true) + regularIntents into allFeedIntents single-col list",
+      "Hybrid Profile: Desktop = ProfileDropdown từ TopNavbar → /profile page (Option C). Mobile = MobileProfileSheet từ BottomNavMobile tab Cá nhân (Option D)",
+      "Profile data: User (NextAuth) 1-1 Profile (displayName/phone/avatarUrl/trustScore) 1-1 UserStat (points/level/streak)"
     ],
     "gotchas": [
       "VN admin reform 2025: No more districts, only Tỉnh/TP → Phường/Xã",
       "Default tab in app/page.tsx must be 'home' (not 'swipe') for guest UX",
-      "SocialPostCard uses Image from next/image for hero (requires unoptimized for external URLs)"
+      "SocialPostCard uses Image from next/image for hero (requires unoptimized for external URLs)",
+      "MobileProfileSheet state quản lý riêng (không dùng activeTab) để tránh xung đột routing BottomNavMobile",
+      "City filter uses server-side city param; district/price filter is client-side on fetched data"
     ],
     "conventions": [
       "Plan folders: plans/YYMMDD-HHMM-feature-name/",
       "Phase files: phase-01-name.md, phase-02-name.md, ...",
       "Components: named exports, TSX, Tailwind classes inline",
       "City filter uses server-side city param; district/price filter is client-side on fetched data",
-      "CITY_DISTRICTS map in FeedFilterSidebar.tsx, exported getDistrictsForCity(city) helper"
+      "CITY_DISTRICTS map in FeedFilterSidebar.tsx, exported getDistrictsForCity(city) helper",
+      "Profile components in app/components/profile/ folder"
     ]
   }
 }

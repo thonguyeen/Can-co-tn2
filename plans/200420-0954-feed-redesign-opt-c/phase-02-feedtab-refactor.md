@@ -1,5 +1,5 @@
 # Phase 02: Refactor FeedTab → Single Column + SocialPostCard
-Status: ⬜ Pending
+Status: ✅ Complete
 Dependencies: Phase 01 ✅
 
 ## Objective
@@ -29,19 +29,19 @@ FeedTab
 
 ## Implementation Steps
 
-1. [ ] import `SocialPostCard` vào FeedTab
-2. [ ] Hợp nhất `vipIntents` và `regularIntents` thành 1 list duy nhất
-3. [ ] VIP items được đánh dấu bằng prop `isVip={true}` → SocialPostCard hiển thị badge "Premium ⭐"
-4. [ ] Xoá đoạn VIP Carousel horizontal scroll
-5. [ ] Xoá 2-col grid
-6. [ ] Bọc list trong `max-w-[680px] mx-auto`
+1. [x] import `SocialPostCard` vào FeedTab
+2. [x] Hợp nhất `vipIntents` và `regularIntents` thành 1 list duy nhất
+3. [x] VIP items được đánh dấu bằng prop `isVip={true}` → SocialPostCard hiển thị badge "Premium ⭐"
+4. [x] Xoá đoạn VIP Carousel horizontal scroll
+5. [x] Xoá 2-col grid
+6. [x] Bọc list trong `max-w-[680px] mx-auto`
 
 ## Test Criteria
 
-- [ ] Feed hiển thị single-column trên mọi breakpoint
-- [ ] VIP badge "Premium ⭐" hiển thị trên đúng card
-- [ ] Infinite scroll vẫn hoạt động
-- [ ] FeedObserverPanel (right panel) vẫn hiện trên xl+
+- [x] Feed hiển thị single-column trên mọi breakpoint
+- [x] VIP badge "Premium ⭐" hiển thị trên đúng card
+- [x] Infinite scroll vẫn hoạt động
+- [x] FeedObserverPanel (right panel) vẫn hiện trên xl+
 
 ---
 Next Phase: [phase-03-testing.md](./phase-03-testing.md)

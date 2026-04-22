@@ -1,5 +1,5 @@
 # Phase 01: Thiết kế SocialPostCard Component
-Status: ⬜ Pending
+Status: ✅ Complete
 Dependencies: None
 
 ## Objective
@@ -46,14 +46,14 @@ Tạo component `SocialPostCard.tsx` hoàn toàn mới theo design Option C đ�
 
 ## Implementation Steps
 
-1. [ ] Tạo file `SocialPostCard.tsx` với skeleton đúng anatomy
-2. [ ] Build `HeroImage` section (full-width, price badge, type badge)
-3. [ ] Build `PostHeader` (avatar, name, badge, timestamp, menu)
-4. [ ] Build `PostBody` (title, text với AI-highlight, tags)
-5. [ ] Build `BotPreview` inline (reuse BotComment)
-6. [ ] Build `ReactionBar` (emoji counts + metrics)
-7. [ ] Build `ActionBar` mới (Quan tâm · Đàm phán · Lưu với requireAuth)
-8. [ ] Export và test render với mock data
+1. [x] Tạo file `SocialPostCard.tsx` với skeleton đúng anatomy
+2. [x] Build `HeroImage` section (full-width, price badge, type badge)
+3. [x] Build `PostHeader` (avatar, name, badge, timestamp, menu)
+4. [x] Build `PostBody` (title, text với AI-highlight, tags)
+5. [x] Build `BotPreview` inline (reuse BotComment)
+6. [x] Build `ReactionBar` (emoji counts + metrics)
+7. [x] Build `ActionBar` mới (Quan tâm · Đàm phán · Lưu với requireAuth)
+8. [x] Export và test render với mock data
 
 ## AI Highlight Rules
 
@@ -64,11 +64,11 @@ Tạo component `SocialPostCard.tsx` hoàn toàn mới theo design Option C đ�
 
 ## Test Criteria
 
-- [ ] Card hiển thị đúng với bài có ảnh (CÓ BÁN)
-- [ ] Card hiển thị đúng với bài không có ảnh (CẦN MUA)
-- [ ] Click Quan tâm/Lưu khi guest → AuthGateModal
-- [ ] Click Đàm phán khi guest → AuthGateModal
-- [ ] Lightbox mở ảnh khi click hero image
+- [x] Card hiển thị đúng với bài có ảnh (CÓ BÁN)
+- [x] Card hiển thị đúng với bài không có ảnh (CẦN MUA)
+- [x] Click Quan tâm/Lưu khi guest → AuthGateModal
+- [x] Click Đàm phán khi guest → AuthGateModal
+- [x] Lightbox mở ảnh khi click hero image
 
 ---
 Next Phase: [phase-02-feedtab-refactor.md](./phase-02-feedtab-refactor.md)
