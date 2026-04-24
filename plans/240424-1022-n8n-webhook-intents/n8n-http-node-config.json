@@ -1,0 +1,80 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://localhost:4000/api/webhook/n8n-intents",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer can-co-n8n-secret-2024"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyContentType": "json",
+                "jsonBody": "={{ JSON.stringify([$input.item.json]) }}",
+                "options": {}
+            },
+            "id": "can-co-webhook-node",
+            "name": "POST to Cần & Có Webhook",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1000,
+                300
+            ],
+            "notes": "Gửi bài đã được AI parse lên webhook Cần & Có.\n\nCHÚ Ý:\n- URL: Thay 'localhost:4000' bằng domain thật khi deploy\n- Authorization: Phải khớp với N8N_WEBHOOK_SECRET trong .env.local\n\nInput mong đợi từ AI node trước đó:\n  fb_post_id, message, author, image, created_time,\n  type (CO|CAN), title, price, district, subcategory, city"
+        }
+    ],
+    "_meta": {
+        "instanceId": "can-co-tn-n8n-webhook"
+    },
+    "pinData": {},
+    "connections": {
+        "AI Parse Node": {
+            "main": [
+                [
+                    {
+                        "node": "POST to Cần & Có Webhook",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "__comment": {
+        "setup_guide": [
+            "1. Import file này vào n8n (Workflow > Import)",
+            "2. Đặt URL đúng: localhost:4000 (dev) hoặc domain thật (prod)",
+            "3. Tạo Credential mới: Header Auth → Name='Authorization', Value='Bearer can-co-n8n-secret-2024'",
+            "4. Kết nối node này sau AI Parse node trong workflow",
+            "5. Test với Execute Node → xem response { inserted, skipped, errors }"
+        ],
+        "expected_input_from_ai_node": {
+            "fb_post_id": "string — ID bài viết Facebook (bắt buộc, dùng để dedup)",
+            "message": "string — Nội dung gốc bài viết (bắt buộc)",
+            "author": "string — Tên tác giả (optional)",
+            "image": "string — URL ảnh FB CDN (optional)",
+            "created_time": "string — ISO 8601 timestamp (optional)",
+            "type": "CO | CAN — AI đã parse (default: CO)",
+            "title": "string — AI đã parse (default: message.slice(0,80))",
+            "price": "number — Giá VNĐ, AI đã parse (optional)",
+            "district": "string — Quận/Phường, AI đã parse (optional)",
+            "subcategory": "apartment | house | land | room | commercial (optional)",
+            "city": "string — Tỉnh/TP (default: Hồ Chí Minh)"
+        },
+        "expected_response_201": {
+            "inserted": "number — Số bài đã insert thành công",
+            "skipped": "number — Số bài bị bỏ qua (trùng hoặc thiếu message)",
+            "errors": "string[] — Danh sách lỗi nếu có"
+        }
+    }
+}

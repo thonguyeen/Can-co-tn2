@@ -43,9 +43,11 @@ export default function FeedTab() {
   const districts = getDistrictsForCity(city);
 
   // Merge VIP (first) + regular intents for single-column social feed
+  // Deduplicate: exclude any intent that already appears in vipIntents
+  const vipIds = new Set(vipIntents.map((i) => i.id));
   const allFeedIntents = [
     ...vipIntents.map((i) => ({ ...i, _isVip: true as const })),
-    ...regularIntents.map((i) => ({ ...i, _isVip: false as const })),
+    ...regularIntents.filter((i) => !vipIds.has(i.id)).map((i) => ({ ...i, _isVip: false as const })),
   ];
 
   return (

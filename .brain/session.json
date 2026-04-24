@@ -1,47 +1,57 @@
 {
-  "updated_at": "2026-04-21T15:16:00+07:00",
+  "updated_at": "2026-04-22T09:02:00+07:00",
   "working_on": {
-    "feature": "Hybrid User Profile (Option C+D)",
-    "plan_path": "N/A",
-    "current_phase": "complete",
-    "status": "complete",
-    "files_changed": [
-      "app/components/profile/ProfileDropdown.tsx (NEW)",
-      "app/components/profile/MobileProfileSheet.tsx (NEW)",
-      "app/components/profile/ProfileTabs.tsx (NEW)",
-      "app/components/profile/ProfileHeader.tsx (NEW - Client Component, inline edit form)",
-      "app/(main)/profile/page.tsx (ProfileHeader replaces old header JSX)",
-      "app/app/api/me/route.ts (NEW - GET + PATCH)",
-      "app/components/layout/TopNavbar.tsx (ProfileDropdown nhúng vào Avatar)",
-      "app/components/layout/BottomNavMobile.tsx (tab Tiện ích → Cá nhân + MobileProfileSheet)"
-    ],
-    "notes": "Tất cả 7 TC PASS sau khi fix bug inline edit. ProfileHeader dùng isEditing state thay vì redirect tới /profile/edit (404 cũ)."
+    "feature": "Detail Page Card & Shadow Redesign",
+    "plan_path": "plans/200420-1541-detail-card-shadow",
+    "current_phase": "not-started",
+    "status": "planning",
+    "files_changed": [],
+    "notes": "Phase 01 (left panel) và Phase 02 (right panel) đều chưa bắt đầu. Xem phase-01-left-panel.md để tiếp tục."
   },
   "pending_tasks": [
     {
-      "task": "City Filter Phase 03: Browser smoke test (10 test cases)",
-      "priority": "medium",
-      "notes": "User tự test trên localhost:4000. Checklist tại plans/210421-1105-city-filter-optD/phase-03-smoke-test.md"
+      "task": "Detail Page Redesign — Phase 01: Left Panel (Card & Shadow)",
+      "priority": "high",
+      "notes": "Plan tại plans/200420-1541-detail-card-shadow/phase-01-left-panel.md"
+    },
+    {
+      "task": "Detail Page Redesign — Phase 02: Right Panel",
+      "priority": "high",
+      "notes": "Plan tại plans/200420-1541-detail-card-shadow/phase-02-right-panel.md"
     }
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-21T09:00:00+07:00",
-      "type": "feature",
-      "description": "City Filter Redesign Option D: CityChipBar + FeedFilterDrawer. API nhận city param. 4 cities: HCM, Đà Nẵng, Khánh Hòa, Hà Nội.",
+      "timestamp": "2026-04-22T08:00:00+07:00",
+      "type": "bugfix",
+      "description": "Fix duplicate React key warning in FeedTab: deduplicate vipIntents from regularIntents trước khi merge thành allFeedIntents. Dùng vipIds Set để filter.",
       "files": [
-        "app/app/api/intents/route.ts",
-        "app/components/feed/CityChipBar.tsx",
-        "app/components/feed/FeedFilterDrawer.tsx",
-        "app/hooks/useFeedData.ts",
-        "app/components/tabs/FeedTab.tsx",
-        "app/components/feed/FeedFilterSidebar.tsx"
+        "app/components/tabs/FeedTab.tsx"
+      ]
+    },
+    {
+      "timestamp": "2026-04-22T07:50:00+07:00",
+      "type": "sync",
+      "description": "Sync plan files feed redesign Option C — đã done trong code nhưng plan.md vẫn Pending. Cập nhật Phase 01, 02, 03 thành Complete.",
+      "files": [
+        "plans/200420-0954-feed-redesign-opt-c/plan.md",
+        "plans/200420-0954-feed-redesign-opt-c/phase-01-social-post-card.md",
+        "plans/200420-0954-feed-redesign-opt-c/phase-02-feedtab-refactor.md"
+      ]
+    },
+    {
+      "timestamp": "2026-04-21T15:10:00+07:00",
+      "type": "bugfix",
+      "description": "Fix TC-06: Thay nút link /profile/edit (404) bằng inline edit form trong ProfileHeader.tsx. 7/7 TC PASS.",
+      "files": [
+        "app/components/profile/ProfileHeader.tsx",
+        "app/(main)/profile/page.tsx"
       ]
     },
     {
       "timestamp": "2026-04-21T12:00:00+07:00",
       "type": "feature",
-      "description": "Hybrid User Profile (C+D): ProfileDropdown + MobileProfileSheet + /profile full-page + GET/PATCH /api/me. TopNavbar + BottomNavMobile updated.",
+      "description": "Hybrid User Profile (C+D): ProfileDropdown + MobileProfileSheet + /profile page + GET/PATCH /api/me.",
       "files": [
         "app/components/profile/ProfileDropdown.tsx",
         "app/components/profile/MobileProfileSheet.tsx",
@@ -53,12 +63,16 @@
       ]
     },
     {
-      "timestamp": "2026-04-21T15:10:00+07:00",
-      "type": "bugfix",
-      "description": "Fix TC-06: Thay nút link /profile/edit (404) bằng inline edit form trong ProfileHeader.tsx. isEditing state toggle form, PATCH /api/me khi lưu, revert khi huỷ. 7/7 TC PASS.",
+      "timestamp": "2026-04-21T09:00:00+07:00",
+      "type": "feature",
+      "description": "City Filter Redesign Option D: CityChipBar + FeedFilterDrawer. API nhận city param. Smoke test PASS 2026-04-22.",
       "files": [
-        "app/components/profile/ProfileHeader.tsx",
-        "app/(main)/profile/page.tsx"
+        "app/app/api/intents/route.ts",
+        "app/components/feed/CityChipBar.tsx",
+        "app/components/feed/FeedFilterDrawer.tsx",
+        "app/hooks/useFeedData.ts",
+        "app/components/tabs/FeedTab.tsx",
+        "app/components/feed/FeedFilterSidebar.tsx"
       ]
     }
   ],
@@ -76,17 +90,17 @@
       "reason": "Tối ưu UX cho từng device"
     },
     {
-      "decision": "MobileProfileSheet state quản lý độc lập (không dùng activeTab)",
-      "reason": "Tránh xung đột với routing BottomNavMobile"
-    },
-    {
       "decision": "Feed redesign: went with Option C (Hybrid Social+BĐS)",
       "reason": "User chose over Option A (Facebook) and Option B (Twitter)"
+    },
+    {
+      "decision": "FeedTab deduplicate: vipIds Set to filter VIP out of regular before merging",
+      "reason": "Avoid duplicate React keys — VIP items were subset of regularIntents"
     },
     {
       "decision": "Default tab = 'home' (FeedTab)",
       "reason": "Guest UX — feed browsable without login"
     }
   ],
-  "session_summary": "Session 2026-04-21: (1) City Filter Option D — Phase 01+02 done, Phase 03 pending smoke test. (2) Hybrid Profile C+D — 3 phases done + bug fix inline edit. Tất cả 7/7 TC profile PASS sau khi thay /profile/edit bằng ProfileHeader inline form."
+  "session_summary": "Session 2026-04-22: (1) Discovered Feed Redesign Option C already complete in code - synced plan files. (2) /test full web: all features pass, 1 real bug found. (3) Fixed duplicate React key bug in FeedTab.tsx (vipIds dedup). (4) Confirmed FeedFilterDrawer works correctly. Next: Detail Page Card & Shadow Redesign (plans/200420-1541-detail-card-shadow)."
 }

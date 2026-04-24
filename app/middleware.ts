@@ -16,6 +16,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // ═══ WEBHOOK — check bảo mật bên trong route (Bearer token) ═══
+  if (pathname.startsWith('/api/webhook')) {
+    return NextResponse.next()
+  }
+
   // ═══ API PROTECTION ═══
   // Public APIs: GET /api/intents, /api/map/*, /api/intents/[id] (GET)
   // Protected APIs: tất cả mutation + private endpoints

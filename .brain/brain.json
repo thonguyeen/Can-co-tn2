@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-21T14:50:00+07:00"
+    "last_updated": "2026-04-22T09:02:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -57,27 +57,34 @@
     {
       "name": "Feed Redesign Option C (Social+BĐS Hybrid)",
       "status": "complete",
-      "plan": "plans/200420-0954-feed-redesign-opt-c"
+      "plan": "plans/200420-0954-feed-redesign-opt-c",
+      "notes": "SocialPostCard (462 lines), FeedTab single-column, deduplicate VIP+regular keys fixed 2026-04-22."
     },
     {
       "name": "City Filter Redesign — Option D (Homigo Style)",
-      "status": "code-complete",
+      "status": "complete",
       "plan": "plans/210421-1105-city-filter-optD",
-      "notes": "Phase 01+02 done. Phase 03 smoke test pending user verification on localhost:4000."
+      "notes": "CityChipBar + FeedFilterDrawer + API city param. Phase 01+02+03 DONE. Smoke test passed 2026-04-22."
     },
     {
       "name": "Hybrid User Profile (Option C+D)",
       "status": "complete",
       "plan": "N/A",
-      "notes": "ProfileDropdown (desktop) + MobileProfileSheet (mobile bottom sheet) + /profile full page + /api/me endpoint. All 3 phases done."
+      "notes": "ProfileDropdown (desktop) + MobileProfileSheet (mobile bottom sheet) + /profile full page + /api/me endpoint. All 3 phases done. 7/7 TC PASS."
+    },
+    {
+      "name": "Detail Page Card & Shadow Redesign",
+      "status": "planned",
+      "plan": "plans/200420-1541-detail-card-shadow",
+      "notes": "Phase 01 (left panel) + Phase 02 (right panel) pending. Mục tiêu: wrap các section trong card shadow-enhanced."
     }
   ],
   "key_components": {
-    "feed": "app/components/tabs/FeedTab.tsx",
-    "city_chip_bar": "app/components/feed/CityChipBar.tsx (NEW - 4 city chips + Tất cả)",
-    "feed_filter_drawer": "app/components/feed/FeedFilterDrawer.tsx (NEW - slide-over panel, filter by type/district/price)",
+    "feed": "app/components/tabs/FeedTab.tsx (VIP+regular deduplicated merge, single-column)",
+    "city_chip_bar": "app/components/feed/CityChipBar.tsx (4 city chips + Tất cả)",
+    "feed_filter_drawer": "app/components/feed/FeedFilterDrawer.tsx (slide-over panel, filter by type/district/price)",
     "feed_filter_sidebar": "app/components/feed/FeedFilterSidebar.tsx (CITY_DISTRICTS multi-city map)",
-    "social_card": "app/components/intent/SocialPostCard.tsx (Option C design)",
+    "social_card": "app/components/intent/SocialPostCard.tsx (Option C design, 462 lines)",
     "legacy_card": "app/components/intent/IntentCard.tsx (still used on detail page)",
     "auth_gate": "app/components/auth/AuthGateProvider.tsx",
     "auth_gate_modal": "app/components/auth/AuthGateModal.tsx",
@@ -85,7 +92,7 @@
     "swipe_match": "app/components/tabs/SwipeMatchTab.tsx",
     "compose": "app/components/intent/ComposeIntent.tsx",
     "feed_observer": "app/components/feed/FeedObserverPanel.tsx",
-    "use_feed_data": "app/hooks/useFeedData.ts (city+district+price+type state, API fetch with city param)",
+    "use_feed_data": "app/hooks/useFeedData.ts (city+district+price+type state, API fetch with city param, 15s polling)",
     "profile_dropdown": "app/components/profile/ProfileDropdown.tsx (desktop - click Avatar TopNavbar)",
     "mobile_profile_sheet": "app/components/profile/MobileProfileSheet.tsx (mobile bottom sheet - tap tab Cá nhân)",
     "profile_tabs": "app/components/profile/ProfileTabs.tsx (tabs: Tin đăng | Đã lưu | Thành tích)",
@@ -117,6 +124,11 @@
       "path": "/api/users/[id]/achievements",
       "method": "GET",
       "explained": "Danh sách huy hiệu đã đạt của user."
+    },
+    {
+      "path": "/api/intents/interest",
+      "method": "POST",
+      "explained": "Toggle quan tâm (interested) cho một intent. Body: { id, increment: boolean }."
     }
   ],
   "auth_gate_pattern": {
@@ -135,24 +147,26 @@
       "Click-to-Gate: guest users see all content but are prompted to login on interaction",
       "SocialPostCard: hero image full-width → PostHeader → PostBody w/ AI highlights → BotPreview → ReactionSummary → ActionBar 3-btn",
       "AI highlight: PRICE_RE highlights prices in indigo bold, PLACE_RE underlines locations",
-      "FeedTab merges vipIntents (isVip=true) + regularIntents into allFeedIntents single-col list",
+      "FeedTab: vipIntents (isVip=true, top 5 by match_count) + regularIntents (all, with vip IDs excluded) → deduplicated allFeedIntents single-col list",
       "Hybrid Profile: Desktop = ProfileDropdown từ TopNavbar → /profile page (Option C). Mobile = MobileProfileSheet từ BottomNavMobile tab Cá nhân (Option D)",
-      "Profile data: User (NextAuth) 1-1 Profile (displayName/phone/avatarUrl/trustScore) 1-1 UserStat (points/level/streak)"
+      "Profile data: User (NextAuth) 1-1 Profile (displayName/phone/avatarUrl/trustScore) 1-1 UserStat (points/level/streak)",
+      "City filter: server-side by city param; district/price filter is client-side on fetched data"
     ],
     "gotchas": [
       "VN admin reform 2025: No more districts, only Tỉnh/TP → Phường/Xã",
       "Default tab in app/page.tsx must be 'home' (not 'swipe') for guest UX",
       "SocialPostCard uses Image from next/image for hero (requires unoptimized for external URLs)",
       "MobileProfileSheet state quản lý riêng (không dùng activeTab) để tránh xung đột routing BottomNavMobile",
-      "City filter uses server-side city param; district/price filter is client-side on fetched data"
+      "FeedTab: must deduplicate vipIntents from regularIntents before merging to avoid duplicate React keys",
+      "FeedFilterDrawer is rendered inside overflow-y-auto container but uses fixed positioning — works correctly in browser"
     ],
     "conventions": [
       "Plan folders: plans/YYMMDD-HHMM-feature-name/",
       "Phase files: phase-01-name.md, phase-02-name.md, ...",
       "Components: named exports, TSX, Tailwind classes inline",
-      "City filter uses server-side city param; district/price filter is client-side on fetched data",
       "CITY_DISTRICTS map in FeedFilterSidebar.tsx, exported getDistrictsForCity(city) helper",
-      "Profile components in app/components/profile/ folder"
+      "Profile components in app/components/profile/ folder",
+      "VIP threshold: match_count > 0 OR trust_score >= 4, top 5 shown with Premium badge"
     ]
   }
 }
