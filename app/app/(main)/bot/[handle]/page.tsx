@@ -15,7 +15,7 @@ interface BotProfilePageProps {
 
 export default async function BotProfilePage({ params }: BotProfilePageProps) {
   const { handle } = await params
-  
+
   // Get current user
   const session = await getServerSession(authOptions)
   const user = session?.user
@@ -50,7 +50,7 @@ export default async function BotProfilePage({ params }: BotProfilePageProps) {
     LIMIT 20
   `
 
-  const postsWithBot = (posts || []).map((post) => ({
+  const postsWithBot = (posts || []).map((post: any) => ({
     ...post,
     sources: post.sources || [],
     bot: post.bot,
@@ -65,8 +65,8 @@ export default async function BotProfilePage({ params }: BotProfilePageProps) {
     const likesResult = await prisma.$queryRaw<any[]>`SELECT post_id FROM likes WHERE user_id = ${userId}::uuid`
     const savesResult = await prisma.$queryRaw<any[]>`SELECT post_id FROM saves WHERE user_id = ${userId}::uuid`
 
-    likedPostIds = (likesResult || []).map((l) => l.post_id)
-    savedPostIds = (savesResult || []).map((s) => s.post_id)
+    likedPostIds = (likesResult || []).map((l: any) => l.post_id)
+    savedPostIds = (savesResult || []).map((s: any) => s.post_id)
   }
 
   return (
