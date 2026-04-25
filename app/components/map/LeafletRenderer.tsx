@@ -84,7 +84,8 @@ export default function LeafletRenderer({
 }: LeafletRendererProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<L.Map | null>(null);
-    const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clusterGroupRef = useRef<any>(null);
     const userMarkerRef = useRef<L.CircleMarker | null>(null);
     const radarMarkersRef = useRef<L.Marker[]>([]);
     const radarOverlayRef = useRef<L.DivOverlay | null>(null);
