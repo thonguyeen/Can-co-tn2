@@ -1,7 +1,7 @@
 # Plan: n8n Webhook → Intent Injection
 Created: 2026-04-24T10:22:00+07:00
-Updated: 2026-04-24T14:30:00+07:00
-Status: ✅ Complete
+Updated: 2026-04-25T07:50:00+07:00
+Status: 🟡 In Progress
 
 ## Overview
 Tạo API webhook chuyên dụng `POST /api/webhook/n8n-intents` để n8n đẩy bài viết **đã được AI parse sẵn** từ Facebook Group vào database Cần & Có.
@@ -30,7 +30,7 @@ Webhook (backend):
 ## Tech Stack
 - Backend: Next.js API Route (TypeScript)
 - Database: PostgreSQL (Prisma ORM)
-- Auth: API Key via `x-api-key` header
+- Auth: API Key via `Authorization: Bearer` header
 - Reuse: `intent-injector.ts` → `getOrCreateCrawlUser()`, matching engine
 
 ## Phases
@@ -39,7 +39,8 @@ Webhook (backend):
 |-------|------|--------|----------|
 | 01 | Webhook API + Middleware | ✅ Complete | 100% |
 | 02 | Verification & n8n Config | ✅ Complete | 100% |
+| 03 | Schema Alignment Fix (n8n real output) | 🟡 In Progress | 0% |
 
 ## Quick Commands
-- Start Phase 1: `/code phase-01`
+- Start Phase 3: `/code phase-03`
 - Check progress: `/next`

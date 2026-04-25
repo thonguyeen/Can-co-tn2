@@ -1,0 +1,50 @@
+# ── Dev dependencies ──────────────────────────────────
+node_modules
+npm-debug.log*
+
+# ── Next.js build output ──────────────────────────────
+.next
+out
+
+# ── Environment files (NEVER include in image) ────────
+.env
+.env.local
+.env.development
+.env.production
+.env.production.local
+.env.test
+.env.test.local
+
+# ── Dev tools ─────────────────────────────────────────
+.vscode
+.idea
+*.swp
+*.swo
+
+# ── Git ───────────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ── Brain/AWF ─────────────────────────────────────────
+.brain
+.agent
+.agents
+_agent
+_agents
+
+# ── Docs & Plans (not needed in image) ───────────────
+plans
+docs
+*.md
+!README.md
+
+# ── Test ─────────────────────────────────────────────
+__tests__
+*.test.ts
+*.spec.ts
+coverage
+
+# ── OS ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

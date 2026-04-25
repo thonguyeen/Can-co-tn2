@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-22T09:02:00+07:00"
+    "last_updated": "2026-04-24T16:20:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -77,6 +77,18 @@
       "status": "planned",
       "plan": "plans/200420-1541-detail-card-shadow",
       "notes": "Phase 01 (left panel) + Phase 02 (right panel) pending. Mục tiêu: wrap các section trong card shadow-enhanced."
+    },
+    {
+      "name": "n8n Webhook Ingestion Pipeline",
+      "status": "complete",
+      "plan": "plans/240424-1022-n8n-webhook-intents",
+      "notes": "POST /api/webhook/n8n-intents — nhận bài đã AI-parse từ n8n, dedup bằng fb_post_id (sourceUrl=fb://group_post/{id}), insert Intent+IntentImage, trigger matching engine. Auth: x-api-key Bearer N8N_WEBHOOK_SECRET. Middleware bypass JWT cho /api/webhook/*. Đã test TC-01 đến TC-04 PASS."
+    },
+    {
+      "name": "Docker VPS Deployment",
+      "status": "in-progress",
+      "plan": "plans/240424-1540-docker-vps-deploy",
+      "notes": "Phase 01 DONE: Dockerfile (3-stage), docker-compose.prod.yml (app+postgres, shared network), deploy.sh (--clean/--migrate flags), nginx/cancotn.conf, .env.production.example. Phase 02 (VPS setup) pending. Dùng Docker shared network để n8n→webhook nội bộ (~1ms). AI trỏ 9router_app nội bộ."
     }
   ],
   "key_components": {
@@ -129,6 +141,11 @@
       "path": "/api/intents/interest",
       "method": "POST",
       "explained": "Toggle quan tâm (interested) cho một intent. Body: { id, increment: boolean }."
+    },
+    {
+      "path": "/api/webhook/n8n-intents",
+      "method": "POST",
+      "explained": "Webhook nhận bài đăng đã AI-parse từ n8n. Auth: Bearer N8N_WEBHOOK_SECRET header. Body: array of parsed posts. Trả về { inserted, skipped, errors }. Middleware bypass JWT cho /api/webhook/*."
     }
   ],
   "auth_gate_pattern": {

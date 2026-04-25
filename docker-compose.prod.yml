@@ -1,0 +1,79 @@
+# ════════════════════════════════════════════════════
+# Cần & Có — Production Docker Compose
+# VPS Stack: can-co_app + can-co_db
+#
+# Networks:
+#   cancotn  — private (app ↔ db)
+#   shared   — external (nginx + n8n + can-co)
+#
+# Usage:
+#   Deploy:  ./deploy.sh
+#   Logs:    docker compose -f docker-compose.prod.yml logs -f app
+#   Shell:   docker exec -it can-co_app sh
+#   DB:      docker exec -it can-co_db psql -U cancotn
+# ════════════════════════════════════════════════════
+
+services:
+  app:
+    container_name: can-co_app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Chỉ bind localhost — nginx proxy vào, không expose public
+    ports:
+      - "127.0.0.1:4000:4000"
+    env_file: .env.production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cancotn
+      - shared
+    # Logging với rotation (tránh đầy disk)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres:
+    container_name: can-co_db
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: cancotn
+      POSTGRES_USER: cancotn
+      # Fail fast nếu thiếu password — không dùng default
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in .env.production}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U cancotn -d cancotn" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - cancotn
+    # DB không expose ra ngoài — chỉ app nội bộ
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  pgdata:
+    name: cancotn_pgdata
+    # external: true  # Uncomment nếu volume đã tồn tại và muốn giữ data
+
+networks:
+  # Private network: chỉ dùng nội bộ giữa app và db
+  cancotn:
+    name: cancotn
+
+  # Shared network: dùng chung với nginx_proxy, n8n_app
+  # Tạo bằng: docker network create shared
+  shared:
+    external: true

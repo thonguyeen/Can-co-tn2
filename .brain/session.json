@@ -1,82 +1,98 @@
 {
-  "updated_at": "2026-04-22T09:02:00+07:00",
+  "updated_at": "2026-04-24T16:20:00+07:00",
   "working_on": {
-    "feature": "Detail Page Card & Shadow Redesign",
-    "plan_path": "plans/200420-1541-detail-card-shadow",
-    "current_phase": "not-started",
-    "status": "planning",
-    "files_changed": [],
-    "notes": "Phase 01 (left panel) và Phase 02 (right panel) đều chưa bắt đầu. Xem phase-01-left-panel.md để tiếp tục."
+    "feature": "Docker VPS Deployment",
+    "plan_path": "plans/240424-1540-docker-vps-deploy",
+    "current_phase": "phase-02-vps-setup",
+    "status": "ready-to-deploy",
+    "files_changed": [
+      "app/Dockerfile",
+      "app/.dockerignore",
+      "app/next.config.ts",
+      "docker-compose.prod.yml",
+      "deploy.sh",
+      "nginx/cancotn.conf",
+      ".env.production.example"
+    ],
+    "notes": "Phase 01 DONE. Phase 02 cần thực hiện trên VPS: git clone, docker network create shared, cp .env.production.example → .env.production, ./deploy.sh --migrate, nginx reload."
   },
   "pending_tasks": [
     {
-      "task": "Detail Page Redesign — Phase 01: Left Panel (Card & Shadow)",
+      "task": "Docker VPS Deploy — Phase 02: VPS Setup",
       "priority": "high",
-      "notes": "Plan tại plans/200420-1541-detail-card-shadow/phase-01-left-panel.md"
+      "notes": "SSH vào VPS, clone repo, config .env.production, docker network create shared, ./deploy.sh --migrate. Xem phase-02-vps-setup.md"
     },
     {
-      "task": "Detail Page Redesign — Phase 02: Right Panel",
+      "task": "Docker VPS Deploy — Phase 03: Smoke Test",
       "priority": "high",
-      "notes": "Plan tại plans/200420-1541-detail-card-shadow/phase-02-right-panel.md"
+      "notes": "Test web, auth, n8n internal webhook. Xem phase-03-smoke-test.md"
+    },
+    {
+      "task": "Detail Page Redesign — Phase 01: Left Panel (Card & Shadow)",
+      "priority": "medium",
+      "notes": "Backlog. Plan tại plans/200420-1541-detail-card-shadow/phase-01-left-panel.md"
     }
   ],
   "recent_changes": [
     {
+      "timestamp": "2026-04-24T16:15:00+07:00",
+      "type": "infra",
+      "description": "Docker VPS Deployment Phase 01 DONE: Dockerfile (3-stage multi), docker-compose.prod.yml (2 networks: cancotn+shared), deploy.sh (--clean/--migrate flags), nginx/cancotn.conf, .env.production.example, sửa next.config.ts (output:standalone + FB CDN remotePatterns).",
+      "files": [
+        "app/Dockerfile",
+        "app/.dockerignore",
+        "app/next.config.ts",
+        "docker-compose.prod.yml",
+        "deploy.sh",
+        "nginx/cancotn.conf",
+        ".env.production.example"
+      ]
+    },
+    {
+      "timestamp": "2026-04-24T08:00:00+07:00",
+      "type": "feature",
+      "description": "n8n Webhook Ingestion Pipeline hoàn thành: POST /api/webhook/n8n-intents, dedup bằng fb_post_id (sourceUrl=fb://group_post/{id}), middleware JWT bypass /api/webhook/*, TC-01 đến TC-04 PASS. N8N_WEBHOOK_SECRET thêm vào .env.local.",
+      "files": [
+        "app/app/api/webhook/n8n-intents/route.ts",
+        "app/middleware.ts",
+        "app/.env.local",
+        "plans/240424-1022-n8n-webhook-intents/n8n-http-node-config.json"
+      ]
+    },
+    {
       "timestamp": "2026-04-22T08:00:00+07:00",
       "type": "bugfix",
-      "description": "Fix duplicate React key warning in FeedTab: deduplicate vipIntents from regularIntents trước khi merge thành allFeedIntents. Dùng vipIds Set để filter.",
+      "description": "Fix duplicate React key warning trong FeedTab: deduplicate vipIntents từ regularIntents trước khi merge. Dùng vipIds Set để filter.",
       "files": [
         "app/components/tabs/FeedTab.tsx"
-      ]
-    },
-    {
-      "timestamp": "2026-04-22T07:50:00+07:00",
-      "type": "sync",
-      "description": "Sync plan files feed redesign Option C — đã done trong code nhưng plan.md vẫn Pending. Cập nhật Phase 01, 02, 03 thành Complete.",
-      "files": [
-        "plans/200420-0954-feed-redesign-opt-c/plan.md",
-        "plans/200420-0954-feed-redesign-opt-c/phase-01-social-post-card.md",
-        "plans/200420-0954-feed-redesign-opt-c/phase-02-feedtab-refactor.md"
-      ]
-    },
-    {
-      "timestamp": "2026-04-21T15:10:00+07:00",
-      "type": "bugfix",
-      "description": "Fix TC-06: Thay nút link /profile/edit (404) bằng inline edit form trong ProfileHeader.tsx. 7/7 TC PASS.",
-      "files": [
-        "app/components/profile/ProfileHeader.tsx",
-        "app/(main)/profile/page.tsx"
-      ]
-    },
-    {
-      "timestamp": "2026-04-21T12:00:00+07:00",
-      "type": "feature",
-      "description": "Hybrid User Profile (C+D): ProfileDropdown + MobileProfileSheet + /profile page + GET/PATCH /api/me.",
-      "files": [
-        "app/components/profile/ProfileDropdown.tsx",
-        "app/components/profile/MobileProfileSheet.tsx",
-        "app/components/profile/ProfileTabs.tsx",
-        "app/(main)/profile/page.tsx",
-        "app/app/api/me/route.ts",
-        "app/components/layout/TopNavbar.tsx",
-        "app/components/layout/BottomNavMobile.tsx"
-      ]
-    },
-    {
-      "timestamp": "2026-04-21T09:00:00+07:00",
-      "type": "feature",
-      "description": "City Filter Redesign Option D: CityChipBar + FeedFilterDrawer. API nhận city param. Smoke test PASS 2026-04-22.",
-      "files": [
-        "app/app/api/intents/route.ts",
-        "app/components/feed/CityChipBar.tsx",
-        "app/components/feed/FeedFilterDrawer.tsx",
-        "app/hooks/useFeedData.ts",
-        "app/components/tabs/FeedTab.tsx",
-        "app/components/feed/FeedFilterSidebar.tsx"
       ]
     }
   ],
   "decisions_made": [
+    {
+      "decision": "Docker deploy: Option A (build rồi swap, dùng cache mặc định)",
+      "reason": "Đủ dùng cho VPS 8GB. ~2-3s downtime che lấp bởi Cloudflare buffer. Dùng --no-cache chỉ khi thật sự cần."
+    },
+    {
+      "decision": "PostgreSQL container riêng (can-co_db), không dùng chung goclaw_postgres",
+      "reason": "Zero blast radius — isolation hoàn toàn giữa 2 ứng dụng"
+    },
+    {
+      "decision": "n8n webhook URL production: http://can-co_app:4000/... (Docker internal)",
+      "reason": "Tránh round-trip qua internet (~100-300ms → ~1ms). Dùng shared Docker network."
+    },
+    {
+      "decision": "AI provider: trỏ 9router_app nội bộ Docker (http://9router_app:20128/v1)",
+      "reason": "9router_app đang chạy cùng VPS → latency giảm từ ~50ms → ~1ms"
+    },
+    {
+      "decision": "deploy.sh: cache mặc định, --clean flag khi cần rebuild toàn bộ",
+      "reason": "Tech-lead correction: --no-cache làm chậm ~3x không cần thiết cho mỗi deploy"
+    },
+    {
+      "decision": "Webhook dedup: chỉ dùng fb_post_id (sourceUrl), không dùng content hash",
+      "reason": "fb_post_id là stable unique ID từ FB. Content hash dễ false-positive. Option A đủ cho v1."
+    },
     {
       "decision": "Inline edit thay vì route /profile/edit riêng",
       "reason": "UX mượt hơn, ít code hơn, mobile-friendly, chuẩn pattern SPA hiện đại"
@@ -84,23 +100,7 @@
     {
       "decision": "City Filter: chọn Option D (Homigo Style)",
       "reason": "User thích giao diện gọn, search bar + chip bar + drawer"
-    },
-    {
-      "decision": "Profile UX: Hybrid C+D — Desktop Dropdown + /profile page, Mobile Bottom Sheet",
-      "reason": "Tối ưu UX cho từng device"
-    },
-    {
-      "decision": "Feed redesign: went with Option C (Hybrid Social+BĐS)",
-      "reason": "User chose over Option A (Facebook) and Option B (Twitter)"
-    },
-    {
-      "decision": "FeedTab deduplicate: vipIds Set to filter VIP out of regular before merging",
-      "reason": "Avoid duplicate React keys — VIP items were subset of regularIntents"
-    },
-    {
-      "decision": "Default tab = 'home' (FeedTab)",
-      "reason": "Guest UX — feed browsable without login"
     }
   ],
-  "session_summary": "Session 2026-04-22: (1) Discovered Feed Redesign Option C already complete in code - synced plan files. (2) /test full web: all features pass, 1 real bug found. (3) Fixed duplicate React key bug in FeedTab.tsx (vipIds dedup). (4) Confirmed FeedFilterDrawer works correctly. Next: Detail Page Card & Shadow Redesign (plans/200420-1541-detail-card-shadow)."
+  "session_summary": "Session 2026-04-24: (1) Hoàn thành n8n Webhook Ingestion Pipeline — POST /api/webhook/n8n-intents với dedup fb_post_id, middleware bypass, 4 TC PASS. (2) Brainstorm + Plan + Design + Code Phase 01 Docker VPS Deployment: Dockerfile multi-stage, docker-compose.prod.yml (shared network với n8n/nginx), deploy.sh (3 modes), nginx config, .env template, next.config.ts standalone. Tech-lead CONDITIONAL GO. Next: SSH VPS và thực hiện Phase 02."
 }

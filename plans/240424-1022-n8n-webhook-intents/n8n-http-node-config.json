@@ -30,7 +30,7 @@
                 1000,
                 300
             ],
-            "notes": "Gửi bài đã được AI parse lên webhook Cần & Có.\n\nCHÚ Ý:\n- URL: Thay 'localhost:4000' bằng domain thật khi deploy\n- Authorization: Phải khớp với N8N_WEBHOOK_SECRET trong .env.local\n\nInput mong đợi từ AI node trước đó:\n  fb_post_id, message, author, image, created_time,\n  type (CO|CAN), title, price, district, subcategory, city"
+            "notes": "Gửi bài đã được AI parse lên webhook Cần & Có.\n\nCHÚ Ý:\n- URL: Thay 'localhost:4000' bằng domain thật khi deploy\n- Authorization: Phải khớp với N8N_WEBHOOK_SECRET trong .env.local\n\nSupported input formats:\n  1. [{ records: [...] }]  — n8n default wrapper\n  2. [post, post, ...]     — flat array\n  3. { posts: [...] }      — legacy format"
         }
     ],
     "_meta": {
@@ -59,17 +59,35 @@
             "5. Test với Execute Node → xem response { inserted, skipped, errors }"
         ],
         "expected_input_from_ai_node": {
-            "fb_post_id": "string — ID bài viết Facebook (bắt buộc, dùng để dedup)",
-            "message": "string — Nội dung gốc bài viết (bắt buộc)",
-            "author": "string — Tên tác giả (optional)",
-            "image": "string — URL ảnh FB CDN (optional)",
+            "__type_mapping": "type: 0=unknown(→CO), 1=có/bán/cho thuê(→CO), 2=cần/mua/thuê(→CAN)",
+            "post_id": "string — ID bài viết Facebook dạng 'group_id_post_id' (bắt buộc, dùng để dedup)",
+            "message_raw": "string — Nội dung gốc (có emoji)",
+            "message_clean": "string — Nội dung đã strip emoji (ưu tiên dùng cho matching)",
+            "author_name": "string — Tên tác giả (optional)",
+            "author_id": "string — FB user ID (optional)",
+            "images": "string[] — Array URL ảnh FB CDN (optional, hỗ trợ nhiều ảnh)",
             "created_time": "string — ISO 8601 timestamp (optional)",
-            "type": "CO | CAN — AI đã parse (default: CO)",
-            "title": "string — AI đã parse (default: message.slice(0,80))",
-            "price": "number — Giá VNĐ, AI đã parse (optional)",
-            "district": "string — Quận/Phường, AI đã parse (optional)",
-            "subcategory": "apartment | house | land | room | commercial (optional)",
-            "city": "string — Tỉnh/TP (default: Hồ Chí Minh)"
+            "post_url": "string — Link tới bài FB gốc (optional)",
+            "group_id": "string — ID group FB (optional)",
+            "group_name": "string — Tên group FB (optional)",
+            "group_url": "string — Link group FB (optional)",
+            "type": "number — 0=unknown, 1=CO (bán/cho thuê), 2=CAN (cần/mua)",
+            "title": "string — AI-generated title (default: message.slice(0,80))",
+            "price": "number — Giá VNĐ, 0 nếu không rõ (optional)",
+            "district": "string — Quận/Huyện (optional)",
+            "subcategory": "house | land | villa | apartment | room | commercial (optional)",
+            "city": "string — Tỉnh/TP, để rỗng nếu không rõ (KHÔNG default HCM)",
+            "acreage": "number — Diện tích m² (optional)",
+            "utilities": "string[] — Tiện ích (optional)",
+            "phones": "string[] — SĐT đã parse (optional)",
+            "confidence": "number — AI confidence score 0-1 (optional)",
+            "ai_processed_at": "string — ISO 8601 timestamp AI xử lý (optional)"
+        },
+        "backward_compat": {
+            "fb_post_id": "Alias cho post_id",
+            "message": "Alias cho message_raw",
+            "author": "Alias cho author_name",
+            "image": "Alias cho images[0] (singular → single image)"
         },
         "expected_response_201": {
             "inserted": "number — Số bài đã insert thành công",

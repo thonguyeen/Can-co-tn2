@@ -38,8 +38,8 @@ Internet → CF Tunnel → nginx_proxy → can-co_app (:4000) → can-co_db (:54
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 01 | Docker Build Files | ⬜ Pending | 0% |
-| 02 | VPS Setup & Deploy | ⬜ Pending | 0% |
+| 01 | Docker Build Files | ✅ Complete | 100% |
+| 02 | VPS Setup & Deploy | ⏳ In Progress | 0% |
 | 03 | Smoke Test & n8n Connect | ⬜ Pending | 0% |
 
 ## Quick Commands
