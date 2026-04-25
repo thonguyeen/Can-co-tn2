@@ -3,13 +3,13 @@
         {
             "parameters": {
                 "method": "POST",
-                "url": "http://localhost:4000/api/webhook/n8n-intents",
+                "url": "https://YOUR_DOMAIN.com/api/webhook/n8n-intents",
                 "sendHeaders": true,
                 "headerParameters": {
                     "parameters": [
                         {
                             "name": "Authorization",
-                            "value": "Bearer can-co-n8n-secret-2024"
+                            "value": "Bearer {{ $env.N8N_WEBHOOK_SECRET }}"
                         },
                         {
                             "name": "Content-Type",
@@ -20,6 +20,7 @@
                 "sendBody": true,
                 "bodyContentType": "json",
                 "jsonBody": "={{ JSON.stringify([$input.item.json]) }}",
+                "__note_bodyFormat": "n8n output is [{records:[...], total, source}] — webhook accepts this as Format 1 directly",
                 "options": {}
             },
             "id": "can-co-webhook-node",

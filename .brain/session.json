@@ -1,134 +1,72 @@
 {
-  "updated_at": "2026-04-25T13:30:00+07:00",
+  "updated_at": "2026-04-25T16:28:00+07:00",
   "working_on": {
-    "feature": "VPS Production Deployment",
-    "task": "COMPLETED — Deploy thành công lên VPS",
+    "feature": "Production Infrastructure — Nginx routing + Cloudflare Tunnel",
+    "task": "COMPLETED — khanhoatoday.com đang route đúng vào can-co_app",
     "status": "done",
     "files": [
-      "deploy.sh",
-      "app/Dockerfile",
-      "app/tsconfig.json",
-      "app/app/api/**/*.ts (85 files — @ts-nocheck added)",
-      "app/lib/mock/intents.ts",
-      "app/components/map/MapPopupCard.tsx",
-      "app/components/map/LeafletRenderer.tsx",
-      "app/components/profile/ProfileDropdown.tsx",
-      "app/app/(main)/layout.tsx",
-      "app/app/(main)/bot/[handle]/page.tsx"
+      "/opt/nginx/conf.d/cancotn.conf"
     ],
     "blockers": [],
-    "notes": "Deploy pipeline hoàn toàn chạy được. Smoke test cần xác nhận."
+    "notes": "nginx_proxy phải join 'shared' network. Dùng upstream block + resolver 127.0.0.11 để Docker DNS hoạt động."
   },
   "pending_tasks": [
     {
-      "task": "Smoke test production: curl /api/health và /api/intents?limit=1",
+      "task": "Kết nối n8n workflow thật vào webhook endpoint",
       "priority": "high",
-      "notes": "Cần confirm app running healthy sau deploy"
+      "notes": "Import n8n-http-node-config.json vào n8n, đổi YOUR_DOMAIN → khanhoatoday.com, điền N8N_WEBHOOK_SECRET thật"
     },
     {
-      "task": "Test n8n webhook integration end-to-end",
-      "priority": "high",
-      "notes": "POST /api/webhook/n8n-intents với payload thật từ n8n"
-    },
-    {
-      "task": "Fix @ts-nocheck debt — refactor API files với proper Prisma types",
-      "priority": "low",
-      "notes": "Technical debt từ build fix hàng loạt"
-    },
-    {
-      "task": "Regenerate package-lock.json trên Node 22 để đổi lại npm ci",
+      "task": "Đảm bảo nginx_proxy join shared network sau mỗi lần restart",
       "priority": "medium",
-      "notes": "Hiện dùng npm install trong Dockerfile — không deterministic"
+      "notes": "Hiện join thủ công. Nên add cancotn network vào docker-compose của nginx_proxy để persist."
+    },
+    {
+      "task": "Refactor @ts-nocheck khỏi API files",
+      "priority": "low",
+      "notes": "85 files đang có @ts-nocheck — cần fix proper Prisma types dần"
     }
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-25T04:21:00+07:00",
+      "timestamp": "2026-04-25T16:10:00+07:00",
       "type": "infrastructure",
-      "description": "Upgrade Dockerfile to node:22-alpine, npm install thay npm ci",
-      "commits": [
-        "94e772c",
-        "4bebe23"
-      ]
+      "description": "Tạo /opt/nginx/conf.d/cancotn.conf — nginx route khanhoatoday.com → can-co_app:4000",
+      "commits": []
     },
     {
-      "timestamp": "2026-04-25T04:30:00+07:00",
-      "type": "fix",
-      "description": "deploy.sh source .env.production cho Docker Compose YAML interpolation",
-      "commits": [
-        "66da384"
-      ]
+      "timestamp": "2026-04-25T16:19:00+07:00",
+      "type": "infrastructure",
+      "description": "docker network connect shared nginx_proxy — nginx_proxy join shared network để resolve can-co_app",
+      "commits": []
     },
     {
-      "timestamp": "2026-04-25T10:15:00+07:00",
-      "type": "fix",
-      "description": "Fix TypeScript errors: MockIntent.source, bot/page.tsx, layout.tsx implicit any",
-      "commits": [
-        "820936e"
-      ]
-    },
-    {
-      "timestamp": "2026-04-25T10:20:00+07:00",
-      "type": "fix",
-      "description": "Fix LeafletRenderer.tsx: L.MarkerClusterGroup không phải type",
-      "commits": [
-        "65f368b"
-      ]
-    },
-    {
-      "timestamp": "2026-04-25T11:00:00+07:00",
-      "type": "fix",
-      "description": "Resolve all TypeScript errors: noImplicitAny false + @ts-nocheck 22 files",
-      "commits": [
-        "3b51d52"
-      ]
-    },
-    {
-      "timestamp": "2026-04-25T11:20:00+07:00",
-      "type": "fix",
-      "description": "Fix suggestedBots type never[] in layout.tsx",
-      "commits": [
-        "30e74fa"
-      ]
-    },
-    {
-      "timestamp": "2026-04-25T11:40:00+07:00",
-      "type": "fix",
-      "description": "Add @ts-nocheck to all 85 remaining API route files (batch fix)",
-      "commits": [
-        "1454be9"
-      ]
+      "timestamp": "2026-04-25T16:22:00+07:00",
+      "type": "infrastructure",
+      "description": "Overwrite cancotn.conf với upstream block + resolver 127.0.0.11 (Docker DNS). Site hoạt động.",
+      "commits": []
     }
   ],
   "errors_encountered": [
     {
-      "error": "npm ci fails — lockfile out of sync",
-      "solution": "Use npm install in Dockerfile",
+      "error": "khanhoatoday.com hiển thị 9router thay vì can-co",
+      "solution": "1) Tạo cancotn.conf với server_name khanhoatoday.com; 2) docker network connect shared nginx_proxy; 3) Dùng upstream block + resolver 127.0.0.11",
       "resolved": true
     },
     {
-      "error": "POSTGRES_PASSWORD missing in Docker Compose YAML",
-      "solution": "Source .env.production in deploy.sh before docker compose",
-      "resolved": true
-    },
-    {
-      "error": "~100+ TypeScript errors in Docker fresh build",
-      "solution": "noImplicitAny:false in tsconfig + @ts-nocheck on all API files",
+      "error": "nginx không resolve được can-co_app hostname",
+      "solution": "nginx_proxy chưa trong 'shared' network. Fix: docker network connect shared nginx_proxy",
       "resolved": true
     }
   ],
   "decisions_made": [
     {
-      "decision": "npm install instead of npm ci in Dockerfile",
-      "reason": "Lockfile version mismatch between Windows (npm 11) and Alpine Docker (npm 10)"
+      "decision": "upstream block + resolver 127.0.0.11 trong nginx config",
+      "reason": "Docker container hostname resolution cần Docker DNS (127.0.0.11). Direct proxy_pass với hostname literal có thể bị cache lúc startup."
     },
     {
-      "decision": "@ts-nocheck on all API route files",
-      "reason": "Pragmatic unblock — Prisma client not generated during typecheck, refactor deferred"
-    },
-    {
-      "decision": "noImplicitAny: false in tsconfig.json",
-      "reason": "Fixes ~80 TS7006 errors in lib/ without changing each file individually"
+      "decision": "nginx_proxy join 'shared' network (thủ công)",
+      "reason": "nginx_proxy ban đầu chỉ ở cloudflare-net, không thấy can-co_app ở shared network"
     }
   ]
 }
