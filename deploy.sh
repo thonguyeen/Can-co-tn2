@@ -44,7 +44,7 @@ echo "════════════════════════�
 # === Step 1: Pull latest code ===
 echo ""
 echo "📥 [1/4] Pulling latest code..."
-git pull origin main
+git pull origin dev
 echo "   ✓ Code updated"
 
 # === Step 2: Build ===
