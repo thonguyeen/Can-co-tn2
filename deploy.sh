@@ -32,8 +32,21 @@ done
 
 # === Config ===
 COMPOSE_FILE="docker-compose.prod.yml"
+ENV_FILE=".env.production"
 APP_SERVICE="app"
 CONTAINER_NAME="can-co_app"
+
+# Load env vars vào shell để Docker Compose YAML substitution hoạt động
+# (env_file trong compose chỉ inject vào container, không phải YAML parse)
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  # shellcheck source=/dev/null
+  source "$ENV_FILE"
+  set +a
+else
+  echo "❌ Không tìm thấy $ENV_FILE — tạo từ .env.production.example trước!"
+  exit 1
+fi
 
 echo ""
 echo "🚀 ═══════════════════════════════════════"
@@ -51,17 +64,17 @@ echo "   ✓ Code updated"
 echo ""
 if [ "$CLEAN_BUILD" = true ]; then
   echo "🔨 [2/4] Building (--no-cache)..."
-  docker compose -f "$COMPOSE_FILE" build --no-cache "$APP_SERVICE"
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build --no-cache "$APP_SERVICE"
 else
   echo "🔨 [2/4] Building (with cache)..."
-  docker compose -f "$COMPOSE_FILE" build "$APP_SERVICE"
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build "$APP_SERVICE"
 fi
 echo "   ✓ Build complete"
 
 # === Step 3: Start/Restart containers ===
 echo ""
 echo "♻️  [3/4] Restarting containers..."
-docker compose -f "$COMPOSE_FILE" up -d
+docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
 echo "   ✓ Containers started"
 
 # === Step 4: Prisma migrate (optional) ===
