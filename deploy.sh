@@ -80,12 +80,11 @@ echo "   ✓ Containers started"
 # === Step 4: Prisma migrate (optional) ===
 if [ "$RUN_MIGRATE" = true ]; then
   echo ""
-  echo "🗄️  [3.5] Running Prisma db push..."
-  # Đợi app healthy trước
+  echo "🗄️  [3.5] Running Prisma migrate..."
   echo "   Waiting for app to be healthy..."
   sleep 5
-  docker exec "$CONTAINER_NAME" npx prisma db push --skip-generate
-  echo "   ✓ Schema synced"
+  docker exec -e DATABASE_URL="$DATABASE_URL" "$CONTAINER_NAME" npx prisma migrate deploy
+  echo "   ✓ Database schema migrated"
 fi
 
 # === Step 5: Cleanup old images ===
