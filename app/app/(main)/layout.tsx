@@ -36,7 +36,7 @@ export default async function MainLayout({
 
   // Get all bots for suggestions (exclude followed)
   const followedBotIds = followedBots.map((b: any) => b.id)
-  let suggestedBots = []
+  let suggestedBots: any[] = []
   if (followedBotIds.length > 0) {
     const excludeStr = followedBotIds.map((id: any) => `'${id}'`).join(',')
     suggestedBots = await prisma.$queryRawUnsafe<any[]>(`SELECT * FROM bots WHERE id NOT IN (${excludeStr}) LIMIT 3`)
