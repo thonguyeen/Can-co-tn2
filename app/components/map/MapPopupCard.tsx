@@ -289,7 +289,7 @@ export default function MapPopupCard({
               ) : likeState === 'liked' ? (
                 <>❤️ Đã quan tâm</>
               ) : (
-                <><Heart size={15} fill={likeState === 'liked' ? 'currentColor' : 'none'} /> Quan tâm</>
+                <><Heart size={15} fill="none" /> Quan tâm</>
               )}
 
               {/* Heart particles */}

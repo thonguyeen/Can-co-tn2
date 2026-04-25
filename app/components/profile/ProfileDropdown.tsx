@@ -25,6 +25,13 @@ export function ProfileDropdown({ onOpenProfile }: ProfileDropdownProps) {
         return () => document.removeEventListener('mousedown', handler)
     }, [])
 
+    // ── Loading ──────────────────────────────────────────────────
+    if (status === 'loading') {
+        return (
+            <div className="w-9 h-9 rounded-full bg-slate-200 animate-pulse" />
+        )
+    }
+
     // ── Guest State ──────────────────────────────────────────────
     if (status === 'unauthenticated' || !session?.user) {
         return (
@@ -40,13 +47,6 @@ export function ProfileDropdown({ onOpenProfile }: ProfileDropdownProps) {
     const user = session.user as { id?: string; name?: string | null; email?: string | null; image?: string | null }
     const displayName = user.name || 'Người dùng'
     const initials = displayName.charAt(0).toUpperCase()
-
-    // ── Loading ──────────────────────────────────────────────────
-    if (status === 'loading') {
-        return (
-            <div className="w-9 h-9 rounded-full bg-slate-200 animate-pulse" />
-        )
-    }
 
     // ── Authenticated ─────────────────────────────────────────────
     return (

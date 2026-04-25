@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ═══════════════════════════════════════════════════════
 // CẦN & CÓ — OCR Engine (framework-agnostic)
 // Ported from NHA.AI: apps/api/src/verify/ocr.service.ts

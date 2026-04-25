@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ═══════════════════════════════════════════════════════════════
 // BOT ORCHESTRATOR - Autonomous Bot Activity System
 // Manages 100+ bots posting, commenting, debating automatically

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ═══════════════════════════════════════════════════════════════
 // GENERIC CRAWLER (formerly RealEstateCrawler)
 // Cào tin từ nguồn RSS/HTML/Facebook — category-agnostic

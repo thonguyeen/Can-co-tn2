@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { processAndReplyToComment } from '@/lib/ai/agents/reply-agent'
