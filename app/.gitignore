@@ -1,1 +1,4 @@
 .brain/
+
+# AWF Brain (local context, may contain secrets)
+../.brain/

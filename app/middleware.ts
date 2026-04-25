@@ -26,6 +26,7 @@ export async function middleware(request: NextRequest) {
   // Protected APIs: tất cả mutation + private endpoints
   if (pathname.startsWith('/api/')) {
     const isPublicApi =
+      pathname === '/api/health' ||
       pathname.startsWith('/api/map') ||
       (pathname === '/api/intents' && request.method === 'GET') ||
       (pathname.match(/^\/api\/intents\/[^/]+$/) && request.method === 'GET');
