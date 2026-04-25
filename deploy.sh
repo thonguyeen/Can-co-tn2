@@ -80,11 +80,18 @@ echo "   ✓ Containers started"
 # === Step 4: Prisma migrate (optional) ===
 if [ "$RUN_MIGRATE" = true ]; then
   echo ""
-  echo "🗄️  [3.5] Running Prisma migrate..."
+  echo "🗄️  [3.5] Running Prisma db push..."
   echo "   Waiting for app to be healthy..."
   sleep 5
-  docker exec -e DATABASE_URL="$DATABASE_URL" "$CONTAINER_NAME" npx prisma migrate deploy
-  echo "   ✓ Database schema migrated"
+  docker run --rm \
+    --network cancotn \
+    -e DATABASE_URL="$DATABASE_URL" \
+    -v "$(pwd)/app/prisma:/app/prisma" \
+    -v "$(pwd)/app/prisma.config.ts:/app/prisma.config.ts" \
+    -w /app \
+    node:22-alpine \
+    sh -c "npm install prisma@7.8.0 && npx prisma db push --accept-data-loss"
+  echo "   ✓ Database schema synced"
 fi
 
 # === Step 5: Cleanup old images ===
