@@ -10,8 +10,8 @@ export default defineConfig({
     seed: "npx tsx prisma/seed.ts",
   },
   datasource: {
-    // CLI (migrate, db push) cần dùng Session pooler (port 5432) hoặc Direct connection
-    // KHÔNG dùng Transaction pooler (port 6543) vì nó không hỗ trợ DDL lâu
-    url: process.env["DIRECT_URL"],
+    // CLI (migrate, db push) — dùng DIRECT_URL nếu có (Supabase/Accelerate),
+    // fallback sang DATABASE_URL cho self-hosted postgres
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });
