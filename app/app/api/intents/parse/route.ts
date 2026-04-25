@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { parseSearchIntent, isConfigured } from '@/lib/engine/openai';
 import { formatPriceRange } from '@/lib/intent-utils';

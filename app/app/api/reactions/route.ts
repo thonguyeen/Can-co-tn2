@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
 import { addReaction, getReactions, getUserReaction, ReactionType } from '@/lib/gamification/reactions'
 

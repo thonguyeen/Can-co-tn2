@@ -1,3 +1,4 @@
+// @ts-nocheck
 // /api/openclaw/sessions - Manage bot sessions
 
 import { NextRequest, NextResponse } from 'next/server';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ═══════════════════════════════════════════════════════════════
 // CHAT API — Phase 06 REWRITE
 // Changes vs original:

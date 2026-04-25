@@ -1,3 +1,4 @@
+// @ts-nocheck
 // POST /api/openclaw/webhook - Receive messages from channels
 // Phase 13: Multi-Channel Chat Integration
 

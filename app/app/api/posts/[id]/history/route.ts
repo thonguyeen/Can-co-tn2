@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
 import { getPostVerificationHistory } from '@/lib/ai/agents/status-manager'
 

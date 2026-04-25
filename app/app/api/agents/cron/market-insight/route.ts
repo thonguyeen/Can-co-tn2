@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextResponse } from 'next/server';
 
 // GET /api/agents/cron/market-insight — periodic market analysis

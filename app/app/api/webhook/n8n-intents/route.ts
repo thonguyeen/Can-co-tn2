@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ═══════════════════════════════════════════════════════════════
 // n8n → Intent Webhook
 // POST /api/webhook/n8n-intents

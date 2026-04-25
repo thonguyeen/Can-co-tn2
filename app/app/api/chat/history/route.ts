@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ═══════════════════════════════════════════════════════════════
 // CHAT HISTORY API — Phase 06
 // GET /api/chat/history

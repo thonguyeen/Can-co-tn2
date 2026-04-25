@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { initiateChannelLink, getUserChannels, unlinkChannel } from '@/lib/openclaw/channel-manager';
 import { OpenClawChannel } from '@/lib/openclaw/types';

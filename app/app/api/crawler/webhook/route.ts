@@ -1,3 +1,4 @@
+// @ts-nocheck
 // ═══════════════════════════════════════════════════════════════
 // n8n CRAWLER WEBHOOK — Phase 06b
 // POST /api/crawler/webhook

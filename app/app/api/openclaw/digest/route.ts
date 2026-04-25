@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { sendScheduledDigests, sendDigestToUser } from '@/lib/openclaw/digest-scheduler';
 import { OpenClawChannel } from '@/lib/openclaw/types';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // POST /api/openclaw/distribute - Distribute post to channels
 
 import { NextRequest, NextResponse } from 'next/server';

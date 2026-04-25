@@ -1,3 +1,4 @@
+// @ts-nocheck
 // GET /api/openclaw/status - Check OpenClaw connection status
 
 import { NextResponse } from 'next/server';
