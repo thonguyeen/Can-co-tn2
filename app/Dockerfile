@@ -12,8 +12,8 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
 COPY package.json package-lock.json* ./
-# Clean install — exact versions from lockfile
-RUN npm ci
+# Use npm install to fix lockfile inconsistencies automatically
+RUN npm install
 
 # ── Stage 2: Build Next.js ───────────────────────────
 FROM node:22-alpine AS builder
