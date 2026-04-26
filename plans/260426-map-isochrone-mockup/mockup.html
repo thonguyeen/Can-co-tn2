@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mockup — Map Popup Isochrone + POI · Cần & Có</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4f8;
+            color: #1a1a2e;
+        }
+
+        /* ── TOOLBAR ── */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+            background: #1a1a2e;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .toolbar h1 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #AADAFF;
+            flex: 1;
+        }
+
+        .tab-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #0068FF;
+            border-color: #0068FF;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ── MAIN CONTENT ── */
+        .content {
+            margin-top: 60px;
+            padding: 24px 20px;
+        }
+
+        .state-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap-6px;
+        }
+
+        .state-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+            margin-left: 10px;
+        }
+
+        /* ── DEVICE FRAMES ── */
+        .frames-row {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-bottom: 48px;
+        }
+
+        /* MOBILE */
+        .phone-frame {
+            width: 375px;
+            height: 720px;
+            background: #AADAFF;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 8px #1a1a2e, 0 0 0 10px #2d2d4e;
+            flex-shrink: 0;
+        }
+
+        /* DESKTOP */
+        .desktop-frame {
+            width: 900px;
+            height: 600px;
+            background: #AADAFF;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 0 2px #cbd5e1;
+            flex-shrink: 0;
+        }
+
+        /* ── MAP BACKGROUND ── */
+        .map-bg {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #AADAFF;
+        }
+
+        .map-roads {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+                linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+            background-size: 60px 60px, 60px 60px, 20px 20px, 20px 20px;
+        }
+
+        .map-block {
+            position: absolute;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        /* ── PINS ── */
+        .map-pins {
+            position: absolute;
+            inset: 0;
+        }
+
+        .pin {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .pin:hover {
+            transform: scale(1.1);
+        }
+
+        .pin.co {
+            background: #0068FF;
+        }
+
+        .pin.can {
+            background: #ef4444;
+        }
+
+        .pin.selected {
+            width: 44px;
+            height: 44px;
+            font-size: 11px;
+            box-shadow: 0 0 0 6px rgba(0, 104, 255, 0.3), 0 4px 12px rgba(0, 104, 255, 0.5);
+            z-index: 10;
+            transform: scale(1.1);
+        }
+
+        /* ── ISOCHRONE PREVIEW ON MAP ── */
+        .iso-on-map {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* ── HEADER OVERLAY ── */
+        .map-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95) 60%, transparent);
+            padding: 16px 16px 32px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 14px;
+            padding: 10px 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .search-bar span {
+            font-size: 18px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 13px;
+            color: #64748b;
+            background: transparent;
+        }
+
+        /* ── BOTTOM SHEET MOBILE ── */
+        .bottom-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 30;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+            max-height: 82%;
+            overflow-y: auto;
+            animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .drag-handle {
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drag-handle-bar {
+            width: 36px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 99px;
+        }
+
+        /* ── SIDEBAR DESKTOP ── */
+        .desktop-sidebar {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            bottom: 16px;
+            z-index: 30;
+            width: 360px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+            animation: slideIn 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ── CARD CONTENT ── */
+        .prop-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prop-img-inner {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #c7d2fe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 0.04em;
+        }
+
+        .badge.co {
+            background: #0068FF;
+        }
+
+        .badge.can {
+            background: #ef4444;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .price {
+            font-size: 22px;
+            font-weight: 900;
+            color: #0068FF;
+        }
+
+        .price.can {
+            color: #ef4444;
+        }
+
+        .trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .prop-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 6px 0 8px;
+            line-height: 1.4;
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .meta-row span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .author-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 14px;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0068FF, #38bdf8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* ── ISOCHRONE SECTION ── */
+        .section {
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .iso-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .iso-mini-map {
+            width: 100%;
+            height: 120px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: #cfe2f3;
+            margin-bottom: 8px;
+        }
+
+        .iso-circle {
+            position: absolute;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+        }
+
+        .iso-legend {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .iso-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .iso-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── POI SECTION ── */
+        .poi-chips {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .poi-chip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 11px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        /* ── DISTANCE + TIME ROW ── */
+        .distance-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .dist-chip {
+            flex: 1;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 8px 10px;
+            text-align: center;
+        }
+
+        .dist-chip .val {
+            font-size: 14px;
+            font-weight: 800;
+            color: #16a34a;
+        }
+
+        .dist-chip .lbl {
+            font-size: 10px;
+            color: #86efac;
+            margin-top: 1px;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .btn:hover {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-primary {
+            background: #0068FF;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 104, 255, 0.35);
+        }
+
+        .btn-primary.can {
+            background: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+        }
+
+        /* ── LOADING STATE ── */
+        @keyframes shimmer {
+            0% {
+                background-position: -400px 0;
+            }
+
+            100% {
+                background-position: 400px 0;
+            }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: #9ca3af;
+            line-height: 1.5;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+
+        /* ── SECTION WRAPPER ── */
+        .scenario {
+            margin-bottom: 48px;
+        }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .scenario-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #0068FF;
+            color: white;
+            font-size: 12px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .scenario-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .scenario-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="toolbar">
+        <h1>🗺️ Mockup — Map Popup v2 · Isochrone + POI · Cần &amp; Có</h1>
+        <button class="tab-btn active">📱 Mobile</button>
+        <button class="tab-btn">🖥️ Desktop</button>
+        <button class="tab-btn">⏳ Loading</button>
+        <button class="tab-btn">📭 Empty</button>
+    </div>
+
+    <div class="content">
+
+        <!-- ══════════════════════════════════════════
+       SCENARIO 1: MOBILE — Popup CO (có bán)
+  ══════════════════════════════════════════════ -->
+        <div class="scenario">
+            <div class="scenario-header">
+                <div class="scenario-num">1</div>
+                <div>
+                    <div class="scenario-title">Mobile · Popup "CÓ" (Bất động sản rao bán)</div>
+                    <div class="scenario-desc">User tap vào pin xanh trên bản đồ → bottom sheet slide lên với isochrone
+                        + POI</div>
+                </div>
+            </div>
+
+            <div class="frames-row">
+                <div class="phone-frame">
+                    <div class="map-bg">
+                        <!-- Map texture -->
+                        <div class="map-roads"></div>
+                        <div class="map-block" style="top:20%;left:10%;width:80px;height:60px;"></div>
+                        <div class="map-block" style="top:40%;left:5%;width:60px;height:80px;"></div>
+                        <div class="map-block" style="top:15%;left:55%;width:100px;height:50px;"></div>
+                        <div class="map-block" style="top:35%;left:60%;width:70px;height:70px;"></div>
+
+                        <!-- Isochrone on map (faint preview) -->
+                        <div class="iso-circle"
+                            style="width:180px;height:180px;left:48%;top:28%;background:rgba(239,68,68,0.08);border:2px solid rgba(239,68,68,0.2);">
+                        </div>
+                        <div class="iso-circle"
+                            style="width:110px;height:110px;left:48%;top:28%;background:rgba(234,179,8,0.1);border:2px solid rgba(234,179,8,0.25);">
+                        </div>
+                        <div class="iso-circle"
+                            style="width:56px;height:56px;left:48%;top:28%;background:rgba(34,197,94,0.15);border:2px solid rgba(34,197,94,0.35);">
+                        </div>
+
+                        <!-- Pins -->
+                        <div class="map-pins">
+                            <div class="pin co" style="top:22%;left:42%">CÓ</div>
+                            <div class="pin can" style="top:10%;left:65%">CẦN</div>
+                            <div class="pin co" style="top:15%;left:20%">CÓ</div>
+                            <div class="pin can" style="top:5%;left:40%">CẦN</div>
+                            <div class="pin co selected" style="top:22%;left:42%;top:22%;left:42%">CÓ</div>
+                        </div>
+
+                        <!-- Header -->
+                        <div class="map-header">
+                            <div class="search-bar">
+                                <span>🔍</span>
+                                <input type="text" placeholder="Tìm khu vực, đường..." readonly />
+                                <span style="color:#0068FF;font-size:16px;">⚙️</span>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Sheet -->
+                        <div class="bottom-sheet">
+                            <div class="drag-handle">
+                                <div class="drag-handle-bar"></div>
+                            </div>
+
+                            <!-- Image -->
+                            <div class="prop-img-inner">
+                                🏢
+                                <span class="badge co">CÓ</span>
+                                <button class="close-btn">✕</button>
+                            </div>
+
+                            <div class="card-body">
+                                <!-- Price row -->
+                                <div
+                                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                                    <span class="price">4.5 tỷ</span>
+                                    <span class="trust-badge">🛡 Xác thực</span>
+                                </div>
+
+                                <div class="prop-title">Căn hộ 2PN 72m² Quận 3, view công viên Lê Văn Tám, nội thất cao
+                                    cấp</div>
+
+                                <div class="meta-row">
+                                    <span>📍 Phường 14, Q.3</span>
+                                    <span>🏷 Căn hộ</span>
+                                    <span style="margin-left:auto;color:#64748b;">📏 1.2 km</span>
+                                </div>
+
+                                <!-- Author -->
+                                <div class="author-row">
+                                    <div class="avatar">TN</div>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:700;color:#1e293b;">Nguyễn Thanh Tùng 🛡
+                                        </div>
+                                        <div style="font-size:11px;color:#94a3b8;">Người đăng</div>
+                                    </div>
+                                </div>
+
+                                <!-- Distance + Time NEW -->
+                                <div class="distance-row">
+                                    <div class="dist-chip">
+                                        <div class="val">1.2 km</div>
+                                        <div class="lbl">từ bạn</div>
+                                    </div>
+                                    <div class="dist-chip">
+                                        <div class="val">~8 phút</div>
+                                        <div class="lbl">xe máy</div>
+                                    </div>
+                                    <div class="dist-chip">
+                                        <div class="val">~14 phút</div>
+                                        <div class="lbl">đi bộ</div>
+                                    </div>
+                                </div>
+
+                                <!-- Isochrone -->
+                                <div class="section">
+                                    <div class="section-title">🗺 Vùng tiếp cận</div>
+                                    <div class="iso-box">
+                                        <div class="iso-mini-map">
+                                            <div class="iso-circle"
+                                                style="width:200px;height:200px;background:rgba(239,68,68,0.1);border:2px solid rgba(239,68,68,0.3);">
+                                            </div>
+                                            <div class="iso-circle"
+                                                style="width:130px;height:130px;background:rgba(234,179,8,0.12);border:2px solid rgba(234,179,8,0.4);">
+                                            </div>
+                                            <div class="iso-circle"
+                                                style="width:70px;height:70px;background:rgba(34,197,94,0.18);border:2px solid rgba(34,197,94,0.5);">
+                                            </div>
+                                            <!-- Center pin -->
+                                            <div
+                                                style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:#0068FF;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">
+                                            </div>
+                                        </div>
+                                        <div class="iso-legend">
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#22c55e;"></div> 5 phút
+                                            </div>
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#eab308;"></div> 15 phút
+                                            </div>
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#ef4444;"></div> 30 phút
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- POI -->
+                                <div class="section">
+                                    <div class="section-title">📍 Tiện ích gần đây</div>
+                                    <div class="poi-chips">
+                                        <div class="poi-chip">🏫 Trường TH <strong style="color:#0068FF">0.4km</strong>
+                                        </div>
+                                        <div class="poi-chip">🏥 Bệnh viện <strong style="color:#0068FF">1.1km</strong>
+                                        </div>
+                                        <div class="poi-chip">🛒 Chợ <strong style="color:#0068FF">0.6km</strong></div>
+                                        <div class="poi-chip">🏦 Ngân hàng <strong style="color:#0068FF">0.3km</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="btn-row">
+                                    <button class="btn btn-secondary">↗ Chỉ đường</button>
+                                    <button class="btn btn-primary">❤ Quan tâm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MOBILE — CẦN variant -->
+                <div class="phone-frame">
+                    <div class="map-bg">
+                        <div class="map-roads"></div>
+                        <div class="map-block" style="top:25%;left:15%;width:90px;height:55px;"></div>
+                        <div class="map-block" style="top:10%;left:60%;width:65px;height:75px;"></div>
+
+                        <div class="iso-circle"
+                            style="width:160px;height:160px;left:45%;top:25%;background:rgba(239,68,68,0.08);border:2px solid rgba(239,68,68,0.2);">
+                        </div>
+                        <div class="iso-circle"
+                            style="width:96px;height:96px;left:45%;top:25%;background:rgba(234,179,8,0.1);border:2px solid rgba(234,179,8,0.25);">
+                        </div>
+                        <div class="iso-circle"
+                            style="width:50px;height:50px;left:45%;top:25%;background:rgba(34,197,94,0.15);border:2px solid rgba(34,197,94,0.35);">
+                        </div>
+
+                        <div class="map-pins">
+                            <div class="pin co" style="top:10%;left:65%">CÓ</div>
+                            <div class="pin co" style="top:18%;left:22%">CÓ</div>
+                            <div class="pin can selected" style="top:18%;left:38%">CẦN</div>
+                        </div>
+
+                        <div class="map-header">
+                            <div class="search-bar">
+                                <span>🔍</span>
+                                <input type="text" placeholder="Tìm khu vực, đường..." readonly />
+                            </div>
+                        </div>
+
+                        <div class="bottom-sheet">
+                            <div class="drag-handle">
+                                <div class="drag-handle-bar"></div>
+                            </div>
+
+                            <div class="prop-img-inner" style="background:linear-gradient(135deg,#fef2f2,#fee2e2);">
+                                🏘
+                                <span class="badge can">CẦN</span>
+                                <button class="close-btn">✕</button>
+                            </div>
+
+                            <div class="card-body">
+                                <div
+                                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                                    <span class="price can">2.5–3 tỷ</span>
+                                </div>
+
+                                <div class="prop-title">Cần mua nhà phố Quận 10, 4x15m, hẻm xe hơi, đường rộng, SHR
+                                </div>
+
+                                <div class="meta-row">
+                                    <span>📍 Phường 11, Q.10</span>
+                                    <span>🏷 Nhà phố</span>
+                                    <span style="margin-left:auto;">📏 2.4 km</span>
+                                </div>
+
+                                <div class="author-row">
+                                    <div class="avatar" style="background:linear-gradient(135deg,#ef4444,#f97316);">ML
+                                    </div>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:700;color:#1e293b;">Minh Linh</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Người tìm mua</div>
+                                    </div>
+                                </div>
+
+                                <div class="distance-row">
+                                    <div class="dist-chip">
+                                        <div class="val">2.4 km</div>
+                                        <div class="lbl">từ bạn</div>
+                                    </div>
+                                    <div class="dist-chip">
+                                        <div class="val">~12 phút</div>
+                                        <div class="lbl">xe máy</div>
+                                    </div>
+                                    <div class="dist-chip">
+                                        <div class="val">~28 phút</div>
+                                        <div class="lbl">đi bộ</div>
+                                    </div>
+                                </div>
+
+                                <div class="section">
+                                    <div class="section-title">🗺 Khu vực tìm kiếm</div>
+                                    <div class="iso-box">
+                                        <div class="iso-mini-map">
+                                            <div class="iso-circle"
+                                                style="width:180px;height:180px;background:rgba(239,68,68,0.12);border:2px solid rgba(239,68,68,0.35);">
+                                            </div>
+                                            <div class="iso-circle"
+                                                style="width:110px;height:110px;background:rgba(234,179,8,0.1);border:2px solid rgba(234,179,8,0.3);">
+                                            </div>
+                                            <div class="iso-circle"
+                                                style="width:58px;height:58px;background:rgba(34,197,94,0.15);border:2px solid rgba(34,197,94,0.45);">
+                                            </div>
+                                            <div
+                                                style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:#ef4444;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">
+                                            </div>
+                                        </div>
+                                        <div class="iso-legend">
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#22c55e;"></div> 5 phút
+                                            </div>
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#eab308;"></div> 15 phút
+                                            </div>
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#ef4444;"></div> 30 phút
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section">
+                                    <div class="section-title">📍 Tiện ích khu vực mong muốn</div>
+                                    <div class="poi-chips">
+                                        <div class="poi-chip">🏫 Trường ĐH <strong style="color:#ef4444">0.8km</strong>
+                                        </div>
+                                        <div class="poi-chip">🏥 BV Nhi <strong style="color:#ef4444">0.5km</strong>
+                                        </div>
+                                        <div class="poi-chip">🛒 Siêu thị <strong style="color:#ef4444">1.2km</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="btn-row">
+                                    <button class="btn btn-secondary">↗ Chỉ đường</button>
+                                    <button class="btn btn-primary can">❤ Quan tâm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+       SCENARIO 2: DESKTOP — Sidebar + map
+  ══════════════════════════════════════════════ -->
+        <div class="scenario">
+            <div class="scenario-header">
+                <div class="scenario-num">2</div>
+                <div>
+                    <div class="scenario-title">Desktop · Sidebar panel (md breakpoint)</div>
+                    <div class="scenario-desc">Trên desktop, popup "CÓ" slide từ phải vào thay vì bottom sheet</div>
+                </div>
+            </div>
+
+            <div class="frames-row">
+                <div class="desktop-frame">
+                    <div class="map-bg">
+                        <div class="map-roads"></div>
+                        <div class="map-block" style="top:20%;left:8%;width:120px;height:70px;"></div>
+                        <div class="map-block" style="top:45%;left:5%;width:80px;height:100px;"></div>
+                        <div class="map-block" style="top:15%;left:48%;width:140px;height:60px;"></div>
+                        <div class="map-block" style="top:40%;left:40%;width:90px;height:80px;"></div>
+
+                        <!-- Isochrone on map -->
+                        <div class="iso-circle"
+                            style="width:220px;height:220px;left:35%;top:45%;background:rgba(239,68,68,0.08);border:2px solid rgba(239,68,68,0.2);">
+                        </div>
+                        <div class="iso-circle"
+                            style="width:140px;height:140px;left:35%;top:45%;background:rgba(234,179,8,0.1);border:2px solid rgba(234,179,8,0.25);">
+                        </div>
+                        <div class="iso-circle"
+                            style="width:72px;height:72px;left:35%;top:45%;background:rgba(34,197,94,0.15);border:2px solid rgba(34,197,94,0.35);">
+                        </div>
+
+                        <div class="map-pins">
+                            <div class="pin co" style="top:12%;left:22%">CÓ</div>
+                            <div class="pin can" style="top:8%;left:45%">CẦN</div>
+                            <div class="pin co" style="top:25%;left:60%">CÓ</div>
+                            <div class="pin can" style="top:35%;left:15%">CẦN</div>
+                            <div class="pin co selected" style="top:40%;left:30%">CÓ</div>
+                        </div>
+
+                        <!-- Desktop header -->
+                        <div class="map-header" style="padding:12px 12px 28px;">
+                            <div class="search-bar" style="max-width:360px;">
+                                <span>🔍</span>
+                                <input type="text" placeholder="Tìm khu vực, đường phố..." readonly />
+                                <span style="color:#0068FF;">⚙️</span>
+                            </div>
+                        </div>
+
+                        <!-- Desktop Sidebar -->
+                        <div class="desktop-sidebar">
+                            <div class="prop-img-inner" style="height:140px;">
+                                🏢
+                                <span class="badge co">CÓ</span>
+                                <button class="close-btn">✕</button>
+                            </div>
+
+                            <div class="card-body">
+                                <div
+                                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                                    <span class="price">4.5 tỷ</span>
+                                    <span class="trust-badge">🛡 Xác thực</span>
+                                </div>
+                                <div class="prop-title">Căn hộ 2PN 72m² Quận 3, view công viên, nội thất đầy đủ</div>
+                                <div class="meta-row">
+                                    <span>📍 P.14 Q.3</span>
+                                    <span>🏷 Căn hộ</span>
+                                    <span style="margin-left:auto;">📏 1.2 km</span>
+                                </div>
+
+                                <div class="author-row">
+                                    <div class="avatar">TN</div>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:700;">Nguyễn Thanh Tùng 🛡</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Người đăng</div>
+                                    </div>
+                                </div>
+
+                                <div class="distance-row">
+                                    <div class="dist-chip">
+                                        <div class="val">1.2 km</div>
+                                        <div class="lbl">khoảng cách</div>
+                                    </div>
+                                    <div class="dist-chip">
+                                        <div class="val">~8 phút</div>
+                                        <div class="lbl">xe máy</div>
+                                    </div>
+                                </div>
+
+                                <div class="section">
+                                    <div class="section-title">🗺 Vùng tiếp cận</div>
+                                    <div class="iso-box">
+                                        <div class="iso-mini-map">
+                                            <div class="iso-circle"
+                                                style="width:200px;height:200px;background:rgba(239,68,68,0.1);border:2px solid rgba(239,68,68,0.3);">
+                                            </div>
+                                            <div class="iso-circle"
+                                                style="width:130px;height:130px;background:rgba(234,179,8,0.12);border:2px solid rgba(234,179,8,0.4);">
+                                            </div>
+                                            <div class="iso-circle"
+                                                style="width:68px;height:68px;background:rgba(34,197,94,0.18);border:2px solid rgba(34,197,94,0.5);">
+                                            </div>
+                                            <div
+                                                style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:#0068FF;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">
+                                            </div>
+                                        </div>
+                                        <div class="iso-legend">
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#22c55e;"></div> 5 phút
+                                            </div>
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#eab308;"></div> 15 phút
+                                            </div>
+                                            <div class="iso-legend-item">
+                                                <div class="iso-dot" style="background:#ef4444;"></div> 30 phút
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section">
+                                    <div class="section-title">📍 Tiện ích gần đây</div>
+                                    <div class="poi-chips">
+                                        <div class="poi-chip">🏫 Trường TH <strong style="color:#0068FF">0.4km</strong>
+                                        </div>
+                                        <div class="poi-chip">🏥 BV Q.3 <strong style="color:#0068FF">1.1km</strong>
+                                        </div>
+                                        <div class="poi-chip">🛒 Chợ <strong style="color:#0068FF">0.6km</strong></div>
+                                        <div class="poi-chip">🏦 Ngân hàng <strong style="color:#0068FF">0.3km</strong>
+                                        </div>
+                                        <div class="poi-chip">🌳 Công viên <strong style="color:#0068FF">0.2km</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="btn-row">
+                                    <button class="btn btn-secondary">↗ Chỉ đường</button>
+                                    <button class="btn btn-primary">❤ Quan tâm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+       SCENARIO 3: LOADING STATE
+  ══════════════════════════════════════════════ -->
+        <div class="scenario">
+            <div class="scenario-header">
+                <div class="scenario-num">3</div>
+                <div>
+                    <div class="scenario-title">Loading State — Skeleton khi đang tải isochrone + POI</div>
+                    <div class="scenario-desc">ORS API call ~1-2s. Hiện skeleton cho phần mới, data cũ hiện ngay</div>
+                </div>
+            </div>
+
+            <div class="frames-row">
+                <div class="phone-frame">
+                    <div class="map-bg">
+                        <div class="map-roads"></div>
+                        <div class="map-pins">
+                            <div class="pin co selected" style="top:22%;left:42%">CÓ</div>
+                        </div>
+                        <div class="map-header">
+                            <div class="search-bar">
+                                <span>🔍</span>
+                                <input type="text" placeholder="Tìm khu vực..." readonly />
+                            </div>
+                        </div>
+
+                        <div class="bottom-sheet">
+                            <div class="drag-handle">
+                                <div class="drag-handle-bar"></div>
+                            </div>
+
+                            <div class="prop-img-inner">🏢<span class="badge co">CÓ</span><button
+                                    class="close-btn">✕</button></div>
+
+                            <div class="card-body">
+                                <div
+                                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                                    <span class="price">4.5 tỷ</span>
+                                    <span class="trust-badge">🛡 Xác thực</span>
+                                </div>
+                                <div class="prop-title">Căn hộ 2PN 72m² Quận 3, view công viên</div>
+                                <div class="meta-row">
+                                    <span>📍 Phường 14, Q.3</span>
+                                    <span style="margin-left:auto;">📏 1.2 km</span>
+                                </div>
+                                <div class="author-row">
+                                    <div class="avatar">TN</div>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:700;">Nguyễn Thanh Tùng</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Người đăng</div>
+                                    </div>
+                                </div>
+
+                                <!-- Skeleton loading -->
+                                <div class="section">
+                                    <div class="section-title">🗺 Vùng tiếp cận</div>
+                                    <div class="iso-box">
+                                        <div class="skeleton"
+                                            style="width:100%;height:120px;border-radius:10px;margin-bottom:8px;"></div>
+                                        <div style="display:flex;gap:10px;">
+                                            <div class="skeleton" style="width:60px;height:16px;"></div>
+                                            <div class="skeleton" style="width:60px;height:16px;"></div>
+                                            <div class="skeleton" style="width:60px;height:16px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section">
+                                    <div class="section-title">📍 Tiện ích gần đây</div>
+                                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                        <div class="skeleton" style="width:100px;height:30px;border-radius:20px;"></div>
+                                        <div class="skeleton" style="width:110px;height:30px;border-radius:20px;"></div>
+                                        <div class="skeleton" style="width:90px;height:30px;border-radius:20px;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="btn-row">
+                                    <button class="btn btn-secondary">↗ Chỉ đường</button>
+                                    <button class="btn btn-primary">❤ Quan tâm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+       SCENARIO 4: EMPTY / ORS UNAVAILABLE
+  ══════════════════════════════════════════════ -->
+        <div class="scenario">
+            <div class="scenario-header">
+                <div class="scenario-num">4</div>
+                <div>
+                    <div class="scenario-title">Empty/Error State — ORS không có dữ liệu khu vực này</div>
+                    <div class="scenario-desc">OSM/ORS data có thể thiếu ở vùng nông thôn → fallback gracefully</div>
+                </div>
+            </div>
+
+            <div class="frames-row">
+                <div class="phone-frame">
+                    <div class="map-bg">
+                        <div class="map-roads"></div>
+                        <div class="map-pins">
+                            <div class="pin co selected" style="top:22%;left:42%">CÓ</div>
+                        </div>
+                        <div class="map-header">
+                            <div class="search-bar">
+                                <span>🔍</span>
+                                <input type="text" placeholder="Tìm khu vực..." readonly />
+                            </div>
+                        </div>
+
+                        <div class="bottom-sheet">
+                            <div class="drag-handle">
+                                <div class="drag-handle-bar"></div>
+                            </div>
+                            <div class="prop-img-inner" style="background:linear-gradient(135deg,#dbeafe,#c7d2fe);">
+                                🏡<span class="badge co">CÓ</span><button class="close-btn">✕</button></div>
+
+                            <div class="card-body">
+                                <div style="margin-bottom:4px;"><span class="price">1.8 tỷ</span></div>
+                                <div class="prop-title">Nhà vườn 200m² Long Thành, Đồng Nai, đường bê tông</div>
+                                <div class="meta-row">
+                                    <span>📍 Xã Lộc An, Long Thành</span>
+                                    <span style="margin-left:auto;">📏 28 km</span>
+                                </div>
+                                <div class="author-row">
+                                    <div class="avatar" style="background:linear-gradient(135deg,#0068FF,#06b6d4);">HV
+                                    </div>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:700;">Hoàng Văn Minh</div>
+                                        <div style="font-size:11px;color:#94a3b8;">Người đăng</div>
+                                    </div>
+                                </div>
+
+                                <!-- Empty isochrone -->
+                                <div class="section">
+                                    <div class="section-title">🗺 Vùng tiếp cận</div>
+                                    <div class="iso-box">
+                                        <div class="empty-state" style="padding:20px;">
+                                            <div class="icon" style="font-size:32px;">🗺️</div>
+                                            <h3 style="font-size:12px;">Chưa có dữ liệu vùng này</h3>
+                                            <p style="font-size:11px;">Bản đồ tiếp cận chưa hỗ trợ khu vực ngoại thành
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Empty POI -->
+                                <div class="section">
+                                    <div class="section-title">📍 Tiện ích gần đây</div>
+                                    <div class="poi-chips">
+                                        <div class="poi-chip" style="color:#94a3b8;">📭 Chưa có dữ liệu tiện ích khu vực
+                                            này</div>
+                                    </div>
+                                </div>
+
+                                <div class="btn-row">
+                                    <button class="btn btn-secondary">↗ Chỉ đường</button>
+                                    <button class="btn btn-primary">❤ Quan tâm</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /content -->
+
+    <script>
+        // Tab switching (placeholder for demo)
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

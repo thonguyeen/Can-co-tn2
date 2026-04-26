@@ -181,15 +181,18 @@ export async function POST(req: NextRequest) {
     const systemUserId = await getOrCreateCrawlUser();
 
     // 4. Process batch
-    const results = { inserted: 0, skipped: 0, errors: [] as string[] };
+    const results = { inserted: 0, skipped: 0, errors: [] as string[], skipped_detail: [] as { id: string; reason: string }[] };
 
-    for (const post of posts) {
+    for (const [postIndex, post] of posts.entries()) {
         // Resolve post ID: post_id (new) > fb_post_id (legacy)
         const fbId = (post.post_id || post.fb_post_id || '').trim();
 
         // Validate: phải có ID
         if (!fbId) {
             results.skipped++;
+            const reason = 'missing_post_id';
+            results.skipped_detail.push({ id: `#${postIndex + 1}`, reason });
+            console.log(`[n8n-intents] Skip bài #${postIndex + 1}: không có post_id`);
             continue;
         }
 
@@ -200,6 +203,8 @@ export async function POST(req: NextRequest) {
 
         if (!rawText) {
             results.skipped++;
+            const reason = 'missing_content';
+            results.skipped_detail.push({ id: fbId, reason });
             console.log(`[n8n-intents] Skip bài ${fbId}: không có nội dung`);
             continue;
         }
@@ -214,6 +219,8 @@ export async function POST(req: NextRequest) {
             });
             if (existing) {
                 results.skipped++;
+                results.skipped_detail.push({ id: fbId, reason: `duplicate:${existing.id}` });
+                console.log(`[n8n-intents] Skip bài ${fbId}: đã tồn tại (dedup) → id=${existing.id}`);
                 continue;
             }
 
@@ -309,3 +316,4 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(results, { status: 201 });
 }
+
