@@ -83,7 +83,11 @@ if [ "$RUN_MIGRATE" = true ]; then
   echo "🗄️  [3.5] Running Prisma migrate..."
   echo "   Waiting for app to be healthy..."
   sleep 5
-  docker exec -e DATABASE_URL="$DATABASE_URL" "$CONTAINER_NAME" node_modules/.bin/prisma migrate deploy
+  docker exec \
+    -e DATABASE_URL="$DATABASE_URL" \
+    -e DIRECT_URL="${DIRECT_URL:-$DATABASE_URL}" \
+    "$CONTAINER_NAME" \
+    node_modules/.bin/prisma migrate deploy
   echo "   ✓ Database schema migrated"
 fi
 
