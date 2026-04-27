@@ -80,15 +80,18 @@ echo "   ✓ Containers started"
 # === Step 4: Prisma migrate (optional) ===
 if [ "$RUN_MIGRATE" = true ]; then
   echo ""
-  echo "🗄️  [3.5] Running Prisma migrate..."
-  echo "   Waiting for app to be healthy..."
-  sleep 5
-  docker exec \
+  echo "🗄️  [3.5] Running Prisma db push..."
+  echo "   Building temp migrator from builder stage..."
+  # Runner stage chỉ có prisma client, KHÔNG có CLI (thiếu dependency tree).
+  # → Dùng builder stage (có đầy đủ node_modules) qua temp container.
+  docker build --target builder -t cancotn-migrator -f app/Dockerfile app/ -q
+  docker run --rm \
+    --network cancotn \
     -e DATABASE_URL="$DATABASE_URL" \
     -e DIRECT_URL="${DIRECT_URL:-$DATABASE_URL}" \
-    "$CONTAINER_NAME" \
-    node node_modules/prisma/build/index.js migrate deploy
-  echo "   ✓ Database schema migrated"
+    cancotn-migrator \
+    npx prisma db push --skip-generate --accept-data-loss
+  echo "   ✓ Database schema synced"
 fi
 
 # === Step 5: Cleanup old images ===
