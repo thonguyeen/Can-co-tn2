@@ -87,7 +87,7 @@ if [ "$RUN_MIGRATE" = true ]; then
     -e DATABASE_URL="$DATABASE_URL" \
     -e DIRECT_URL="${DIRECT_URL:-$DATABASE_URL}" \
     "$CONTAINER_NAME" \
-    node_modules/.bin/prisma migrate deploy
+    node node_modules/prisma/build/index.js migrate deploy
   echo "   ✓ Database schema migrated"
 fi
 
