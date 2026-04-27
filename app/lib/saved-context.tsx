@@ -92,19 +92,23 @@ export function SavedProvider({ children }: { children: ReactNode }) {
 
       // Sync với DB nếu là UUID thật (không phải mock 'i-xxx')
       if (session?.user && !id.startsWith('i-')) {
-        fetch(`/api/intents/${id}/save`, { method: 'POST' }).catch(() => {
-          // Revert nếu API lỗi
-          setSavedIds((prev) => {
-            const reverted = new Set(prev);
-            if (reverted.has(id)) {
-              reverted.delete(id);
-            } else {
-              reverted.add(id);
-            }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify([...reverted]));
-            return reverted;
+        fetch(`/api/intents/${id}/save`, { method: 'POST' })
+          .then((res) => {
+            if (!res.ok) throw new Error('Failed to save');
+          })
+          .catch(() => {
+            // Revert nếu API lỗi
+            setSavedIds((prev) => {
+              const reverted = new Set(prev);
+              if (reverted.has(id)) {
+                reverted.delete(id);
+              } else {
+                reverted.add(id);
+              }
+              localStorage.setItem(STORAGE_KEY, JSON.stringify([...reverted]));
+              return reverted;
+            });
           });
-        });
       }
     },
     [session]
