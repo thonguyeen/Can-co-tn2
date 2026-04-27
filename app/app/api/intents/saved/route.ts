@@ -53,15 +53,6 @@ export async function GET(request: NextRequest) {
                         createdAt: true,
                         updatedAt: true,
                         userId: true,
-                        profile: {
-                            select: {
-                                id: true,
-                                displayName: true,
-                                avatarUrl: true,
-                                trustScore: true,
-                                verificationLevel: true,
-                            }
-                        },
                         images: {
                             orderBy: { displayOrder: 'asc' },
                             select: { id: true, url: true, displayOrder: true }
@@ -77,55 +68,68 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ ids })
         }
 
+        // Collect unique userIds to batch-fetch profiles
+        // (Intent model has no direct `profile` relation — fetch separately)
+        const intentsList = saves.map((s) => s.intent).filter(Boolean)
+        const userIds = [...new Set(intentsList.map((i) => i!.userId).filter(Boolean))] as string[]
+
+        const profiles = userIds.length > 0
+            ? await prisma.profile.findMany({
+                where: { id: { in: userIds } },
+                select: { id: true, displayName: true, avatarUrl: true, trustScore: true, verificationLevel: true },
+            })
+            : []
+        const profileMap = Object.fromEntries(profiles.map((p) => [p.id, p]))
+
         // Map Prisma shape → MockIntent shape expected by frontend cards
-        const intents = saves
-            .map((s) => s.intent)
-            .filter(Boolean)
-            .map((i) => ({
-                id: i.id,
-                user_id: i.userId ?? '',
-                type: i.type as 'CAN' | 'CO',
-                raw_text: i.rawText ?? '',
-                title: i.title ?? '',
-                parsed_data: i.parsedData ?? {},
-                category: i.category ?? 'real_estate',
-                subcategory: i.subcategory ?? null,
-                price: i.price ? Number(i.price) : null,
-                price_min: i.priceMin ? Number(i.priceMin) : null,
-                price_max: i.priceMax ? Number(i.priceMax) : null,
-                address: i.address ?? null,
-                district: i.district ?? null,
-                ward: i.ward ?? null,
-                city: i.city ?? 'Hồ Chí Minh',
-                lat: i.lat ? Number(i.lat) : null,
-                lng: i.lng ? Number(i.lng) : null,
-                trust_score: i.trustScore ?? 1,
-                verification_level: i.verificationLevel ?? 'none',
-                comment_count: i.commentCount ?? 0,
-                match_count: i.matchCount ?? 0,
-                view_count: i.viewCount ?? 0,
+        const intents = intentsList.map((i) => {
+            const profile = profileMap[i!.userId ?? ''] ?? null
+            return {
+                id: i!.id,
+                user_id: i!.userId ?? '',
+                type: i!.type as 'CAN' | 'CO',
+                raw_text: i!.rawText ?? '',
+                title: i!.title ?? '',
+                parsed_data: i!.parsedData ?? {},
+                category: i!.category ?? 'real_estate',
+                subcategory: i!.subcategory ?? null,
+                price: i!.price ? Number(i!.price) : null,
+                price_min: i!.priceMin ? Number(i!.priceMin) : null,
+                price_max: i!.priceMax ? Number(i!.priceMax) : null,
+                address: i!.address ?? null,
+                district: i!.district ?? null,
+                ward: i!.ward ?? null,
+                city: i!.city ?? 'Hồ Chí Minh',
+                lat: i!.lat ? Number(i!.lat) : null,
+                lng: i!.lng ? Number(i!.lng) : null,
+                trust_score: i!.trustScore ?? 1,
+                verification_level: i!.verificationLevel ?? 'none',
+                comment_count: i!.commentCount ?? 0,
+                match_count: i!.matchCount ?? 0,
+                view_count: i!.viewCount ?? 0,
                 reactions: { interested: 0, fair_price: 0, hot: 0 },
-                status: i.status ?? 'active',
-                expires_at: i.expiresAt ?? null,
-                created_at: i.createdAt instanceof Date ? i.createdAt.toISOString() : String(i.createdAt ?? ''),
-                updated_at: i.updatedAt instanceof Date ? i.updatedAt.toISOString() : String(i.updatedAt ?? ''),
-                images: (i.images ?? []).map((img) => ({
+                status: i!.status ?? 'active',
+                expires_at: i!.expiresAt ?? null,
+                created_at: i!.createdAt instanceof Date ? i!.createdAt.toISOString() : String(i!.createdAt ?? ''),
+                updated_at: i!.updatedAt instanceof Date ? i!.updatedAt.toISOString() : String(i!.updatedAt ?? ''),
+                images: (i!.images ?? []).map((img) => ({
                     id: img.id,
                     url: img.url,
                     display_order: img.displayOrder ?? 0,
                 })),
-                is_bot: i.isBot ?? false,
+                is_bot: i!.isBot ?? false,
                 user: {
-                    id: i.profile?.id ?? i.userId ?? '',
-                    name: i.profile?.displayName ?? 'Người dùng',
-                    avatar_url: i.profile?.avatarUrl ?? null,
-                    trust_score: i.profile?.trustScore ?? 1,
-                    verification_level: i.profile?.verificationLevel ?? 'none',
+                    id: profile?.id ?? i!.userId ?? '',
+                    name: profile?.displayName ?? 'Người dùng',
+                    avatar_url: profile?.avatarUrl ?? null,
+                    trust_score: profile?.trustScore ?? 1,
+                    verification_level: profile?.verificationLevel ?? 'none',
                 },
                 bot_comment: null,
                 bot_comments: [],
                 latest_comment: null,
-            }))
+            }
+        })
 
         return NextResponse.json({ ids, intents })
     } catch (err) {
