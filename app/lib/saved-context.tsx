@@ -6,7 +6,6 @@ import {
   useState,
   useCallback,
   useEffect,
-  useRef,
   type ReactNode,
 } from 'react';
 import { useSession } from 'next-auth/react';
@@ -25,60 +24,64 @@ const SavedContext = createContext<SavedContextType>({
 
 const STORAGE_KEY = 'canco-saved-intents';
 
-// Pre-saved demo intents (guest mode fallback)
-const DEFAULT_SAVED = ['i-002', 'i-004', 'i-006'];
-
 export function SavedProvider({ children }: { children: ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const initialized = useRef(false);
 
-  // Khởi tạo: load từ DB nếu đã login, fallback localStorage nếu guest
+  /**
+   * Load saved IDs whenever auth state is resolved.
+   * - "authenticated"  → fetch from DB (source of truth)
+   * - "unauthenticated" → read from localStorage (guest mode)
+   * Dependency on `session?.user?.id` ensures this re-runs after login/logout.
+   */
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    // Still loading auth state — wait
+    if (status === 'loading') return;
+
+    const userId = (session?.user as any)?.id as string | undefined;
 
     const loadSaved = async () => {
-      if (session?.user) {
-        // Đã login → fetch từ DB
+      if (userId) {
+        // ── Logged-in: fetch from DB ──────────────────────────────────────
         try {
           const res = await fetch('/api/intents/saved');
           if (res.ok) {
             const data = await res.json();
-            const dbIds: string[] = data.ids || [];
-            // Merge với localStorage để giữ trạng thái optimistic từ tab khác
-            const stored = localStorage.getItem(STORAGE_KEY);
-            const localIds: string[] = stored ? JSON.parse(stored) : [];
-            const merged = new Set([...dbIds, ...localIds.filter((id) => id.startsWith('i-'))]);
-            setSavedIds(merged);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify([...merged]));
+            const dbIds: string[] = data.ids ?? [];
+            setSavedIds(new Set(dbIds));
+            // Sync localStorage so offline/optimistic reads stay consistent
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbIds));
             return;
           }
         } catch {
-          // Fall through to localStorage
+          // Fall through to localStorage fallback
         }
       }
 
-      // Guest mode: dùng localStorage
+      // ── Guest or DB fetch failed: read localStorage ───────────────────
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-          setSavedIds(new Set(JSON.parse(stored)));
+          const parsed: string[] = JSON.parse(stored);
+          // Only keep real UUIDs in guest mode (not mock 'i-xxx')
+          const filtered = userId ? parsed : parsed.filter((id) => id.startsWith('i-'));
+          setSavedIds(new Set(filtered));
         } else {
-          setSavedIds(new Set(DEFAULT_SAVED));
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SAVED));
+          setSavedIds(new Set());
         }
       } catch {
-        setSavedIds(new Set(DEFAULT_SAVED));
+        setSavedIds(new Set());
       }
     };
 
     loadSaved();
-  }, [session]);
+  }, [status, (session?.user as any)?.id]);      // re-run when auth state changes
 
   const toggleSave = useCallback(
     (id: string) => {
-      // Optimistic update ngay lập tức
+      const userId = (session?.user as any)?.id as string | undefined;
+
+      // ── Optimistic update ────────────────────────────────────────────────
       setSavedIds((prev) => {
         const next = new Set(prev);
         if (next.has(id)) {
@@ -90,14 +93,14 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         return next;
       });
 
-      // Sync với DB nếu là UUID thật (không phải mock 'i-xxx')
-      if (session?.user && !id.startsWith('i-')) {
+      // ── Sync with DB (only for real UUIDs when logged in) ───────────────
+      if (userId && !id.startsWith('i-')) {
         fetch(`/api/intents/${id}/save`, { method: 'POST' })
           .then((res) => {
-            if (!res.ok) throw new Error('Failed to save');
+            if (!res.ok) throw new Error('save failed');
           })
           .catch(() => {
-            // Revert nếu API lỗi
+            // Revert optimistic update on error
             setSavedIds((prev) => {
               const reverted = new Set(prev);
               if (reverted.has(id)) {

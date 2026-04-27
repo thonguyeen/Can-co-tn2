@@ -20,13 +20,14 @@ export default async function SavedPage() {
   const savedIntents = await prisma.$queryRaw<any[]>`
     SELECT
       i.*,
+      MIN(s.created_at) AS save_created_at,
       COALESCE(json_agg(img ORDER BY img.display_order) FILTER (WHERE img.id IS NOT NULL), '[]') AS images
     FROM intent_saves s
     JOIN intents i ON i.id = s.intent_id
     LEFT JOIN intent_images img ON img.intent_id = i.id
-    WHERE s.user_id = ${userId}::uuid
+    WHERE s.user_id::text = ${userId}
     GROUP BY i.id
-    ORDER BY s.created_at DESC
+    ORDER BY save_created_at DESC
   `
 
   // Map DB row → MockIntent shape (IntentCard expects this interface)

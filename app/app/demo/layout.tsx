@@ -2,7 +2,6 @@ import { DemoHeader } from '@/components/layout/DemoHeader'
 import { DemoLeftSidebar } from '@/components/layout/DemoLeftSidebar'
 import { DemoRightSidebar } from '@/components/layout/DemoRightSidebar'
 import { MOCK_USER } from '@/lib/mock/data'
-import { SavedProvider } from '@/lib/saved-context'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -33,9 +32,7 @@ export default function DemoLayout({
         {/* Main Content */}
         <main className="flex-1 min-w-0">
           <div className="max-w-2xl mx-auto px-3 py-4">
-            <SavedProvider>
-              {children}
-            </SavedProvider>
+            {children}
           </div>
         </main>
 
