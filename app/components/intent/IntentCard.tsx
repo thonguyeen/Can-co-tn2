@@ -483,7 +483,7 @@ function ActionBar({ intentId, interested, onToggleInterest, requireAuth }: { in
         tabIndex={0}
         onClick={(e) => {
           e.preventDefault(); e.stopPropagation();
-          toggleSave(intentId);
+          requireAuth(() => toggleSave(intentId));
         }}
         className={cn(
           'flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs transition-colors cursor-pointer',

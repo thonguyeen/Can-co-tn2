@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FileText, Heart, Trophy, Clock } from 'lucide-react'
+import { FileText, Bookmark, Trophy, Clock } from 'lucide-react'
+import { SocialPostCard } from '@/components/intent/SocialPostCard'
+import type { MockIntent } from '@/lib/mock/intents'
 
 interface Intent {
     id: string
@@ -23,7 +25,7 @@ interface ProfileTabsProps {
 
 const TABS = [
     { id: 'intents', label: 'Tin đang bán', icon: FileText },
-    { id: 'saved', label: 'Đã lưu', icon: Heart },
+    { id: 'saved', label: 'Đã lưu', icon: Bookmark },
     { id: 'history', label: 'Đã chốt', icon: Clock },
     { id: 'achievements', label: 'Thành tích', icon: Trophy },
 ]
@@ -89,6 +91,8 @@ function EmptyState({ icon: Icon, title, desc }: { icon: any; title: string; des
 export function ProfileTabs({ userId, activeIntentsCount }: ProfileTabsProps) {
     const [activeTab, setActiveTab] = useState('intents')
     const [intents, setIntents] = useState<Intent[] | null>(null)
+    const [savedIntents, setSavedIntents] = useState<MockIntent[] | null>(null)
+    const [loadingSaved, setLoadingSaved] = useState(false)
     const [loading, setLoading] = useState(false)
 
     const fetchIntents = async () => {
@@ -105,6 +109,20 @@ export function ProfileTabs({ userId, activeIntentsCount }: ProfileTabsProps) {
         }
     }
 
+    const fetchSaved = async () => {
+        if (loadingSaved || savedIntents !== null) return
+        setLoadingSaved(true)
+        try {
+            const res = await fetch('/api/intents/saved?full=true')
+            const data = await res.json()
+            setSavedIntents(data.intents ?? [])
+        } catch {
+            setSavedIntents([])
+        } finally {
+            setLoadingSaved(false)
+        }
+    }
+
     // Auto-load intents on mount (initial tab is 'intents')
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => { fetchIntents() }, [])
@@ -112,6 +130,7 @@ export function ProfileTabs({ userId, activeIntentsCount }: ProfileTabsProps) {
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId)
         if (tabId === 'intents' && intents === null) fetchIntents()
+        if (tabId === 'saved') fetchSaved()
     }
 
     return (
@@ -172,11 +191,34 @@ export function ProfileTabs({ userId, activeIntentsCount }: ProfileTabsProps) {
 
                 {/* Đã lưu */}
                 {activeTab === 'saved' && (
-                    <EmptyState
-                        icon={Heart}
-                        title="Chưa lưu tin nào"
-                        desc="Bấm ❤️ vào bài đăng để lưu lại để xem sau."
-                    />
+                    <div>
+                        {loadingSaved && (
+                            <div className="space-y-3">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="h-40 rounded-2xl bg-slate-100 animate-pulse" />
+                                ))}
+                            </div>
+                        )}
+                        {!loadingSaved && savedIntents && savedIntents.length === 0 && (
+                            <EmptyState
+                                icon={Bookmark}
+                                title="Chưa lưu tin nào"
+                                desc="Bấm 🔖 vào bài đăng để lưu lại xem sau."
+                            />
+                        )}
+                        {!loadingSaved && savedIntents && savedIntents.length > 0 && (
+                            <div className="space-y-3">
+                                {savedIntents.map((intent) => (
+                                    <SocialPostCard
+                                        key={intent.id}
+                                        intent={intent}
+                                        compact
+                                        basePath=""
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 )}
 
                 {/* Đã chốt */}

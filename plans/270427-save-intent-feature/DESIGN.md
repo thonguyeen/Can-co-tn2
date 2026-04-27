@@ -1,270 +1,172 @@
-# 🎨 DESIGN: Tính Năng "Lưu Bài" (Save Intent)
+# 🎨 DESIGN: Tính Năng Lưu Bài Viết Ưa Thích
 
-**Ngày tạo:** 2026-04-27  
-**Tính năng:** Save/Bookmark cho Intent posts  
-**Dựa trên:** brainstorm-save-feature.md  
+**Ngày:** 2026-04-27  
+**Dựa trên:** `plans/270427-save-intent-feature/plan.md`
 
 ---
 
-## 1. Cách Lưu Thông Tin (Database Schema)
-
-### Sơ đồ dữ liệu
+## 1. Luồng Hoạt Động
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│  👤 Profile (profiles)                                   │
-│  ├── id (UUID)                                           │
-│  ├── displayName                                         │
-│  └── ...                                                 │
-└──────────────────────┬───────────────────────────────────┘
-                       │ 1 user có nhiều bài đã lưu
+Guest bấm "Lưu"
+      │
+      ▼
+requireAuth() ──── Chưa login ──→ Modal "Đăng nhập để tiếp tục"
+      │                                      │
+   Đã login                               User đăng nhập
+      │                                      │
+      └──────────────────────────────────────┘
+                       │
                        ▼
-┌──────────────────────────────────────────────────────────┐
-│  🔖 IntentSave [MỚI] (intent_saves)                      │
-│  ├── user_id   (FK → profiles.id)  ← Ai lưu             │
-│  ├── intent_id (FK → intents.id)   ← Lưu bài nào        │
-│  └── created_at                    ← Lưu lúc nào         │
-│  PRIMARY KEY: (user_id, intent_id)                       │
-│  → 1 user chỉ lưu 1 bài 1 lần                           │
-└──────────────────────┬───────────────────────────────────┘
-                       │ Nhiều lượt lưu trỏ vào 1 Intent
-                       ▼
-┌──────────────────────────────────────────────────────────┐
-│  📋 Intent (intents)                                     │
-│  ├── id (UUID)                                           │
-│  ├── type (CAN/CO)                                       │
-│  ├── rawText                                             │
-│  └── ...                                                 │
-└──────────────────────────────────────────────────────────┘
+              toggleSave(intentId) [optimistic]
+                       │
+              Nút đổi màu AMBER ngay │
+              (Đã lưu / Bookmark fill) │
+                       │
+              POST /api/intents/[id]/save
+                       │
+          ─────────────┴──────────────
+          │                          │
+        200 OK                   Lỗi (500)
+        Lưu DB ✅               Revert màu nút
+                                 (trở về xám)
 ```
 
-> ⚠️ KHÔNG đụng vào bảng `saves` (liên kết `Post`) — để tránh migration conflict
-
-### Prisma model thêm vào schema.prisma
-
-```prisma
-model IntentSave {
-  userId    String   @map("user_id")
-  intentId  String   @map("intent_id")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  user   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
-  intent Intent  @relation(fields: [intentId], references: [id], onDelete: Cascade)
-
-  @@id([userId, intentId])
-  @@map("intent_saves")
-}
 ```
-
-Cần thêm relation vào:
-```prisma
-// Profile model — thêm:
-intentSaves IntentSave[]
-
-// Intent model — thêm:
-intentSaves IntentSave[]
+User vào /profile → tab "Đã lưu"
+      │
+      ▼
+ProfileTabs fetch GET /api/intents/saved
+      │
+      ▼
+API trả về { ids: ["uuid-1", "uuid-2", ...] }
+      │
+BUT: cần trả về full intent data, không chỉ IDs
+      │
+      ▼
+Fetch GET /api/intents/saved?full=true (option mới)
+hoặc: ProfileTabs dùng endpoint riêng /api/profile/saved-intents
+      │
+      ▼
+Render danh sách IntentCard/SocialPostCard
 ```
 
 ---
 
-## 2. Các Màn Hình Bị Ảnh Hưởng
+## 2. Thiết Kế Dữ Liệu
 
-| Màn hình | File | Thay đổi |
-|----------|------|----------|
-| Feed (trang chủ) | `IntentCard.tsx` điều phối qua `SavedProvider` | Không đổi UI, chỉ đổi persistence |
-| Context Provider | `lib/saved-context.tsx` | Thêm API call, giữ localStorage làm optimistic cache |
-| Trang Đã Lưu | `app/(main)/saved/page.tsx` | Query `intent_saves` thay vì `saves` |
-| API Toggle | `app/api/intents/[id]/save/route.ts` | **[MỚI]** giống pattern `posts/[id]/save` |
-| API List | `app/api/intents/saved/route.ts` | **[MỚI]** trả danh sách intent_id đã lưu |
+**Bảng `intent_saves`** (đã có trong DB):
 
----
+| Cột | Kiểu | Mô tả |
+|-----|------|-------|
+| `id` | UUID | PK |
+| `user_id` | UUID | FK → Profile |
+| `intent_id` | UUID | FK → Intent |
+| `created_at` | Timestamp | Thời điểm lưu |
 
-## 3. Luồng Hoạt Động
-
-### Hành trình 1: User bấm "Lưu" trên feed
-
-```
-User bấm nút Lưu
-      │
-      ▼
-AuthGate check → chưa login → mở dialog đăng nhập (✅ đã có sẵn)
-      │ đã login
-      ▼
-Optimistic UI: toggle trạng thái ngay (UX mượt mà)
-      │
-      ▼
-Gọi API POST /api/intents/{id}/save
-      │
-      ├── 200 OK → giữ trạng thái optimistic, sync localStorage
-      │
-      └── Lỗi → hoàn tác UI (revert)
-
-Trang /saved → query DB → hiển thị đúng bài đã lưu ✅
-```
-
-### Hành trình 2: User mở app lần 2 (khởi tạo context)
-
-```
-App mount → SavedProvider useEffect khởi động
-      │
-      ▼
-Gọi GET /api/intents/saved → nhận [intentId, intentId, ...]
-      │
-      ├── Có session → dùng data từ DB (source of truth)
-      │
-      └── Không có session → dùng localStorage (guest mode)
-```
+**Bảng index:** `UNIQUE(user_id, intent_id)` — ngăn lưu trùng.
 
 ---
 
-## 4. Thiết Kế API
+## 3. API Contract
 
 ### `POST /api/intents/[id]/save`
-> Toggle save — nếu chưa lưu thì lưu, nếu đã lưu thì bỏ lưu
-
-```
-Auth: Bearer (session cookie)
-Method: POST
-Path: /api/intents/{intentId}/save
-
-Response 200:
-{
-  "saved": true  // hoặc false nếu vừa unsave
-}
-
-Response 401: { "error": "Unauthorized" }
-Response 404: { "error": "Intent not found" }
+Toggle save (upsert hoặc delete):
+```json
+// Request: không cần body
+// Response 200 đã lưu: { saved: true }
+// Response 200 bỏ lưu: { saved: false }
+// Response 401: { error: "Unauthorized" }
 ```
 
 ### `GET /api/intents/saved`
-> Lấy danh sách intent ID user đã lưu (để khởi tạo context)
-
-```
-Auth: Bearer (session cookie)
-Method: GET
-Path: /api/intents/saved
-
-Response 200:
+Trả danh sách IDs **và** full intent data:
+```json
 {
-  "ids": ["uuid-1", "uuid-2", ...]
+  "ids": ["uuid-1", "uuid-2"],
+  "intents": [ ...full intent objects ]  // mới thêm
 }
-
-Response 401: { "ids": [] }
 ```
 
 ---
 
-## 5. Checklist Kiểm Tra (Acceptance Criteria)
+## 4. Các Màn Hình Liên Quan
 
-### ✅ Bug Fix Core
-- [ ] Bấm "Lưu" trên IntentCard → gọi API → lưu vào DB
-- [ ] Vào trang `/saved` → thấy đúng các bài đã lưu
-- [ ] Đổi thiết bị / xóa cache → dữ liệu vẫn còn (sync từ DB)
-- [ ] Bấm "Lưu" lần 2 → bỏ lưu (toggle hoạt động)
+### Feed (Trang chủ)
+- Nút **"Lưu"** (Bookmark icon + text)
+- State: xám = chưa lưu | amber + filled = đã lưu
+- Click khi chưa login → Modal đăng nhập
+- Click khi đã login → Toggle ngay (optimistic)
 
-### ✅ Auth
-- [ ] Chưa đăng nhập → bấm "Lưu" → mở dialog đăng nhập
-- [ ] Sau đăng nhập → hành động được thực hiện
-- [ ] API trả 401 nếu không có session
+### Profile `/profile` → Tab "Đã lưu"
+- Hiện spinner khi đang load
+- Hiện danh sách `SocialPostCard` (compact)  
+- Hiện EmptyState nếu chưa lưu tin nào
+- Dùng API `GET /api/intents/saved?full=true`
 
-### ✅ Optimistic UI
-- [ ] UI đổi ngay lập tức khi bấm (không đợi API)
-- [ ] Nếu API lỗi → UI revert về trạng thái cũ
-
-### ✅ Khởi tạo đúng trạng thái
-- [ ] Sau đăng nhập, các bài đã lưu trước đó vẫn hiện "Đã lưu"
-- [ ] Refresh page → trạng thái "Đã lưu" được giữ nguyên
+### Trang `/saved` (dedicated page)
+- Đã hoạt động đúng ✅ (query raw SQL từ `intent_saves`)
+- Không thay đổi
 
 ---
 
-## 6. Test Cases
+## 5. Components thay đổi
 
-### TC-01: Happy Path — Lưu bài mới
-```
-Given: User đã đăng nhập, đang xem feed
-When:  Bấm "Lưu" trên 1 IntentCard
-Then:  ✓ Nút đổi sang "Đã lưu" (màu vàng) ngay lập tức
-       ✓ API POST /api/intents/{id}/save trả 200 { saved: true }
-       ✓ Vào /saved → thấy bài đó trong danh sách
-```
-
-### TC-02: Toggle — Bỏ lưu
-```
-Given: User đã lưu bài X, đang xem feed
-When:  Bấm "Đã lưu" trên bài X (lần 2)
-Then:  ✓ Nút đổi về "Lưu" (màu xám)
-       ✓ API POST trả 200 { saved: false }
-       ✓ Vào /saved → bài X biến mất
-```
-
-### TC-03: Auth Gate
-```
-Given: User CHƯA đăng nhập
-When:  Bấm "Lưu" trên bất kỳ bài nào
-Then:  ✓ Mở dialog đăng nhập
-       ✓ KHÔNG lưu vào DB, KHÔNG đổi UI
-```
-
-### TC-04: Persistence
-```
-Given: User đã lưu 3 bài trên thiết bị A
-When:  Mở app trên thiết bị B (cùng tài khoản)
-Then:  ✓ /saved hiển thị đúng 3 bài
-       ✓ Feed hiển thị đúng 3 bài đó với trạng thái "Đã lưu"
-```
-
-### TC-05: DB chứa UUIDs thật (intent query)
-```
-Given: 1 bài mock (id bắt đầu bằng 'i-')
-When:  Bấm "Lưu"
-Then:  ✓ UI toggle hoạt động
-       ✓ Nếu id không phải UUID thật → API có thể skip (không crash)
-       Note: Hiện tại intent mock ID format = 'i-001', v.v.
-```
+| Component | Thay đổi |
+|-----------|---------|
+| `SocialPostCard.tsx:359` | Revert: `toggleSave(id)` → `requireAuth(() => toggleSave(id))` |
+| `IntentCard.tsx:486` | Revert: `toggleSave(id)` → `requireAuth(() => toggleSave(id))` |
+| `ProfileTabs.tsx:174-180` | Thay `<EmptyState>` bằng fetch + render list |
+| `api/intents/saved/route.ts` | Thêm `?full=true` option trả về full intent data |
 
 ---
 
-## 7. Các File Cần Thay Đổi
+## 6. Acceptance Criteria
 
-```
-app/
-├── prisma/
-│   └── schema.prisma                         [MODIFY] thêm IntentSave + relations
-│
-├── app/api/intents/
-│   ├── [id]/save/route.ts                    [NEW] toggle save API
-│   └── saved/route.ts                        [NEW] get saved IDs API
-│
-├── lib/
-│   └── saved-context.tsx                     [MODIFY] thêm API sync
-│
-└── app/(main)/
-    └── saved/page.tsx                        [MODIFY] query intent_saves
-```
+### ✅ Nút Lưu trên Feed
+- [ ] Guest bấm → Hiện modal đăng nhập (không lưu)
+- [ ] Đã login bấm → Nút chuyển amber + text "Đã lưu" ngay (optimistic)
+- [ ] API lưu thành công → state giữ nguyên
+- [ ] API lỗi → nút revert về xám + text "Lưu"
+- [ ] F5 sau khi lưu → nút vẫn amber (fetch từ DB)
 
-**Deploy command sau khi code:**
-```bash
-./deploy.sh --migrate
-```
+### ✅ Tab "Đã lưu" trong Profile
+- [ ] Vào tab → Hiện spinner load
+- [ ] Load xong → Hiện danh sách bài đã lưu
+- [ ] Chưa lưu tin nào → Hiện EmptyState "Chưa lưu tin nào"
+- [ ] Bài trong list → Click được, dẫn đến trang chi tiết
+
+---
+
+## 7. Test Cases
+
+**TC-01: Guest bấm Lưu**
+- Given: chưa đăng nhập
+- When: bấm "Lưu" trên bất kỳ bài nào
+- Then: Modal "Đăng nhập để tiếp tục" hiện ra, nút KHÔNG đổi màu
+
+**TC-02: Login xong bấm Lưu**
+- Given: đã đăng nhập
+- When: bấm "Lưu" trên bài chưa lưu
+- Then: Nút chuyển amber + "Đã lưu" trong <300ms
+
+**TC-03: Bỏ lưu**
+- Given: bài đang ở trạng thái "Đã lưu"
+- When: bấm nút "Đã lưu"
+- Then: Nút revert về xám, API DELETE record
+
+**TC-04: Kiểm tra Profile tab**
+- Given: đã lưu ít nhất 1 bài
+- When: vào `/profile` → click tab "Đã lưu"
+- Then: Hiện bài đã lưu đó trong danh sách
+
+**TC-05: Persist qua session**
+- Given: đã lưu bài, đóng trình duyệt
+- When: mở lại, đăng nhập lại
+- Then: Feed vẫn hiện nút amber cho bài đã lưu
 
 ---
 
 ## 8. Bước Tiếp Theo
 
-```
-1️⃣ Code phase-01: Schema + Migration
-   → Thêm IntentSave model vào schema.prisma
-
-2️⃣ Code phase-02: API routes
-   → /api/intents/[id]/save + /api/intents/saved
-
-3️⃣ Code phase-03: Context + UI
-   → Cập nhật saved-context.tsx + /saved page
-
-4️⃣ Deploy
-   → ./deploy.sh --migrate (cần migrate vì thêm bảng mới)
-```
-
----
-
-*Thiết kế bởi AWF /design — Cần & Có Platform*
+→ `/code` để implement theo thứ tự: Revert → Fix API → Fix ProfileTabs → Test

@@ -356,7 +356,7 @@ function ActionBar({
 
             {/* Lưu */}
             <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleSave(intentId); }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); requireAuth(() => toggleSave(intentId)); }}
                 className={cn(
                     'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[13px] font-semibold transition-all',
                     saved
