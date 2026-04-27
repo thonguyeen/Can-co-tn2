@@ -106,6 +106,7 @@ model Profile {
   userAchievements UserAchievement[]
   pointTransactions PointTransaction[]
   swipeLikes    SwipeLike[]
+  intentSaves   IntentSave[]
 
   @@map("profiles")
 }
@@ -483,6 +484,7 @@ model Intent {
   agentActivities AgentActivity[]
   boosts          IntentBoost[]
   swipeLikes      SwipeLike[]    // Mutual Match: danh sách lượt vuốt vào bài này
+  intentSaves     IntentSave[]
 
   @@map("intents")
 }
@@ -552,6 +554,22 @@ model SwipeLike {
   // Index nhanh cho query "user này đã vuốt bài nào?"
   @@index([userId, action])
   @@map("swipe_likes")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Intent Save (Lưu bài — 100_can_co_intents domain)
+// ═══════════════════════════════════════════════════════════════
+
+model IntentSave {
+  userId    String   @map("user_id")
+  intentId  String   @map("intent_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user   Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  intent Intent  @relation(fields: [intentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, intentId])
+  @@map("intent_saves")
 }
 
 model Match {

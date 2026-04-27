@@ -1,16 +1,22 @@
 {
-  "updated_at": "2026-04-25T16:28:00+07:00",
+  "updated_at": "2026-04-26T21:26:00+07:00",
   "working_on": {
-    "feature": "Production Infrastructure — Nginx routing + Cloudflare Tunnel",
-    "task": "COMPLETED — khanhoatoday.com đang route đúng vào can-co_app",
-    "status": "done",
+    "feature": "Map Isochrone + POI Upgrade (Phase 1 Planning)",
+    "task": "UI/UX mockup hoàn chỉnh — 4 kịch bản (Mobile CÓ/CẦN, Desktop, Loading, Empty)",
+    "status": "planning_done",
     "files": [
-      "/opt/nginx/conf.d/cancotn.conf"
+      "plans/260426-map-isochrone-mockup/mockup.html",
+      "docs/BRIEF-map-upgrade.md"
     ],
     "blockers": [],
-    "notes": "nginx_proxy phải join 'shared' network. Dùng upstream block + resolver 127.0.0.11 để Docker DNS hoạt động."
+    "notes": "Mockup đã duyệt. Bước tiếp theo: /plan để lên implementation plan Phase 1 (tích hợp vào MapPopupCard.tsx)"
   },
   "pending_tasks": [
+    {
+      "task": "Implement Map Phase 1: isochrone + POI vào MapPopupCard.tsx",
+      "priority": "high",
+      "notes": "Xem mockup tại plans/260426-map-isochrone-mockup/mockup.html. Dùng ORS API key NEXT_PUBLIC_ORS_API_KEY. Cần lazy load + cache."
+    },
     {
       "task": "Kết nối n8n workflow thật vào webhook endpoint",
       "priority": "high",
@@ -29,44 +35,64 @@
   ],
   "recent_changes": [
     {
-      "timestamp": "2026-04-25T16:10:00+07:00",
+      "timestamp": "2026-04-26T16:00:00+07:00",
+      "type": "bugfix",
+      "description": "n8n webhook route.ts: Thêm log + skipped_detail cho 3 trường hợp silent skip (missing_post_id, missing_content, duplicate dedup). Dùng entries() thay indexOf().",
+      "files": [
+        "app/app/api/webhook/n8n-intents/route.ts"
+      ],
+      "commits": [
+        "fix(webhook): add logging and skipped_detail to silent n8n skip cases"
+      ]
+    },
+    {
+      "timestamp": "2026-04-26T16:30:00+07:00",
       "type": "infrastructure",
-      "description": "Tạo /opt/nginx/conf.d/cancotn.conf — nginx route khanhoatoday.com → can-co_app:4000",
+      "description": "deploy.sh: Cập nhật --migrate flag từ `db push` sang `prisma migrate deploy` (an toàn hơn cho production)",
+      "files": [
+        "deploy.sh"
+      ],
       "commits": []
     },
     {
-      "timestamp": "2026-04-25T16:19:00+07:00",
-      "type": "infrastructure",
-      "description": "docker network connect shared nginx_proxy — nginx_proxy join shared network để resolve can-co_app",
-      "commits": []
-    },
-    {
-      "timestamp": "2026-04-25T16:22:00+07:00",
-      "type": "infrastructure",
-      "description": "Overwrite cancotn.conf với upstream block + resolver 127.0.0.11 (Docker DNS). Site hoạt động.",
+      "timestamp": "2026-04-26T14:00:00+07:00",
+      "type": "feature",
+      "description": "Tạo UI/UX mockup cho tính năng Map Isochrone + POI: 4 kịch bản (Mobile CÓ/CẦN, Desktop Sidebar, Loading Skeleton, Empty State)",
+      "files": [
+        "plans/260426-map-isochrone-mockup/mockup.html",
+        "docs/BRIEF-map-upgrade.md"
+      ],
       "commits": []
     }
   ],
   "errors_encountered": [
     {
-      "error": "khanhoatoday.com hiển thị 9router thay vì can-co",
-      "solution": "1) Tạo cancotn.conf với server_name khanhoatoday.com; 2) docker network connect shared nginx_proxy; 3) Dùng upstream block + resolver 127.0.0.11",
+      "error": "git pull bị block trên VPS vì deploy.sh có local changes",
+      "solution": "git restore deploy.sh rồi chạy lại ./deploy.sh",
       "resolved": true
     },
     {
-      "error": "nginx không resolve được can-co_app hostname",
-      "solution": "nginx_proxy chưa trong 'shared' network. Fix: docker network connect shared nginx_proxy",
+      "error": "multi_replace_file_content tool làm hỏng n8n-intents/route.ts (xóa mất for-loop và results object)",
+      "solution": "Dùng replace_file_content với TargetContent đầy đủ để restore toàn bộ đoạn bị hỏng",
       "resolved": true
     }
   ],
   "decisions_made": [
     {
-      "decision": "upstream block + resolver 127.0.0.11 trong nginx config",
-      "reason": "Docker container hostname resolution cần Docker DNS (127.0.0.11). Direct proxy_pass với hostname literal có thể bị cache lúc startup."
+      "decision": "Dùng entries() thay indexOf() trong vòng lặp n8n webhook",
+      "reason": "O(1) thay vì O(n) — clean hơn và đúng chuẩn hơn"
     },
     {
-      "decision": "nginx_proxy join 'shared' network (thủ công)",
-      "reason": "nginx_proxy ban đầu chỉ ở cloudflare-net, không thấy can-co_app ở shared network"
+      "decision": "Thêm skipped_detail array vào response JSON của webhook",
+      "reason": "Caller (n8n) cần biết post nào bị skip và lý do để debug từ phía n8n dashboard"
+    },
+    {
+      "decision": "Deploy command tối ưu: docker compose up -d --build --no-deps app",
+      "reason": "1 lệnh, có cache, không restart DB, thay thế container trong tích tắc"
+    },
+    {
+      "decision": "Map upgrade: dùng Leaflet + ORS Isochrone API (stack đã sẵn có)",
+      "reason": "Không cần thêm dependency. Phase 1 chỉ cần gọi ORS API và nhúng vào MapPopupCard"
     }
   ]
 }

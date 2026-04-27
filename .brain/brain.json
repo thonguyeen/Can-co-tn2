@@ -2,7 +2,7 @@
   "meta": {
     "schema_version": "1.1.0",
     "awf_version": "4.0.2",
-    "last_updated": "2026-04-25T13:30:00+07:00"
+    "last_updated": "2026-04-26T21:26:00+07:00"
   },
   "project": {
     "name": "Cần & Có",
@@ -41,9 +41,10 @@
     },
     "cloudflare_tunnel": "Buffers requests during rebuild (zero downtime)",
     "key_commands": [
-      "git pull origin dev",
-      "./deploy.sh --clean",
-      "./deploy.sh --migrate"
+      "./deploy.sh",
+      "./deploy.sh --clean  (khi thay đổi package.json)",
+      "./deploy.sh --migrate  (khi thay đổi Prisma schema)",
+      "docker compose -f docker-compose.prod.yml up -d --build --no-deps app  (one-liner nhanh nhất)"
     ]
   },
   "known_issues_resolved": [
@@ -86,7 +87,13 @@
       "auth": "Bearer N8N_WEBHOOK_SECRET",
       "purpose": "Ingest AI-parsed Facebook posts from n8n crawler",
       "input_format": "[{ records: [...] }] (wrapped) OR flat array",
-      "type_mapping": "0=unknown→CO, 1=CO(bán), 2=CAN(cần)"
+      "type_mapping": "0=unknown→CO, 1=CO(bán), 2=CAN(cần)",
+      "response": "{ inserted, skipped, errors[], skipped_detail: [{id, reason}] }",
+      "skip_reasons": [
+        "missing_post_id",
+        "missing_content",
+        "duplicate:intentId"
+      ]
     },
     "intents": "/api/intents — CRUD for intent posts",
     "health": "/api/health — Health check endpoint"
@@ -119,11 +126,18 @@
     {
       "name": "Choropleth Ward Map",
       "status": "production"
+    },
+    {
+      "name": "Map Isochrone + POI (ORS)",
+      "status": "planning",
+      "notes": "Mockup xong: plans/260426-map-isochrone-mockup/mockup.html. Brief: docs/BRIEF-map-upgrade.md. Dùng NEXT_PUBLIC_ORS_API_KEY."
     }
   ],
   "conventions": {
     "api_routes": "All app/api/**/*.ts files have @ts-nocheck at top (pragmatic fix for Prisma type issues)",
     "tsconfig": "noImplicitAny: false to avoid strict lambda param errors in lib/",
-    "mock_data": "lib/mock/intents.ts — MockIntent interface is source of truth for mock types"
+    "mock_data": "lib/mock/intents.ts — MockIntent interface is source of truth for mock types",
+    "deploy_gotcha": "git pull on VPS may fail if deploy.sh has local changes. Fix: git restore deploy.sh",
+    "tool_gotcha": "multi_replace_file_content can corrupt files if TargetContent is not exact — use replace_file_content for large hunks"
   }
 }
