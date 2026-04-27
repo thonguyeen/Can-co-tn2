@@ -90,7 +90,7 @@ if [ "$RUN_MIGRATE" = true ]; then
     -e DATABASE_URL="$DATABASE_URL" \
     -e DIRECT_URL="${DIRECT_URL:-$DATABASE_URL}" \
     cancotn-migrator \
-    npx prisma db push --skip-generate --accept-data-loss
+    npx prisma db push --accept-data-loss
   echo "   ✓ Database schema synced"
 fi
 
